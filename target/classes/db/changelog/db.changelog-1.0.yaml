@@ -1,0 +1,224 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: assistant
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: VARCHAR(500)
+              - column:
+                  name: last_name
+                  type: VARCHAR(500)
+              - column:
+                  name: email
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: phone
+                  type: VARCHAR(50)
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: created_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_datetime
+                  type: TIMESTAMP
+        - createTable:
+            tableName: item
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+              - column:
+                  name: price
+                  type: DECIMAL(15,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: created_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_datetime
+                  type: TIMESTAMP
+        - createTable:
+            tableName: po_h
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: datetime
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+              - column:
+                  name: total_price
+                  type: DECIMAL(15,2)
+              - column:
+                  name: total_cost
+                  type: DECIMAL(15,2)
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: created_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_datetime
+                  type: TIMESTAMP
+        - createTable:
+            tableName: po_d
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: poh_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_qty
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_cost
+                  type: DECIMAL(15,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_price
+                  type: DECIMAL(15,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+              - column:
+                  name: created_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_datetime
+                  type: TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: po_d
+            baseColumnNames: poh_id
+            constraintName: fk_po_d_poh
+            referencedTableName: po_h
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: po_d
+            baseColumnNames: item_id
+            constraintName: fk_po_d_item
+            referencedTableName: item
+            referencedColumnNames: id
+  - changeSet:
+      id: 2
+      author: assistant
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: first_name
+                  value: Admin
+              - column:
+                  name: last_name
+                  value: User
+              - column:
+                  name: email
+                  value: admin@example.com
+              - column:
+                  name: phone
+                  value: 0000000000
+              - column:
+                  name: password
+                  value: "$2a$10$dXJQ0c7xJRZ/5j0uLZRW0OBzFZISwH0z7dxyzKDn5XxhxL7sRKq0C"
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-01-01T00:00:00"
+        - insert:
+            tableName: item
+            columns:
+              - column:
+                  name: name
+                  value: Sample Item
+              - column:
+                  name: description
+                  value: Example description
+              - column:
+                  name: price
+                  valueNumeric: 10.50
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-01-01T00:00:00"
