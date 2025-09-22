@@ -7,7 +7,7 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
     hikari:
-      connection-init-sql: "SET search_path TO \"${DB_SCHEMA:public}\", public"
+      connection-init-sql: "CREATE SCHEMA IF NOT EXISTS \"${DB_SCHEMA:public}\"; SET search_path TO \"${DB_SCHEMA:public}\", public"
       data-source-properties:
         prepareThreshold: 0
   jpa:
