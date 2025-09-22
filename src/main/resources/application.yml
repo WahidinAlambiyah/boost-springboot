@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:purchaseorder;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+jwt:
+  secret: "c2VjcmV0LWtleS1mb3ItcHVyY2hhc2Utb3JkZXItYXBwLXNob3VsZC1iZS1sb25nLWVuLWFuZC1yYW5kb20="
+  expiration: 3600000
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
