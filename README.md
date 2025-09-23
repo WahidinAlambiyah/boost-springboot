@@ -62,7 +62,7 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
     "email": "admin@example.com",
-    "password": "password"
+    "password": "SuperSecret123!"
   }'
 ```
 
