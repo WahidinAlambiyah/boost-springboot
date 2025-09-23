@@ -3,6 +3,7 @@ package com.example.purchaseorder.controller;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.dto.UserResponse;
 import com.example.purchaseorder.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,12 +28,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(UserResponse.from(userService.create(request)));
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<UserResponse>> createBulk(@RequestBody List<UserRequest> requests) {
+    public ResponseEntity<List<UserResponse>> createBulk(@Valid @RequestBody List<@Valid UserRequest> requests) {
         List<UserResponse> responses = userService.createBulk(requests).stream()
                 .map(UserResponse::from)
                 .collect(Collectors.toList());
@@ -40,7 +41,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id, @RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(UserResponse.from(userService.update(id, request)));
     }
 
