@@ -55,20 +55,30 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public void delete(Long id) {
-        headerRepository.delete(get(id));
+        PurchaseOrderHeader header = headerRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found: " + id));
+        header.setDeleted(true);
+        headerRepository.save(header);
+    }
+
+    @Override
+    public void deletePermanent(Long id) {
+        PurchaseOrderHeader header = headerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found: " + id));
+        headerRepository.delete(header);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PurchaseOrderHeader get(Long id) {
-        return headerRepository.findById(id)
+        return headerRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<PurchaseOrderHeader> list(Pageable pageable) {
-        return headerRepository.findAll(pageable);
+        return headerRepository.findAllByDeletedFalse(pageable);
     }
 
     private void applyHeader(PurchaseOrderHeader header, PurchaseOrderRequest request) {
@@ -111,7 +121,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             return;
         }
         for (PurchaseOrderDetailRequest detailRequest : requests) {
-            Item item = itemRepository.findById(detailRequest.getItemId())
+            Item item = itemRepository.findByIdAndDeletedFalse(detailRequest.getItemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + detailRequest.getItemId()));
             PurchaseOrderDetail detail = PurchaseOrderDetail.builder()
                     .purchaseOrder(header)
@@ -133,6 +143,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         applyHeader(header, request);
         applyDetails(header, request.getDetails());
         applyTotals(header, request);
+        header.setDeleted(false);
         return headerRepository.save(header);
     }
 }

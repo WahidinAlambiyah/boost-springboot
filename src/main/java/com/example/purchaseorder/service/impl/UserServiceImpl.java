@@ -51,20 +51,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long id) {
-        userRepository.delete(get(id));
+        User user = userRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        user.setDeleted(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deletePermanent(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        userRepository.delete(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public User get(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<User> list(Pageable pageable) {
-        return userRepository.findAll(pageable);
+        return userRepository.findAllByDeletedFalse(pageable);
     }
 
     private void applyRequest(User user, UserRequest request) {
@@ -82,6 +92,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         applyRequest(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setDeleted(false);
         return userRepository.save(user);
     }
 }

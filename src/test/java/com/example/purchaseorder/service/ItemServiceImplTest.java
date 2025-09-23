@@ -60,7 +60,7 @@ class ItemServiceImplTest {
     @Test
     void updateShouldModifyExistingItem() {
         Item existing = Item.builder().id(1L).name("Old").build();
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(itemRepository.save(existing)).thenReturn(existing);
 
         Item updated = itemService.update(1L, request);
@@ -70,17 +70,29 @@ class ItemServiceImplTest {
 
     @Test
     void updateShouldThrowWhenNotFound() {
-        when(itemRepository.findById(1L)).thenReturn(Optional.empty());
+        when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> itemService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void deleteShouldRemoveItem() {
+    void deleteShouldSoftDeleteItem() {
+        Item existing = Item.builder().id(1L).build();
+        when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.save(existing)).thenReturn(existing);
+
+        itemService.delete(1L);
+
+        assertThat(existing.isDeleted()).isTrue();
+        verify(itemRepository).save(existing);
+    }
+
+    @Test
+    void deletePermanentShouldRemoveItem() {
         Item existing = Item.builder().id(1L).build();
         when(itemRepository.findById(1L)).thenReturn(Optional.of(existing));
 
-        itemService.delete(1L);
+        itemService.deletePermanent(1L);
 
         verify(itemRepository).delete(existing);
     }
@@ -88,7 +100,7 @@ class ItemServiceImplTest {
     @Test
     void getShouldReturnItem() {
         Item existing = Item.builder().id(1L).build();
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
 
         assertThat(itemService.get(1L)).isEqualTo(existing);
     }
@@ -98,11 +110,11 @@ class ItemServiceImplTest {
         List<Item> items = List.of(Item.builder().id(1L).build());
         Page<Item> page = new PageImpl<>(items);
         PageRequest pageable = PageRequest.of(0, 10);
-        when(itemRepository.findAll(pageable)).thenReturn(page);
+        when(itemRepository.findAllByDeletedFalse(pageable)).thenReturn(page);
 
         Page<Item> result = itemService.list(pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        verify(itemRepository).findAll(pageable);
+        verify(itemRepository).findAllByDeletedFalse(pageable);
     }
 }

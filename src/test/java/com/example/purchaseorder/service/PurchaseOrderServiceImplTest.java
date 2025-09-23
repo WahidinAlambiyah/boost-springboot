@@ -67,7 +67,7 @@ class PurchaseOrderServiceImplTest {
     @Test
     void createShouldPersistHeaderAndDetails() {
         Item item = Item.builder().id(10L).build();
-        when(itemRepository.findById(10L)).thenReturn(Optional.of(item));
+        when(itemRepository.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(item));
         when(headerRepository.save(any(PurchaseOrderHeader.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         PurchaseOrderHeader saved = purchaseOrderService.create(request);
@@ -84,8 +84,8 @@ class PurchaseOrderServiceImplTest {
         PurchaseOrderHeader existing = new PurchaseOrderHeader();
         existing.setId(1L);
         existing.setDetails(new java.util.ArrayList<>(List.of(PurchaseOrderDetail.builder().build())));
-        when(headerRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(itemRepository.findById(10L)).thenReturn(Optional.of(Item.builder().id(10L).build()));
+        when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(Item.builder().id(10L).build()));
         when(headerRepository.save(existing)).thenReturn(existing);
 
         PurchaseOrderHeader updated = purchaseOrderService.update(1L, request);
@@ -96,18 +96,31 @@ class PurchaseOrderServiceImplTest {
 
     @Test
     void updateShouldThrowWhenNotFound() {
-        when(headerRepository.findById(1L)).thenReturn(Optional.empty());
+        when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> purchaseOrderService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void deleteShouldRemoveHeader() {
+    void deleteShouldSoftDeleteHeader() {
+        PurchaseOrderHeader existing = new PurchaseOrderHeader();
+        existing.setId(1L);
+        when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(headerRepository.save(existing)).thenReturn(existing);
+
+        purchaseOrderService.delete(1L);
+
+        assertThat(existing.isDeleted()).isTrue();
+        verify(headerRepository).save(existing);
+    }
+
+    @Test
+    void deletePermanentShouldRemoveHeader() {
         PurchaseOrderHeader existing = new PurchaseOrderHeader();
         existing.setId(1L);
         when(headerRepository.findById(1L)).thenReturn(Optional.of(existing));
 
-        purchaseOrderService.delete(1L);
+        purchaseOrderService.deletePermanent(1L);
 
         verify(headerRepository).delete(existing);
     }
@@ -117,11 +130,11 @@ class PurchaseOrderServiceImplTest {
         List<PurchaseOrderHeader> headers = List.of(new PurchaseOrderHeader());
         Page<PurchaseOrderHeader> page = new PageImpl<>(headers);
         PageRequest pageable = PageRequest.of(0, 10);
-        when(headerRepository.findAll(pageable)).thenReturn(page);
+        when(headerRepository.findAllByDeletedFalse(pageable)).thenReturn(page);
 
         Page<PurchaseOrderHeader> result = purchaseOrderService.list(pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        verify(headerRepository).findAll(pageable);
+        verify(headerRepository).findAllByDeletedFalse(pageable);
     }
 }

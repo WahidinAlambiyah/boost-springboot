@@ -61,4 +61,10 @@ public class PurchaseOrderController {
         purchaseOrderService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePermanent(@PathVariable Long id) {
+        purchaseOrderService.deletePermanent(id);
+        return ResponseEntity.noContent().build();
+    }
 }

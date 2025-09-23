@@ -46,20 +46,30 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void delete(Long id) {
-        itemRepository.delete(get(id));
+        Item item = itemRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + id));
+        item.setDeleted(true);
+        itemRepository.save(item);
+    }
+
+    @Override
+    public void deletePermanent(Long id) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + id));
+        itemRepository.delete(item);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Item get(Long id) {
-        return itemRepository.findById(id)
+        return itemRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<Item> list(Pageable pageable) {
-        return itemRepository.findAll(pageable);
+        return itemRepository.findAllByDeletedFalse(pageable);
     }
 
     private void applyRequest(Item item, ItemRequest request) {
@@ -75,6 +85,7 @@ public class ItemServiceImpl implements ItemService {
     private Item createItem(ItemRequest request) {
         Item item = new Item();
         applyRequest(item, request);
+        item.setDeleted(false);
         return itemRepository.save(item);
     }
 }

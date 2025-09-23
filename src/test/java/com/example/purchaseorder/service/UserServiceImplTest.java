@@ -71,7 +71,7 @@ class UserServiceImplTest {
     @Test
     void updateShouldModifyExistingUser() {
         User existing = User.builder().id(1L).email("john.doe@example.com").password("old").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(userRepository.save(existing)).thenReturn(existing);
         when(passwordEncoder.encode("password")).thenReturn("encoded");
 
@@ -83,17 +83,29 @@ class UserServiceImplTest {
 
     @Test
     void updateShouldThrowWhenNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void deleteShouldRemoveUser() {
+    void deleteShouldSoftDeleteUser() {
+        User existing = User.builder().id(1L).build();
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.save(existing)).thenReturn(existing);
+
+        userService.delete(1L);
+
+        assertThat(existing.isDeleted()).isTrue();
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void deletePermanentShouldRemoveUser() {
         User existing = User.builder().id(1L).build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
 
-        userService.delete(1L);
+        userService.deletePermanent(1L);
 
         verify(userRepository).delete(existing);
     }
@@ -101,7 +113,7 @@ class UserServiceImplTest {
     @Test
     void getShouldReturnUser() {
         User existing = User.builder().id(1L).build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
 
         assertThat(userService.get(1L)).isEqualTo(existing);
     }
@@ -111,11 +123,11 @@ class UserServiceImplTest {
         List<User> users = List.of(User.builder().id(1L).build());
         Page<User> page = new PageImpl<>(users);
         PageRequest pageable = PageRequest.of(0, 10);
-        when(userRepository.findAll(pageable)).thenReturn(page);
+        when(userRepository.findAllByDeletedFalse(pageable)).thenReturn(page);
 
         Page<User> result = userService.list(pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        verify(userRepository).findAll(pageable);
+        verify(userRepository).findAllByDeletedFalse(pageable);
     }
 }

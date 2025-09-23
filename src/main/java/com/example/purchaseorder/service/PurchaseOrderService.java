@@ -17,6 +17,8 @@ public interface PurchaseOrderService {
 
     void delete(Long id);
 
+    void deletePermanent(Long id);
+
     PurchaseOrderHeader get(Long id);
 
     Page<PurchaseOrderHeader> list(Pageable pageable);

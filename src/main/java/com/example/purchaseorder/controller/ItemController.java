@@ -61,4 +61,10 @@ public class ItemController {
         itemService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePermanent(@PathVariable Long id) {
+        itemService.deletePermanent(id);
+        return ResponseEntity.noContent().build();
+    }
 }

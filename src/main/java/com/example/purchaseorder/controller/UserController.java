@@ -61,4 +61,10 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePermanent(@PathVariable Long id) {
+        userService.deletePermanent(id);
+        return ResponseEntity.noContent().build();
+    }
 }

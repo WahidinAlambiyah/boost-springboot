@@ -17,6 +17,8 @@ public interface ItemService {
 
     void delete(Long id);
 
+    void deletePermanent(Long id);
+
     Item get(Long id);
 
     Page<Item> list(Pageable pageable);

@@ -17,6 +17,8 @@ public interface UserService {
 
     void delete(Long id);
 
+    void deletePermanent(Long id);
+
     User get(Long id);
 
     Page<User> list(Pageable pageable);
