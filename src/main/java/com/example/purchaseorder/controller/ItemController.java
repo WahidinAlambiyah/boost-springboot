@@ -4,6 +4,8 @@ import com.example.purchaseorder.domain.Item;
 import com.example.purchaseorder.dto.ItemRequest;
 import com.example.purchaseorder.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/items")
@@ -39,8 +39,8 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Item>> list() {
-        return ResponseEntity.ok(itemService.list());
+    public ResponseEntity<Page<Item>> list(Pageable pageable) {
+        return ResponseEntity.ok(itemService.list(pageable));
     }
 
     @DeleteMapping("/{id}")

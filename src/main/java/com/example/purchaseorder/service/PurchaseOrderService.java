@@ -3,7 +3,8 @@ package com.example.purchaseorder.service;
 import com.example.purchaseorder.domain.PurchaseOrderHeader;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface PurchaseOrderService {
     PurchaseOrderHeader create(PurchaseOrderRequest request);
@@ -14,5 +15,5 @@ public interface PurchaseOrderService {
 
     PurchaseOrderHeader get(Long id);
 
-    List<PurchaseOrderHeader> list();
+    Page<PurchaseOrderHeader> list(Pageable pageable);
 }

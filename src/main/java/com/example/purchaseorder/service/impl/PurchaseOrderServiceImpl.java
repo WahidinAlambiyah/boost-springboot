@@ -10,6 +10,8 @@ import com.example.purchaseorder.repository.ItemRepository;
 import com.example.purchaseorder.repository.PurchaseOrderHeaderRepository;
 import com.example.purchaseorder.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +59,8 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseOrderHeader> list() {
-        return headerRepository.findAll();
+    public Page<PurchaseOrderHeader> list(Pageable pageable) {
+        return headerRepository.findAll(pageable);
     }
 
     private void applyHeader(PurchaseOrderHeader header, PurchaseOrderRequest request) {

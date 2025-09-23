@@ -3,7 +3,8 @@ package com.example.purchaseorder.service;
 import com.example.purchaseorder.domain.User;
 import com.example.purchaseorder.dto.UserRequest;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     User create(UserRequest request);
@@ -14,5 +15,5 @@ public interface UserService {
 
     User get(Long id);
 
-    List<User> list();
+    Page<User> list(Pageable pageable);
 }

@@ -6,11 +6,11 @@ import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.UserRepository;
 import com.example.purchaseorder.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,8 +52,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> list() {
-        return userRepository.findAll();
+    public Page<User> list(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     private void applyRequest(User user, UserRequest request) {
