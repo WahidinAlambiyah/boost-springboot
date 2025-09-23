@@ -8,6 +8,7 @@ import com.example.purchaseorder.service.impl.ItemServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,10 +42,6 @@ class ItemServiceImplTest {
         request.setName("Keyboard");
         request.setDescription("Mechanical");
         request.setPrice(BigDecimal.TEN);
-        request.setCreatedBy("tester");
-        request.setCreatedDatetime(OffsetDateTime.now());
-        request.setUpdatedBy("tester");
-        request.setUpdatedDatetime(OffsetDateTime.now());
     }
 
     @Test
@@ -54,18 +51,31 @@ class ItemServiceImplTest {
         Item saved = itemService.create(request);
 
         assertThat(saved.getName()).isEqualTo("Keyboard");
-        verify(itemRepository).save(any(Item.class));
+        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(captor.capture());
+        assertThat(captor.getValue().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(captor.getValue().getCreatedDatetime()).isNotNull();
+        assertThat(captor.getValue().getUpdatedBy()).isNull();
+        assertThat(captor.getValue().getUpdatedDatetime()).isNull();
     }
 
     @Test
     void updateShouldModifyExistingItem() {
-        Item existing = Item.builder().id(1L).name("Old").build();
+        Item existing = Item.builder()
+                .id(1L)
+                .name("Old")
+                .createdBy("original")
+                .createdDatetime(OffsetDateTime.now())
+                .build();
         when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(itemRepository.save(existing)).thenReturn(existing);
 
         Item updated = itemService.update(1L, request);
 
         assertThat(updated.getName()).isEqualTo("Keyboard");
+        assertThat(existing.getCreatedBy()).isEqualTo("original");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
     }
 
     @Test

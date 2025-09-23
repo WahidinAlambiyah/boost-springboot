@@ -5,6 +5,7 @@ import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.UserRepository;
 import com.example.purchaseorder.service.UserService;
+import com.example.purchaseorder.service.util.AuditUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ public class UserServiceImpl implements UserService {
         if (request.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
+        applyUpdateAudit(user);
         return userRepository.save(user);
     }
 
@@ -82,17 +85,30 @@ public class UserServiceImpl implements UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setCreatedBy(request.getCreatedBy());
-        user.setCreatedDatetime(request.getCreatedDatetime());
-        user.setUpdatedBy(request.getUpdatedBy());
-        user.setUpdatedDatetime(request.getUpdatedDatetime());
     }
 
     private User createUser(UserRequest request) {
         User user = new User();
         applyRequest(user, request);
+        applyCreationAudit(user);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setDeleted(false);
         return userRepository.save(user);
+    }
+
+    private void applyCreationAudit(User user) {
+        String auditor = AuditUtils.resolveCurrentAuditor();
+        OffsetDateTime now = AuditUtils.currentDateTime();
+        user.setCreatedBy(auditor);
+        user.setCreatedDatetime(now);
+        user.setUpdatedBy(null);
+        user.setUpdatedDatetime(null);
+    }
+
+    private void applyUpdateAudit(User user) {
+        String auditor = AuditUtils.resolveCurrentAuditor();
+        OffsetDateTime now = AuditUtils.currentDateTime();
+        user.setUpdatedBy(auditor);
+        user.setUpdatedDatetime(now);
     }
 }

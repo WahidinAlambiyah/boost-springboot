@@ -12,9 +12,5 @@ public class PurchaseOrderRequest {
     private String description;
     private BigDecimal totalPrice;
     private BigDecimal totalCost;
-    private String createdBy;
-    private OffsetDateTime createdDatetime;
-    private String updatedBy;
-    private OffsetDateTime updatedDatetime;
     private List<PurchaseOrderDetailRequest> details;
 }

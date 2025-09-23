@@ -17,7 +17,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,10 +46,6 @@ class UserServiceImplTest {
         request.setEmail("john.doe@example.com");
         request.setPhone("123456789");
         request.setPassword("password");
-        request.setCreatedBy("tester");
-        request.setCreatedDatetime(OffsetDateTime.now());
-        request.setUpdatedBy("tester");
-        request.setUpdatedDatetime(OffsetDateTime.now());
     }
 
     @Test
@@ -66,11 +61,20 @@ class UserServiceImplTest {
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(captor.getValue().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(captor.getValue().getCreatedDatetime()).isNotNull();
+        assertThat(captor.getValue().getUpdatedBy()).isNull();
+        assertThat(captor.getValue().getUpdatedDatetime()).isNull();
     }
 
     @Test
     void updateShouldModifyExistingUser() {
-        User existing = User.builder().id(1L).email("john.doe@example.com").password("old").build();
+        User existing = User.builder()
+                .id(1L)
+                .email("john.doe@example.com")
+                .password("old")
+                .createdBy("original")
+                .build();
         when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(userRepository.save(existing)).thenReturn(existing);
         when(passwordEncoder.encode("password")).thenReturn("encoded");
@@ -78,6 +82,9 @@ class UserServiceImplTest {
         User updated = userService.update(1L, request);
 
         assertThat(updated.getPassword()).isEqualTo("encoded");
+        assertThat(existing.getCreatedBy()).isEqualTo("original");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
         verify(userRepository).save(existing);
     }
 

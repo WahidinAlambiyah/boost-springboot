@@ -49,19 +49,11 @@ class PurchaseOrderServiceImplTest {
         detailRequest.setItemQty(2);
         detailRequest.setItemCost(new BigDecimal("5.00"));
         detailRequest.setItemPrice(new BigDecimal("7.50"));
-        detailRequest.setCreatedBy("tester");
-        detailRequest.setCreatedDatetime(OffsetDateTime.now());
-        detailRequest.setUpdatedBy("tester");
-        detailRequest.setUpdatedDatetime(OffsetDateTime.now());
 
         request = new PurchaseOrderRequest();
         request.setDatetime(OffsetDateTime.now());
         request.setDescription("Test PO");
         request.setDetails(List.of(detailRequest));
-        request.setCreatedBy("tester");
-        request.setCreatedDatetime(OffsetDateTime.now());
-        request.setUpdatedBy("tester");
-        request.setUpdatedDatetime(OffsetDateTime.now());
     }
 
     @Test
@@ -77,12 +69,22 @@ class PurchaseOrderServiceImplTest {
         assertThat(detail.getItem()).isEqualTo(item);
         assertThat(saved.getTotalCost()).isEqualTo(new BigDecimal("10.00"));
         assertThat(saved.getTotalPrice()).isEqualTo(new BigDecimal("15.00"));
+        assertThat(saved.getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(saved.getCreatedDatetime()).isNotNull();
+        assertThat(saved.getUpdatedBy()).isNull();
+        assertThat(saved.getUpdatedDatetime()).isNull();
+        assertThat(detail.getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(detail.getCreatedDatetime()).isNotNull();
+        assertThat(detail.getUpdatedBy()).isNull();
+        assertThat(detail.getUpdatedDatetime()).isNull();
     }
 
     @Test
     void updateShouldReplaceExistingDetails() {
         PurchaseOrderHeader existing = new PurchaseOrderHeader();
         existing.setId(1L);
+        existing.setCreatedBy("original");
+        existing.setCreatedDatetime(OffsetDateTime.now().minusDays(1));
         existing.setDetails(new java.util.ArrayList<>(List.of(PurchaseOrderDetail.builder().build())));
         when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(itemRepository.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(Item.builder().id(10L).build()));
@@ -92,6 +94,14 @@ class PurchaseOrderServiceImplTest {
 
         assertThat(updated.getDetails()).hasSize(1);
         assertThat(updated.getDetails().get(0).getItemQty()).isEqualTo(2);
+        assertThat(existing.getCreatedBy()).isEqualTo("original");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
+        PurchaseOrderDetail updatedDetail = updated.getDetails().get(0);
+        assertThat(updatedDetail.getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(updatedDetail.getCreatedDatetime()).isNotNull();
+        assertThat(updatedDetail.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(updatedDetail.getUpdatedDatetime()).isNotNull();
     }
 
     @Test

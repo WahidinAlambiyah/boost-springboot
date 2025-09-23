@@ -5,12 +5,14 @@ import com.example.purchaseorder.dto.ItemRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.ItemRepository;
 import com.example.purchaseorder.service.ItemService;
+import com.example.purchaseorder.service.util.AuditUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ public class ItemServiceImpl implements ItemService {
     public Item update(Long id, ItemRequest request) {
         Item item = get(id);
         applyRequest(item, request);
+        applyUpdateAudit(item);
         return itemRepository.save(item);
     }
 
@@ -76,16 +79,29 @@ public class ItemServiceImpl implements ItemService {
         item.setName(request.getName());
         item.setDescription(request.getDescription());
         item.setPrice(request.getPrice());
-        item.setCreatedBy(request.getCreatedBy());
-        item.setCreatedDatetime(request.getCreatedDatetime());
-        item.setUpdatedBy(request.getUpdatedBy());
-        item.setUpdatedDatetime(request.getUpdatedDatetime());
     }
 
     private Item createItem(ItemRequest request) {
         Item item = new Item();
         applyRequest(item, request);
+        applyCreationAudit(item);
         item.setDeleted(false);
         return itemRepository.save(item);
+    }
+
+    private void applyCreationAudit(Item item) {
+        String auditor = AuditUtils.resolveCurrentAuditor();
+        OffsetDateTime now = AuditUtils.currentDateTime();
+        item.setCreatedBy(auditor);
+        item.setCreatedDatetime(now);
+        item.setUpdatedBy(null);
+        item.setUpdatedDatetime(null);
+    }
+
+    private void applyUpdateAudit(Item item) {
+        String auditor = AuditUtils.resolveCurrentAuditor();
+        OffsetDateTime now = AuditUtils.currentDateTime();
+        item.setUpdatedBy(auditor);
+        item.setUpdatedDatetime(now);
     }
 }
