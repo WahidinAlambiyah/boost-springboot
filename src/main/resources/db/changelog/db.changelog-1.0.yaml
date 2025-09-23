@@ -461,15 +461,15 @@ databaseChangeLog:
       id: 4
       author: assistant
       changes:
-        - alterSequence:
+        - setSequenceValue:
             sequenceName: users_id_seq
-            startValue: 4
-        - alterSequence:
+            value: 4
+        - setSequenceValue:
             sequenceName: item_id_seq
-            startValue: 4
-        - alterSequence:
+            value: 4
+        - setSequenceValue:
             sequenceName: po_h_id_seq
-            startValue: 3
-        - alterSequence:
+            value: 3
+        - setSequenceValue:
             sequenceName: po_d_id_seq
-            startValue: 4
+            value: 4
