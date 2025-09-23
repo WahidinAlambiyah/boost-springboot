@@ -19,6 +19,7 @@ C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\domain\PurchaseOrderDetail.java
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\controller\AuthController.java
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\service\impl\PurchaseOrderServiceImpl.java
+C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\config\OpenApiConfig.java
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\dto\PurchaseOrderRequest.java
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\service\impl\UserServiceImpl.java
 C:\Users\legio\Project\boost-springboot\src\main\java\com\example\purchaseorder\controller\ItemController.java

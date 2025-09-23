@@ -1,4 +1,5 @@
 com\example\purchaseorder\domain\PurchaseOrderDetail$PurchaseOrderDetailBuilder.class
+com\example\purchaseorder\config\OpenApiConfig.class
 com\example\purchaseorder\dto\UserRequest.class
 com\example\purchaseorder\security\JwtAuthenticationFilter.class
 com\example\purchaseorder\service\ItemService.class
