@@ -1,7 +1,7 @@
 package com.example.purchaseorder.controller;
 
-import com.example.purchaseorder.domain.PurchaseOrderHeader;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
+import com.example.purchaseorder.dto.PurchaseOrderResponse;
 import com.example.purchaseorder.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -26,28 +27,33 @@ public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
 
     @PostMapping
-    public ResponseEntity<PurchaseOrderHeader> create(@RequestBody PurchaseOrderRequest request) {
-        return ResponseEntity.ok(purchaseOrderService.create(request));
+    public ResponseEntity<PurchaseOrderResponse> create(@RequestBody PurchaseOrderRequest request) {
+        return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.create(request)));
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<PurchaseOrderHeader>> createBulk(@RequestBody List<PurchaseOrderRequest> requests) {
-        return ResponseEntity.ok(purchaseOrderService.createBulk(requests));
+    public ResponseEntity<List<PurchaseOrderResponse>> createBulk(@RequestBody List<PurchaseOrderRequest> requests) {
+        List<PurchaseOrderResponse> responses = purchaseOrderService.createBulk(requests).stream()
+                .map(PurchaseOrderResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PurchaseOrderHeader> update(@PathVariable Long id, @RequestBody PurchaseOrderRequest request) {
-        return ResponseEntity.ok(purchaseOrderService.update(id, request));
+    public ResponseEntity<PurchaseOrderResponse> update(@PathVariable Long id, @RequestBody PurchaseOrderRequest request) {
+        return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.update(id, request)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseOrderHeader> get(@PathVariable Long id) {
-        return ResponseEntity.ok(purchaseOrderService.get(id));
+    public ResponseEntity<PurchaseOrderResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.get(id)));
     }
 
     @GetMapping
-    public ResponseEntity<Page<PurchaseOrderHeader>> list(Pageable pageable) {
-        return ResponseEntity.ok(purchaseOrderService.list(pageable));
+    public ResponseEntity<Page<PurchaseOrderResponse>> list(Pageable pageable) {
+        Page<PurchaseOrderResponse> response = purchaseOrderService.list(pageable)
+                .map(PurchaseOrderResponse::from);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

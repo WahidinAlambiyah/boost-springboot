@@ -1,7 +1,7 @@
 package com.example.purchaseorder.controller;
 
-import com.example.purchaseorder.domain.User;
 import com.example.purchaseorder.dto.UserRequest;
+import com.example.purchaseorder.dto.UserResponse;
 import com.example.purchaseorder.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,28 +27,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.create(request));
+    public ResponseEntity<UserResponse> create(@RequestBody UserRequest request) {
+        return ResponseEntity.ok(UserResponse.from(userService.create(request)));
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<User>> createBulk(@RequestBody List<UserRequest> requests) {
-        return ResponseEntity.ok(userService.createBulk(requests));
+    public ResponseEntity<List<UserResponse>> createBulk(@RequestBody List<UserRequest> requests) {
+        List<UserResponse> responses = userService.createBulk(requests).stream()
+                .map(UserResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.update(id, request));
+    public ResponseEntity<UserResponse> update(@PathVariable Long id, @RequestBody UserRequest request) {
+        return ResponseEntity.ok(UserResponse.from(userService.update(id, request)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> get(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.get(id));
+    public ResponseEntity<UserResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(UserResponse.from(userService.get(id)));
     }
 
     @GetMapping
-    public ResponseEntity<Page<User>> list(Pageable pageable) {
-        return ResponseEntity.ok(userService.list(pageable));
+    public ResponseEntity<Page<UserResponse>> list(Pageable pageable) {
+        Page<UserResponse> response = userService.list(pageable)
+                .map(UserResponse::from);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
