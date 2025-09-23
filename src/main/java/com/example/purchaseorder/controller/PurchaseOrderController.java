@@ -1,5 +1,6 @@
 package com.example.purchaseorder.controller;
 
+import com.example.purchaseorder.dto.PurchaseOrderPatchRequest;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 import com.example.purchaseorder.dto.PurchaseOrderResponse;
 import com.example.purchaseorder.service.PurchaseOrderService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,6 +47,12 @@ public class PurchaseOrderController {
     @PutMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponse> update(@PathVariable Long id, @Valid @RequestBody PurchaseOrderRequest request) {
         return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.update(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<PurchaseOrderResponse> patch(@PathVariable Long id,
+                                                       @Valid @RequestBody PurchaseOrderPatchRequest request) {
+        return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.patch(id, request)));
     }
 
     @GetMapping("/{id}")

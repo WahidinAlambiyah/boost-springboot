@@ -4,6 +4,7 @@ import com.example.purchaseorder.domain.Item;
 import com.example.purchaseorder.domain.PurchaseOrderDetail;
 import com.example.purchaseorder.domain.PurchaseOrderHeader;
 import com.example.purchaseorder.dto.PurchaseOrderDetailRequest;
+import com.example.purchaseorder.dto.PurchaseOrderPatchRequest;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.ItemRepository;
@@ -109,6 +110,43 @@ class PurchaseOrderServiceImplTest {
         when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> purchaseOrderService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patchShouldUpdateSelectedFields() {
+        PurchaseOrderHeader existing = new PurchaseOrderHeader();
+        existing.setId(1L);
+        existing.setDescription("Original");
+        PurchaseOrderDetail existingDetail = PurchaseOrderDetail.builder().itemQty(1).build();
+        existing.setDetails(new java.util.ArrayList<>(List.of(existingDetail)));
+
+        Item item = Item.builder().id(10L).build();
+        when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(item));
+        when(headerRepository.save(existing)).thenReturn(existing);
+
+        PurchaseOrderDetailRequest detailRequest = new PurchaseOrderDetailRequest();
+        detailRequest.setItemId(10L);
+        detailRequest.setItemQty(3);
+        detailRequest.setItemCost(new BigDecimal("2.00"));
+        detailRequest.setItemPrice(new BigDecimal("4.00"));
+
+        PurchaseOrderPatchRequest patchRequest = new PurchaseOrderPatchRequest();
+        patchRequest.setDescription("Patched");
+        patchRequest.setDetails(List.of(detailRequest));
+        patchRequest.setTotalPrice(new BigDecimal("50.00"));
+
+        PurchaseOrderHeader patched = purchaseOrderService.patch(1L, patchRequest);
+
+        assertThat(patched.getDescription()).isEqualTo("Patched");
+        assertThat(patched.getDetails()).hasSize(1);
+        PurchaseOrderDetail patchedDetail = patched.getDetails().get(0);
+        assertThat(patchedDetail.getItem()).isEqualTo(item);
+        assertThat(patchedDetail.getItemQty()).isEqualTo(3);
+        assertThat(patched.getTotalCost()).isEqualTo(new BigDecimal("6.00"));
+        assertThat(patched.getTotalPrice()).isEqualTo(new BigDecimal("50.00"));
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
     }
 
     @Test

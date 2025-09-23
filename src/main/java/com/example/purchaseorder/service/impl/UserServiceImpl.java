@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service.impl;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.dto.UserPatchRequest;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.UserRepository;
@@ -53,6 +54,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User patch(Long id, UserPatchRequest request) {
+        User user = get(id);
+        applyPatch(user, request);
+        applyUpdateAudit(user);
+        return userRepository.save(user);
+    }
+
+    @Override
     public void delete(Long id) {
         User user = userRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
@@ -85,6 +94,24 @@ public class UserServiceImpl implements UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+    }
+
+    private void applyPatch(User user, UserPatchRequest request) {
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
     }
 
     private User createUser(UserRequest request) {

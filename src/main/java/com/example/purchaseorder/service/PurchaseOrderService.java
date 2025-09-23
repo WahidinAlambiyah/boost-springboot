@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.PurchaseOrderHeader;
+import com.example.purchaseorder.dto.PurchaseOrderPatchRequest;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ public interface PurchaseOrderService {
     List<PurchaseOrderHeader> createBulk(List<PurchaseOrderRequest> requests);
 
     PurchaseOrderHeader update(Long id, PurchaseOrderRequest request);
+
+    PurchaseOrderHeader patch(Long id, PurchaseOrderPatchRequest request);
 
     void delete(Long id);
 

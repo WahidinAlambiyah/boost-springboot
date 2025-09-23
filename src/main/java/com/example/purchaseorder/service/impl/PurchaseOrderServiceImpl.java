@@ -4,6 +4,7 @@ import com.example.purchaseorder.domain.Item;
 import com.example.purchaseorder.domain.PurchaseOrderDetail;
 import com.example.purchaseorder.domain.PurchaseOrderHeader;
 import com.example.purchaseorder.dto.PurchaseOrderDetailRequest;
+import com.example.purchaseorder.dto.PurchaseOrderPatchRequest;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.ItemRepository;
@@ -60,6 +61,26 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     }
 
     @Override
+    public PurchaseOrderHeader patch(Long id, PurchaseOrderPatchRequest request) {
+        PurchaseOrderHeader header = get(id);
+        if (request.getDatetime() != null) {
+            header.setDatetime(request.getDatetime());
+        }
+        if (request.getDescription() != null) {
+            header.setDescription(request.getDescription());
+        }
+        String auditor = AuditUtils.resolveCurrentAuditor();
+        OffsetDateTime now = AuditUtils.currentDateTime();
+        applyUpdateAudit(header, auditor, now);
+        boolean detailsProvided = request.getDetails() != null;
+        if (detailsProvided) {
+            applyDetails(header, request.getDetails(), auditor, now, true);
+        }
+        applyTotals(header, request, detailsProvided);
+        return headerRepository.save(header);
+    }
+
+    @Override
     public void delete(Long id) {
         PurchaseOrderHeader header = headerRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found: " + id));
@@ -101,6 +122,19 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         if (request.getTotalPrice() != null) {
             header.setTotalPrice(request.getTotalPrice());
         } else {
+            header.setTotalPrice(calculateTotalPrice(header));
+        }
+    }
+
+    private void applyTotals(PurchaseOrderHeader header, PurchaseOrderPatchRequest request, boolean detailsUpdated) {
+        if (request.getTotalCost() != null) {
+            header.setTotalCost(request.getTotalCost());
+        } else if (detailsUpdated) {
+            header.setTotalCost(calculateTotalCost(header));
+        }
+        if (request.getTotalPrice() != null) {
+            header.setTotalPrice(request.getTotalPrice());
+        } else if (detailsUpdated) {
             header.setTotalPrice(calculateTotalPrice(header));
         }
     }

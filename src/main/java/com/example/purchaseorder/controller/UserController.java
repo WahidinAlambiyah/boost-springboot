@@ -1,5 +1,6 @@
 package com.example.purchaseorder.controller;
 
+import com.example.purchaseorder.dto.UserPatchRequest;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.dto.UserResponse;
 import com.example.purchaseorder.service.UserService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,6 +47,11 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(UserResponse.from(userService.update(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserResponse> patch(@PathVariable Long id, @Valid @RequestBody UserPatchRequest request) {
+        return ResponseEntity.ok(UserResponse.from(userService.patch(id, request)));
     }
 
     @GetMapping("/{id}")

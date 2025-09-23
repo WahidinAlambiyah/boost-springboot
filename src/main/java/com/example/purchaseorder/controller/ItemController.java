@@ -1,5 +1,6 @@
 package com.example.purchaseorder.controller;
 
+import com.example.purchaseorder.dto.ItemPatchRequest;
 import com.example.purchaseorder.dto.ItemRequest;
 import com.example.purchaseorder.dto.ItemResponse;
 import com.example.purchaseorder.service.ItemService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,6 +47,11 @@ public class ItemController {
     @PutMapping("/{id}")
     public ResponseEntity<ItemResponse> update(@PathVariable Long id, @Valid @RequestBody ItemRequest request) {
         return ResponseEntity.ok(ItemResponse.from(itemService.update(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ItemResponse> patch(@PathVariable Long id, @Valid @RequestBody ItemPatchRequest request) {
+        return ResponseEntity.ok(ItemResponse.from(itemService.patch(id, request)));
     }
 
     @GetMapping("/{id}")

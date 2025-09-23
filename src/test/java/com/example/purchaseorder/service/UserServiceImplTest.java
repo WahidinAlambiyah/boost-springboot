@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.dto.UserPatchRequest;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.UserRepository;
@@ -93,6 +94,32 @@ class UserServiceImplTest {
         when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patchShouldUpdateOnlyProvidedFields() {
+        User existing = User.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .password("old")
+                .build();
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(passwordEncoder.encode("newPass")).thenReturn("encoded");
+        when(userRepository.save(existing)).thenReturn(existing);
+
+        UserPatchRequest patchRequest = new UserPatchRequest();
+        patchRequest.setFirstName("Jane");
+        patchRequest.setPassword("newPass");
+
+        User patched = userService.patch(1L, patchRequest);
+
+        assertThat(patched.getFirstName()).isEqualTo("Jane");
+        assertThat(patched.getLastName()).isEqualTo("Doe");
+        assertThat(patched.getPassword()).isEqualTo("encoded");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
+        verify(userRepository).save(existing);
     }
 
     @Test

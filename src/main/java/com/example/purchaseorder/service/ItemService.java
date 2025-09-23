@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.Item;
+import com.example.purchaseorder.dto.ItemPatchRequest;
 import com.example.purchaseorder.dto.ItemRequest;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ public interface ItemService {
     List<Item> createBulk(List<ItemRequest> requests);
 
     Item update(Long id, ItemRequest request);
+
+    Item patch(Long id, ItemPatchRequest request);
 
     void delete(Long id);
 

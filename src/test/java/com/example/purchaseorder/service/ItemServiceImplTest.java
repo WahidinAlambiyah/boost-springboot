@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.Item;
+import com.example.purchaseorder.dto.ItemPatchRequest;
 import com.example.purchaseorder.dto.ItemRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.ItemRepository;
@@ -83,6 +84,31 @@ class ItemServiceImplTest {
         when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> itemService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patchShouldUpdateProvidedFields() {
+        Item existing = Item.builder()
+                .id(1L)
+                .name("Old")
+                .description("Legacy")
+                .price(BigDecimal.ONE)
+                .build();
+        when(itemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(itemRepository.save(existing)).thenReturn(existing);
+
+        ItemPatchRequest patchRequest = new ItemPatchRequest();
+        patchRequest.setDescription("Updated");
+        patchRequest.setPrice(BigDecimal.TEN);
+
+        Item patched = itemService.patch(1L, patchRequest);
+
+        assertThat(patched.getName()).isEqualTo("Old");
+        assertThat(patched.getDescription()).isEqualTo("Updated");
+        assertThat(patched.getPrice()).isEqualTo(BigDecimal.TEN);
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
+        verify(itemRepository).save(existing);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service.impl;
 
 import com.example.purchaseorder.domain.Item;
+import com.example.purchaseorder.dto.ItemPatchRequest;
 import com.example.purchaseorder.dto.ItemRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.ItemRepository;
@@ -48,6 +49,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public Item patch(Long id, ItemPatchRequest request) {
+        Item item = get(id);
+        applyPatch(item, request);
+        applyUpdateAudit(item);
+        return itemRepository.save(item);
+    }
+
+    @Override
     public void delete(Long id) {
         Item item = itemRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + id));
@@ -79,6 +88,18 @@ public class ItemServiceImpl implements ItemService {
         item.setName(request.getName());
         item.setDescription(request.getDescription());
         item.setPrice(request.getPrice());
+    }
+
+    private void applyPatch(Item item, ItemPatchRequest request) {
+        if (request.getName() != null) {
+            item.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            item.setDescription(request.getDescription());
+        }
+        if (request.getPrice() != null) {
+            item.setPrice(request.getPrice());
+        }
     }
 
     private Item createItem(ItemRequest request) {
