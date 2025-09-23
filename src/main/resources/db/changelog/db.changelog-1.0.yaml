@@ -185,7 +185,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 1
+                  valueSequenceNext: users_id_seq
               - column:
                   name: first_name
                   value: Admin
@@ -212,7 +212,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 1
+                  valueSequenceNext: item_id_seq
               - column:
                   name: name
                   value: Sample Item
@@ -233,7 +233,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 2
+                  valueSequenceNext: users_id_seq
               - column:
                   name: first_name
                   value: Jane
@@ -260,7 +260,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 3
+                  valueSequenceNext: users_id_seq
               - column:
                   name: first_name
                   value: Carlos
@@ -287,7 +287,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 2
+                  valueSequenceNext: item_id_seq
               - column:
                   name: name
                   value: Office Chair
@@ -308,7 +308,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 3
+                  valueSequenceNext: item_id_seq
               - column:
                   name: name
                   value: Standing Desk
@@ -333,7 +333,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 1
+                  valueSequenceNext: po_h_id_seq
               - column:
                   name: datetime
                   valueDate: "2023-02-05T10:00:00"
@@ -357,7 +357,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 2
+                  valueSequenceNext: po_h_id_seq
               - column:
                   name: datetime
                   valueDate: "2023-03-18T14:30:00"
@@ -381,7 +381,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 1
+                  valueSequenceNext: po_d_id_seq
               - column:
                   name: poh_id
                   valueNumeric: 1
@@ -408,7 +408,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 2
+                  valueSequenceNext: po_d_id_seq
               - column:
                   name: poh_id
                   valueNumeric: 1
@@ -435,7 +435,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  valueNumeric: 3
+                  valueSequenceNext: po_d_id_seq
               - column:
                   name: poh_id
                   valueNumeric: 2
@@ -457,19 +457,3 @@ databaseChangeLog:
               - column:
                   name: created_datetime
                   valueDate: "2023-03-18T14:35:00"
-  - changeSet:
-      id: 4
-      author: assistant
-      changes:
-        - alterSequence:
-            sequenceName: users_id_seq
-            startValue: 4
-        - alterSequence:
-            sequenceName: item_id_seq
-            startValue: 4
-        - alterSequence:
-            sequenceName: po_h_id_seq
-            startValue: 3
-        - alterSequence:
-            sequenceName: po_d_id_seq
-            startValue: 4
