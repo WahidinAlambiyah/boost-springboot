@@ -184,6 +184,9 @@ databaseChangeLog:
             tableName: users
             columns:
               - column:
+                  name: id
+                  valueSequenceNext: users_id_seq
+              - column:
                   name: first_name
                   value: Admin
               - column:
@@ -208,6 +211,9 @@ databaseChangeLog:
             tableName: item
             columns:
               - column:
+                  name: id
+                  valueSequenceNext: item_id_seq
+              - column:
                   name: name
                   value: Sample Item
               - column:
@@ -222,3 +228,232 @@ databaseChangeLog:
               - column:
                   name: created_datetime
                   valueDate: "2023-01-01T00:00:00"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: users_id_seq
+              - column:
+                  name: first_name
+                  value: Jane
+              - column:
+                  name: last_name
+                  value: Doe
+              - column:
+                  name: email
+                  value: jane.doe@example.com
+              - column:
+                  name: phone
+                  value: 5551234567
+              - column:
+                  name: password
+                  value: "$2a$10$VVyTqoh2Zs2tSO0jnwGnZ.Q5oW1te/VqcZVKB1i0Fe6TILLtU2p0e"
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-01T09:30:00"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: users_id_seq
+              - column:
+                  name: first_name
+                  value: Carlos
+              - column:
+                  name: last_name
+                  value: Santana
+              - column:
+                  name: email
+                  value: carlos.santana@example.com
+              - column:
+                  name: phone
+                  value: 5559876543
+              - column:
+                  name: password
+                  value: "$2a$10$VVyTqoh2Zs2tSO0jnwGnZ.Q5oW1te/VqcZVKB1i0Fe6TILLtU2p0e"
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-15T11:45:00"
+        - insert:
+            tableName: item
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: item_id_seq
+              - column:
+                  name: name
+                  value: Office Chair
+              - column:
+                  name: description
+                  value: Ergonomic chair with lumbar support
+              - column:
+                  name: price
+                  valueNumeric: 149.99
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-01T09:45:00"
+        - insert:
+            tableName: item
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: item_id_seq
+              - column:
+                  name: name
+                  value: Standing Desk
+              - column:
+                  name: description
+                  value: Adjustable height desk
+              - column:
+                  name: price
+                  valueNumeric: 399.50
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-10T16:00:00"
+  - changeSet:
+      id: 3
+      author: assistant
+      changes:
+        - insert:
+            tableName: po_h
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: po_h_id_seq
+              - column:
+                  name: datetime
+                  valueDate: "2023-02-05T10:00:00"
+              - column:
+                  name: description
+                  value: Office Supplies Order
+              - column:
+                  name: total_price
+                  valueNumeric: 450.00
+              - column:
+                  name: total_cost
+                  valueNumeric: 320.00
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-05T10:00:00"
+        - insert:
+            tableName: po_h
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: po_h_id_seq
+              - column:
+                  name: datetime
+                  valueDate: "2023-03-18T14:30:00"
+              - column:
+                  name: description
+                  value: Remote Work Equipment
+              - column:
+                  name: total_price
+                  valueNumeric: 749.50
+              - column:
+                  name: total_cost
+                  valueNumeric: 560.00
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-03-18T14:30:00"
+        - insert:
+            tableName: po_d
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: po_d_id_seq
+              - column:
+                  name: poh_id
+                  valueNumeric: 1
+              - column:
+                  name: item_id
+                  valueNumeric: 1
+              - column:
+                  name: item_qty
+                  valueNumeric: 15
+              - column:
+                  name: item_cost
+                  valueNumeric: 6.50
+              - column:
+                  name: item_price
+                  valueNumeric: 10.50
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-05T10:05:00"
+        - insert:
+            tableName: po_d
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: po_d_id_seq
+              - column:
+                  name: poh_id
+                  valueNumeric: 1
+              - column:
+                  name: item_id
+                  valueNumeric: 2
+              - column:
+                  name: item_qty
+                  valueNumeric: 5
+              - column:
+                  name: item_cost
+                  valueNumeric: 120.00
+              - column:
+                  name: item_price
+                  valueNumeric: 149.99
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-02-05T10:10:00"
+        - insert:
+            tableName: po_d
+            columns:
+              - column:
+                  name: id
+                  valueSequenceNext: po_d_id_seq
+              - column:
+                  name: poh_id
+                  valueNumeric: 2
+              - column:
+                  name: item_id
+                  valueNumeric: 3
+              - column:
+                  name: item_qty
+                  valueNumeric: 2
+              - column:
+                  name: item_cost
+                  valueNumeric: 320.00
+              - column:
+                  name: item_price
+                  valueNumeric: 399.50
+              - column:
+                  name: created_by
+                  value: system
+              - column:
+                  name: created_datetime
+                  valueDate: "2023-03-18T14:35:00"
