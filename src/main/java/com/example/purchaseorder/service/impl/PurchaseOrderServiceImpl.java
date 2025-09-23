@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +31,17 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     public PurchaseOrderHeader create(PurchaseOrderRequest request) {
-        PurchaseOrderHeader header = new PurchaseOrderHeader();
-        applyHeader(header, request);
-        applyDetails(header, request.getDetails());
-        applyTotals(header, request);
-        return headerRepository.save(header);
+        return createPurchaseOrder(request);
+    }
+
+    @Override
+    public List<PurchaseOrderHeader> createBulk(List<PurchaseOrderRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return requests.stream()
+                .map(this::createPurchaseOrder)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -118,5 +126,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                     .build();
             header.getDetails().add(detail);
         }
+    }
+
+    private PurchaseOrderHeader createPurchaseOrder(PurchaseOrderRequest request) {
+        PurchaseOrderHeader header = new PurchaseOrderHeader();
+        applyHeader(header, request);
+        applyDetails(header, request.getDetails());
+        applyTotals(header, request);
+        return headerRepository.save(header);
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
@@ -26,6 +28,11 @@ public class PurchaseOrderController {
     @PostMapping
     public ResponseEntity<PurchaseOrderHeader> create(@RequestBody PurchaseOrderRequest request) {
         return ResponseEntity.ok(purchaseOrderService.create(request));
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<List<PurchaseOrderHeader>> createBulk(@RequestBody List<PurchaseOrderRequest> requests) {
+        return ResponseEntity.ok(purchaseOrderService.createBulk(requests));
     }
 
     @PutMapping("/{id}")

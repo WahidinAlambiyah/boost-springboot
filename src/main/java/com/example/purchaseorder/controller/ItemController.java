@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/items")
 @RequiredArgsConstructor
@@ -26,6 +28,11 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<Item> create(@RequestBody ItemRequest request) {
         return ResponseEntity.ok(itemService.create(request));
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<List<Item>> createBulk(@RequestBody List<ItemRequest> requests) {
+        return ResponseEntity.ok(itemService.createBulk(requests));
     }
 
     @PutMapping("/{id}")

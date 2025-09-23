@@ -11,6 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -20,9 +24,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item create(ItemRequest request) {
-        Item item = new Item();
-        applyRequest(item, request);
-        return itemRepository.save(item);
+        return createItem(request);
+    }
+
+    @Override
+    public List<Item> createBulk(List<ItemRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return requests.stream()
+                .map(this::createItem)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -58,5 +70,11 @@ public class ItemServiceImpl implements ItemService {
         item.setCreatedDatetime(request.getCreatedDatetime());
         item.setUpdatedBy(request.getUpdatedBy());
         item.setUpdatedDatetime(request.getUpdatedDatetime());
+    }
+
+    private Item createItem(ItemRequest request) {
+        Item item = new Item();
+        applyRequest(item, request);
+        return itemRepository.save(item);
     }
 }

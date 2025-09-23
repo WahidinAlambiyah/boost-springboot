@@ -12,6 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,10 +26,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(UserRequest request) {
-        User user = new User();
-        applyRequest(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        return userRepository.save(user);
+        return createUser(request);
+    }
+
+    @Override
+    public List<User> createBulk(List<UserRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return requests.stream()
+                .map(this::createUser)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -65,5 +76,12 @@ public class UserServiceImpl implements UserService {
         user.setCreatedDatetime(request.getCreatedDatetime());
         user.setUpdatedBy(request.getUpdatedBy());
         user.setUpdatedDatetime(request.getUpdatedDatetime());
+    }
+
+    private User createUser(UserRequest request) {
+        User user = new User();
+        applyRequest(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return userRepository.save(user);
     }
 }
