@@ -15,6 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -112,8 +115,13 @@ class PurchaseOrderServiceImplTest {
     @Test
     void listShouldReturnAllHeaders() {
         List<PurchaseOrderHeader> headers = List.of(new PurchaseOrderHeader());
-        when(headerRepository.findAll()).thenReturn(headers);
+        Page<PurchaseOrderHeader> page = new PageImpl<>(headers);
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(headerRepository.findAll(pageable)).thenReturn(page);
 
-        assertThat(purchaseOrderService.list()).hasSize(1);
+        Page<PurchaseOrderHeader> result = purchaseOrderService.list(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(headerRepository).findAll(pageable);
     }
 }

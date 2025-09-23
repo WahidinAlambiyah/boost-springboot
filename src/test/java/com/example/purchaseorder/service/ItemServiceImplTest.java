@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -93,8 +96,13 @@ class ItemServiceImplTest {
     @Test
     void listShouldReturnAllItems() {
         List<Item> items = List.of(Item.builder().id(1L).build());
-        when(itemRepository.findAll()).thenReturn(items);
+        Page<Item> page = new PageImpl<>(items);
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(itemRepository.findAll(pageable)).thenReturn(page);
 
-        assertThat(itemService.list()).hasSize(1);
+        Page<Item> result = itemService.list(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(itemRepository).findAll(pageable);
     }
 }

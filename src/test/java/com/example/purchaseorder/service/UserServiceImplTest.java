@@ -12,6 +12,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
@@ -106,8 +109,13 @@ class UserServiceImplTest {
     @Test
     void listShouldReturnAllUsers() {
         List<User> users = List.of(User.builder().id(1L).build());
-        when(userRepository.findAll()).thenReturn(users);
+        Page<User> page = new PageImpl<>(users);
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(userRepository.findAll(pageable)).thenReturn(page);
 
-        assertThat(userService.list()).hasSize(1);
+        Page<User> result = userService.list(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(userRepository).findAll(pageable);
     }
 }
