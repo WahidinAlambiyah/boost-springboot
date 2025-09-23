@@ -197,7 +197,7 @@ databaseChangeLog:
                   value: 0000000000
               - column:
                   name: password
-                  value: "$2a$10$dXJQ0c7xJRZ/5j0uLZRW0OBzFZISwH0z7dxyzKDn5XxhxL7sRKq0C"
+                  value: "$2a$10$VVyTqoh2Zs2tSO0jnwGnZ.Q5oW1te/VqcZVKB1i0Fe6TILLtU2p0e"
               - column:
                   name: created_by
                   value: system
