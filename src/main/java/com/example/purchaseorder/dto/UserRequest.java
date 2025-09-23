@@ -17,7 +17,7 @@ public class UserRequest {
     private String lastName;
 
     @NotBlank
-    @Email
+    @Email(message = "Email must be valid.")
     private String email;
 
     @NotBlank

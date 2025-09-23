@@ -3,10 +3,12 @@ package com.example.purchaseorder.controller;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 import com.example.purchaseorder.dto.PurchaseOrderResponse;
 import com.example.purchaseorder.service.PurchaseOrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,17 +24,18 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
+@Validated
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
     @PostMapping
-    public ResponseEntity<PurchaseOrderResponse> create(@RequestBody PurchaseOrderRequest request) {
+    public ResponseEntity<PurchaseOrderResponse> create(@Valid @RequestBody PurchaseOrderRequest request) {
         return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.create(request)));
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<List<PurchaseOrderResponse>> createBulk(@RequestBody List<PurchaseOrderRequest> requests) {
+    public ResponseEntity<List<PurchaseOrderResponse>> createBulk(@Valid @RequestBody List<@Valid PurchaseOrderRequest> requests) {
         List<PurchaseOrderResponse> responses = purchaseOrderService.createBulk(requests).stream()
                 .map(PurchaseOrderResponse::from)
                 .collect(Collectors.toList());
@@ -40,7 +43,7 @@ public class PurchaseOrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PurchaseOrderResponse> update(@PathVariable Long id, @RequestBody PurchaseOrderRequest request) {
+    public ResponseEntity<PurchaseOrderResponse> update(@PathVariable Long id, @Valid @RequestBody PurchaseOrderRequest request) {
         return ResponseEntity.ok(PurchaseOrderResponse.from(purchaseOrderService.update(id, request)));
     }
 
