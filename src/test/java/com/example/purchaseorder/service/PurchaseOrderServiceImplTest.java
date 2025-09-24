@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -184,5 +185,48 @@ class PurchaseOrderServiceImplTest {
 
         assertThat(result.getContent()).hasSize(1);
         verify(headerRepository).findAllByDeletedFalse(pageable);
+    }
+
+    @Test
+    void createBulkShouldReturnEmptyWhenRequestsNullOrEmpty() {
+        assertThat(purchaseOrderService.createBulk(null)).isEmpty();
+        assertThat(purchaseOrderService.createBulk(Collections.emptyList())).isEmpty();
+
+        verifyNoInteractions(headerRepository, itemRepository);
+    }
+
+    @Test
+    void createBulkShouldPersistMultiplePurchaseOrders() {
+        Item itemOne = Item.builder().id(10L).build();
+        Item itemTwo = Item.builder().id(11L).build();
+        when(itemRepository.findByIdAndDeletedFalse(10L)).thenReturn(Optional.of(itemOne));
+        when(itemRepository.findByIdAndDeletedFalse(11L)).thenReturn(Optional.of(itemTwo));
+        when(headerRepository.save(any(PurchaseOrderHeader.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PurchaseOrderDetailRequest secondDetail = new PurchaseOrderDetailRequest();
+        secondDetail.setItemId(11L);
+        secondDetail.setItemQty(1);
+        secondDetail.setItemCost(new BigDecimal("3.00"));
+        secondDetail.setItemPrice(new BigDecimal("5.00"));
+
+        PurchaseOrderRequest second = new PurchaseOrderRequest();
+        second.setDatetime(OffsetDateTime.now().plusDays(1));
+        second.setDescription("Second PO");
+        second.setDetails(List.of(secondDetail));
+
+        List<PurchaseOrderHeader> results = purchaseOrderService.createBulk(List.of(request, second));
+
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getDetails()).hasSize(1);
+        assertThat(results.get(1).getDetails()).hasSize(1);
+        assertThat(results.get(0).getTotalCost()).isEqualTo(new BigDecimal("10.00"));
+        assertThat(results.get(0).getTotalPrice()).isEqualTo(new BigDecimal("15.00"));
+        assertThat(results.get(1).getTotalCost()).isEqualTo(new BigDecimal("3.00"));
+        assertThat(results.get(1).getTotalPrice()).isEqualTo(new BigDecimal("5.00"));
+        assertThat(results.get(1).getDetails().get(0).getItem()).isEqualTo(itemTwo);
+        assertThat(results.get(0).isDeleted()).isFalse();
+
+        verify(headerRepository, times(2)).save(any(PurchaseOrderHeader.class));
+        verify(itemRepository, times(2)).findByIdAndDeletedFalse(anyLong());
     }
 }

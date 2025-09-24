@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -163,5 +164,37 @@ class UserServiceImplTest {
 
         assertThat(result.getContent()).hasSize(1);
         verify(userRepository).findAllByDeletedFalse(pageable);
+    }
+
+    @Test
+    void createBulkShouldReturnEmptyWhenRequestsNullOrEmpty() {
+        assertThat(userService.createBulk(null)).isEmpty();
+        assertThat(userService.createBulk(Collections.emptyList())).isEmpty();
+
+        verifyNoInteractions(userRepository, passwordEncoder);
+    }
+
+    @Test
+    void createBulkShouldCreateMultipleUsers() {
+        UserRequest second = new UserRequest();
+        second.setFirstName("Jane");
+        second.setLastName("Smith");
+        second.setEmail("jane.smith@example.com");
+        second.setPhone("987654321");
+        second.setPassword("secret");
+
+        when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "encoded-" + invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<User> results = userService.createBulk(List.of(request, second));
+
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getPassword()).isEqualTo("encoded-password");
+        assertThat(results.get(1).getPassword()).isEqualTo("encoded-secret");
+        assertThat(results.get(0).getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(results.get(1).getCreatedBy()).isEqualTo("SYSTEM");
+
+        verify(passwordEncoder, times(2)).encode(anyString());
+        verify(userRepository, times(2)).save(any(User.class));
     }
 }

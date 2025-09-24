@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,5 +153,33 @@ class ItemServiceImplTest {
 
         assertThat(result.getContent()).hasSize(1);
         verify(itemRepository).findAllByDeletedFalse(pageable);
+    }
+
+    @Test
+    void createBulkShouldReturnEmptyWhenRequestsNullOrEmpty() {
+        assertThat(itemService.createBulk(null)).isEmpty();
+        assertThat(itemService.createBulk(Collections.emptyList())).isEmpty();
+
+        verifyNoInteractions(itemRepository);
+    }
+
+    @Test
+    void createBulkShouldCreateMultipleItems() {
+        ItemRequest second = new ItemRequest();
+        second.setName("Mouse");
+        second.setDescription("Wireless");
+        second.setPrice(BigDecimal.ONE);
+
+        when(itemRepository.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<Item> results = itemService.createBulk(List.of(request, second));
+
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getName()).isEqualTo("Keyboard");
+        assertThat(results.get(1).getName()).isEqualTo("Mouse");
+        assertThat(results.get(0).getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(results.get(1).getCreatedBy()).isEqualTo("SYSTEM");
+
+        verify(itemRepository, times(2)).save(any(Item.class));
     }
 }
