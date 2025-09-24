@@ -87,7 +87,7 @@ Execute the full unit test suite:
 mvn test
 ```
 
-To generate a JaCoCo report (with an 80% minimum line coverage gate) run:
+To generate a JaCoCo report (with an 70% minimum line coverage gate) run:
 
 ```bash
 mvn verify
