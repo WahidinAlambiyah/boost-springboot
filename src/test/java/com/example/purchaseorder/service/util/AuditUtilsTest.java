@@ -3,6 +3,8 @@ package com.example.purchaseorder.service.util;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
@@ -50,8 +52,11 @@ class AuditUtilsTest {
 
     @Test
     void resolveCurrentAuditorShouldReturnAuthenticatedName() {
-        TestingAuthenticationToken authentication = new TestingAuthenticationToken("auditor", "pw");
-        authentication.setAuthenticated(true);
+        UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken.authenticated(
+            "auditor",
+            "pw",
+            java.util.List.<GrantedAuthority>of()
+        );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String auditor = AuditUtils.resolveCurrentAuditor();
