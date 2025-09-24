@@ -58,4 +58,8 @@ public class PurchaseOrderHeader {
     @Builder.Default
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrderDetail> details = new ArrayList<>();
+
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

@@ -52,4 +52,8 @@ public class User {
 
     @Column(name = "updated_datetime")
     private OffsetDateTime updatedDatetime;
+
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

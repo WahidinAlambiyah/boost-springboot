@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.dto.UserPatchRequest;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
 import com.example.purchaseorder.repository.UserRepository;
@@ -12,9 +13,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,10 +48,6 @@ class UserServiceImplTest {
         request.setEmail("john.doe@example.com");
         request.setPhone("123456789");
         request.setPassword("password");
-        request.setCreatedBy("tester");
-        request.setCreatedDatetime(OffsetDateTime.now());
-        request.setUpdatedBy("tester");
-        request.setUpdatedDatetime(OffsetDateTime.now());
     }
 
     @Test
@@ -63,34 +63,84 @@ class UserServiceImplTest {
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(captor.getValue().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(captor.getValue().getCreatedDatetime()).isNotNull();
+        assertThat(captor.getValue().getUpdatedBy()).isNull();
+        assertThat(captor.getValue().getUpdatedDatetime()).isNull();
     }
 
     @Test
     void updateShouldModifyExistingUser() {
-        User existing = User.builder().id(1L).email("john.doe@example.com").password("old").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+        User existing = User.builder()
+                .id(1L)
+                .email("john.doe@example.com")
+                .password("old")
+                .createdBy("original")
+                .build();
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
         when(userRepository.save(existing)).thenReturn(existing);
         when(passwordEncoder.encode("password")).thenReturn("encoded");
 
         User updated = userService.update(1L, request);
 
         assertThat(updated.getPassword()).isEqualTo("encoded");
+        assertThat(existing.getCreatedBy()).isEqualTo("original");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
         verify(userRepository).save(existing);
     }
 
     @Test
     void updateShouldThrowWhenNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.update(1L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void deleteShouldRemoveUser() {
+    void patchShouldUpdateOnlyProvidedFields() {
+        User existing = User.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .password("old")
+                .build();
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(passwordEncoder.encode("newPass")).thenReturn("encoded");
+        when(userRepository.save(existing)).thenReturn(existing);
+
+        UserPatchRequest patchRequest = new UserPatchRequest();
+        patchRequest.setFirstName("Jane");
+        patchRequest.setPassword("newPass");
+
+        User patched = userService.patch(1L, patchRequest);
+
+        assertThat(patched.getFirstName()).isEqualTo("Jane");
+        assertThat(patched.getLastName()).isEqualTo("Doe");
+        assertThat(patched.getPassword()).isEqualTo("encoded");
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void deleteShouldSoftDeleteUser() {
+        User existing = User.builder().id(1L).build();
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.save(existing)).thenReturn(existing);
+
+        userService.delete(1L);
+
+        assertThat(existing.isDeleted()).isTrue();
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void deletePermanentShouldRemoveUser() {
         User existing = User.builder().id(1L).build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
 
-        userService.delete(1L);
+        userService.deletePermanent(1L);
 
         verify(userRepository).delete(existing);
     }
@@ -98,7 +148,7 @@ class UserServiceImplTest {
     @Test
     void getShouldReturnUser() {
         User existing = User.builder().id(1L).build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(userRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
 
         assertThat(userService.get(1L)).isEqualTo(existing);
     }
@@ -106,8 +156,45 @@ class UserServiceImplTest {
     @Test
     void listShouldReturnAllUsers() {
         List<User> users = List.of(User.builder().id(1L).build());
-        when(userRepository.findAll()).thenReturn(users);
+        Page<User> page = new PageImpl<>(users);
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(userRepository.findAllByDeletedFalse(pageable)).thenReturn(page);
 
-        assertThat(userService.list()).hasSize(1);
+        Page<User> result = userService.list(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(userRepository).findAllByDeletedFalse(pageable);
+    }
+
+    @Test
+    void createBulkShouldReturnEmptyWhenRequestsNullOrEmpty() {
+        assertThat(userService.createBulk(null)).isEmpty();
+        assertThat(userService.createBulk(Collections.emptyList())).isEmpty();
+
+        verifyNoInteractions(userRepository, passwordEncoder);
+    }
+
+    @Test
+    void createBulkShouldCreateMultipleUsers() {
+        UserRequest second = new UserRequest();
+        second.setFirstName("Jane");
+        second.setLastName("Smith");
+        second.setEmail("jane.smith@example.com");
+        second.setPhone("987654321");
+        second.setPassword("secret");
+
+        when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "encoded-" + invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<User> results = userService.createBulk(List.of(request, second));
+
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getPassword()).isEqualTo("encoded-password");
+        assertThat(results.get(1).getPassword()).isEqualTo("encoded-secret");
+        assertThat(results.get(0).getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(results.get(1).getCreatedBy()).isEqualTo("SYSTEM");
+
+        verify(passwordEncoder, times(2)).encode(anyString());
+        verify(userRepository, times(2)).save(any(User.class));
     }
 }
