@@ -19,7 +19,7 @@ pagination, bulk operations, soft deletion, and consistent error handling.
 12. [Troubleshooting](#troubleshooting)
 
 ## Tech stack
-- Java 21
+- Java 17
 - Spring Boot 3 (Web, Validation, Security, Data JPA)
 - PostgreSQL 15
 - Liquibase for schema migrations
@@ -28,13 +28,13 @@ pagination, bulk operations, soft deletion, and consistent error handling.
 - JaCoCo for code coverage reporting
 
 ## Prerequisites
-- Java 21 SDK
+- Java 17 SDK
 - Maven 3.9+
 - Docker (optional, for running PostgreSQL locally)
 
 ## Database setup
 The application connects to PostgreSQL at `localhost:5432` using the database
-`purchaseorder` with credentials `purchaseorder/purchaseorder`. Adjust the
+`wahidin-purchaseorder` with credentials `wahidin-purchaseorder/wahidin-purchaseorder`. Adjust the
 properties in `src/main/resources/application.yml` if required.
 
 For local development a Docker Compose file is available.
@@ -43,7 +43,7 @@ For local development a Docker Compose file is available.
 docker compose -f docker-compose.postgres.yml up -d
 ```
 
-This starts a container named `purchaseorder-postgres` that exposes PostgreSQL
+This starts a container named `wahidin-purchaseorder-postgres` that exposes PostgreSQL
 on port `5432`, seeds the default credentials, and persists data inside a named
 volume.
 
@@ -52,10 +52,10 @@ Create a `.env` file in the project root to override any Compose variable:
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `CONTAINER_NAME` | Docker container name | `purchaseorder-postgres` |
-| `POSTGRES_DB` | Database name | `purchaseorder` |
-| `POSTGRES_USER` | Database username | `purchaseorder` |
-| `POSTGRES_PASSWORD` | Database password | `purchaseorder` |
+| `CONTAINER_NAME` | Docker container name | `wahidin-purchaseorder-postgres` |
+| `POSTGRES_DB` | Database name | `wahidin-purchaseorder` |
+| `POSTGRES_USER` | Database username | `wahidin-purchaseorder` |
+| `POSTGRES_PASSWORD` | Database password | `wahidin-purchaseorder` |
 | `POSTGRES_PORT` | Host port for PostgreSQL | `5432` |
 | `POSTGRES_IMAGE` | Docker image to use | `postgres:15-alpine` |
 
