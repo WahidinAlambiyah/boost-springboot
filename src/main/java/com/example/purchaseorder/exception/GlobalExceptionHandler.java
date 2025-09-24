@@ -35,9 +35,27 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex,
                                                                             HttpServletRequest request) {
         Map<String, String> violations = ex.getConstraintViolations().stream()
-                .collect(Collectors.toMap(violation -> violation.getPropertyPath().toString(),
+                .collect(Collectors.toMap(violation -> cleanConstraintPath(violation.getPropertyPath().toString()),
                         ConstraintViolation::getMessage, (existing, replacement) -> existing, LinkedHashMap::new));
         return buildResponse(HttpStatus.BAD_REQUEST, "Constraint violations found", request, violations);
+    }
+
+    private String cleanConstraintPath(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return rawPath;
+        }
+
+        String cleaned = rawPath;
+        int firstDot = cleaned.indexOf('.');
+        if (firstDot >= 0) {
+            cleaned = cleaned.substring(firstDot + 1);
+        }
+
+        if (cleaned.startsWith("requests")) {
+            cleaned = cleaned.substring("requests".length());
+        }
+
+        return cleaned;
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
