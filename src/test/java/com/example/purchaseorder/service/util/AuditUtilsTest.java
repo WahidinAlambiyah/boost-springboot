@@ -51,6 +51,7 @@ class AuditUtilsTest {
     @Test
     void resolveCurrentAuditorShouldReturnAuthenticatedName() {
         TestingAuthenticationToken authentication = new TestingAuthenticationToken("auditor", "pw");
+        authentication.setAuthenticated(true);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String auditor = AuditUtils.resolveCurrentAuditor();
