@@ -86,6 +86,42 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleConstraintViolationException_trimsRequestCollectionPrefixWithoutMethod() {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+        Path path = mock(Path.class);
+        when(path.toString()).thenReturn("requests[1].phone");
+        when(violation.getPropertyPath()).thenReturn(path);
+        when(violation.getMessage()).thenReturn("Phone number must be valid");
+
+        ConstraintViolationException ex = new ConstraintViolationException(Collections.singleton(violation));
+
+        ResponseEntity<ErrorResponse> response = handler.handleConstraintViolationException(ex, request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getValidationErrors()).containsEntry("[1].phone", "Phone number must be valid");
+    }
+
+    @Test
+    void handleConstraintViolationException_returnsRawPathWhenBlank() {
+        @SuppressWarnings("unchecked")
+        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
+        Path path = mock(Path.class);
+        when(path.toString()).thenReturn("");
+        when(violation.getPropertyPath()).thenReturn(path);
+        when(violation.getMessage()).thenReturn("must not be blank");
+
+        ConstraintViolationException ex = new ConstraintViolationException(Collections.singleton(violation));
+
+        ResponseEntity<ErrorResponse> response = handler.handleConstraintViolationException(ex, request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getValidationErrors()).containsEntry("", "must not be blank");
+    }
+
+    @Test
     void handleHttpMessageNotReadableException_returnsBadRequest() {
         HttpMessageNotReadableException ex = new HttpMessageNotReadableException("Malformed", (Throwable) null);
 

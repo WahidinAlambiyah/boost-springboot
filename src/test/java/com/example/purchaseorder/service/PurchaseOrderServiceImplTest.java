@@ -151,6 +151,31 @@ class PurchaseOrderServiceImplTest {
     }
 
     @Test
+    void patchShouldRetainTotalsWhenDetailsOmittedAndTotalsNotProvided() {
+        PurchaseOrderHeader existing = new PurchaseOrderHeader();
+        existing.setId(1L);
+        existing.setDescription("Original");
+        existing.setTotalCost(new BigDecimal("25.00"));
+        existing.setTotalPrice(new BigDecimal("40.00"));
+        existing.setDetails(new java.util.ArrayList<>(List.of(PurchaseOrderDetail.builder().itemQty(1).build())));
+
+        when(headerRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(existing));
+        when(headerRepository.save(existing)).thenReturn(existing);
+
+        PurchaseOrderPatchRequest patchRequest = new PurchaseOrderPatchRequest();
+        patchRequest.setDescription("Retained totals");
+
+        PurchaseOrderHeader patched = purchaseOrderService.patch(1L, patchRequest);
+
+        assertThat(patched.getDescription()).isEqualTo("Retained totals");
+        assertThat(patched.getTotalCost()).isEqualTo(new BigDecimal("25.00"));
+        assertThat(patched.getTotalPrice()).isEqualTo(new BigDecimal("40.00"));
+        assertThat(existing.getUpdatedBy()).isEqualTo("SYSTEM");
+        assertThat(existing.getUpdatedDatetime()).isNotNull();
+        verify(headerRepository).save(existing);
+    }
+
+    @Test
     void deleteShouldSoftDeleteHeader() {
         PurchaseOrderHeader existing = new PurchaseOrderHeader();
         existing.setId(1L);
