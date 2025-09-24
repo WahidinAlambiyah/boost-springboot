@@ -34,7 +34,7 @@ pagination, bulk operations, soft deletion, and consistent error handling.
 
 ## Database setup
 The application connects to PostgreSQL at `localhost:5432` using the database
-`wahidin-purchaseorder` with credentials `wahidin-purchaseorder/wahidin-purchaseorder`. Adjust the
+`wahidin_purchaseorder` with credentials `wahidin_purchaseorder/wahidin_purchaseorder`. Adjust the
 properties in `src/main/resources/application.yml` if required.
 
 For local development a Docker Compose file is available.
@@ -43,19 +43,21 @@ For local development a Docker Compose file is available.
 docker compose -f docker-compose.postgres.yml up -d
 ```
 
-This starts a container named `wahidin-purchaseorder-postgres` that exposes PostgreSQL
+This starts a container named `wahidin_purchaseorder_postgres` that exposes PostgreSQL
 on port `5432`, seeds the default credentials, and persists data inside a named
-volume.
+volume (`wahidin_purchaseorder_postgres_data`). If you previously ran the hyphen-
+based configuration, bring the stack down with `--volumes` to drop the old data
+and allow PostgreSQL to initialize the new role.
 
 ### Configuration overrides
 Create a `.env` file in the project root to override any Compose variable:
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `CONTAINER_NAME` | Docker container name | `wahidin-purchaseorder-postgres` |
-| `POSTGRES_DB` | Database name | `wahidin-purchaseorder` |
-| `POSTGRES_USER` | Database username | `wahidin-purchaseorder` |
-| `POSTGRES_PASSWORD` | Database password | `wahidin-purchaseorder` |
+| `CONTAINER_NAME` | Docker container name | `wahidin_purchaseorder_postgres` |
+| `POSTGRES_DB` | Database name | `wahidin_purchaseorder` |
+| `POSTGRES_USER` | Database username | `wahidin_purchaseorder` |
+| `POSTGRES_PASSWORD` | Database password | `wahidin_purchaseorder` |
 | `POSTGRES_PORT` | Host port for PostgreSQL | `5432` |
 | `POSTGRES_IMAGE` | Docker image to use | `postgres:15-alpine` |
 
@@ -85,7 +87,7 @@ Execute the full unit test suite:
 mvn test
 ```
 
-To generate a JaCoCo report (with an 80% minimum line coverage gate) run:
+To generate a JaCoCo report (with an 70% minimum line coverage gate) run:
 
 ```bash
 mvn verify
