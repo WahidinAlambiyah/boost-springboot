@@ -48,7 +48,10 @@ public class GlobalExceptionHandler {
         String cleaned = rawPath;
         int firstDot = cleaned.indexOf('.');
         if (firstDot >= 0) {
-            cleaned = cleaned.substring(firstDot + 1);
+            String prefix = cleaned.substring(0, firstDot);
+            if (!prefix.contains("[")) {
+                cleaned = cleaned.substring(firstDot + 1);
+            }
         }
 
         if (cleaned.startsWith("requests")) {
