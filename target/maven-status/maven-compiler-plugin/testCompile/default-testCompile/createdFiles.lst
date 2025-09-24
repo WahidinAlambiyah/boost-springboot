@@ -1,5 +1,2 @@
-com\example\purchaseorder\service\AuthServiceImplTest.class
-com\example\purchaseorder\service\ItemServiceImplTest.class
-com\example\purchaseorder\service\PurchaseOrderServiceImplTest.class
-com\example\purchaseorder\service\UserServiceImplTest.class
 com\example\purchaseorder\security\JwtServiceTest.class
+com\example\purchaseorder\service\AuthServiceImplTest.class
