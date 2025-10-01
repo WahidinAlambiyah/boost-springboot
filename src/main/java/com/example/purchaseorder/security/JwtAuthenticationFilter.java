@@ -8,18 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -39,12 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = header.substring(7);
         String username = jwtService.extractUsername(token);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            List<String> tokenRoles = jwtService.extractRoles(token);
-            Collection<? extends GrantedAuthority> authoritiesFromToken = tokenRoles.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
+            Collection<? extends GrantedAuthority> authoritiesFromToken = jwtService.extractGrantedAuthorities(token);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = authoritiesFromToken.isEmpty()
+                    ? userDetailsService.loadUserByUsername(username)
+                    : User.withUsername(username)
+                            .password("N/A")
+                            .authorities(authoritiesFromToken)
+                            .accountExpired(false)
+                            .accountLocked(false)
+                            .credentialsExpired(false)
+                            .disabled(false)
+                            .build();
             if (jwtService.isTokenValid(token, userDetails)) {
                 Collection<? extends GrantedAuthority> authorities = authoritiesFromToken.isEmpty()
                         ? userDetails.getAuthorities()

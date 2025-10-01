@@ -1,5 +1,6 @@
 package com.example.purchaseorder.security;
 
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.Key;
 import java.util.Base64;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +42,9 @@ class JwtServiceTest {
 
         assertThat(jwtService.extractUsername(token)).isEqualTo("user@example.com");
         assertThat(jwtService.extractRoles(token)).containsExactly("ROLE_USER");
+        assertThat(jwtService.extractGrantedAuthorities(token))
+                .extracting("authority")
+                .containsExactly("ROLE_USER");
         assertThat(jwtService.isTokenValid(token, user)).isTrue();
 
         UserDetails mismatchedUser = User.withUsername("user@example.com")
@@ -48,5 +53,44 @@ class JwtServiceTest {
                 .build();
 
         assertThat(jwtService.isTokenValid(token, mismatchedUser)).isFalse();
+    }
+
+    @Test
+    void shouldGenerateTokenWithMultipleRoles() {
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        String secret = Base64.getEncoder().encodeToString(key.getEncoded());
+        ReflectionTestUtils.setField(jwtService, "secret", secret);
+        ReflectionTestUtils.setField(jwtService, "expirationMillis", 60000L);
+
+        UserDetails user = User.withUsername("admin@example.com")
+                .password("password")
+                .roles("ADMIN", "USER")
+                .build();
+
+        String token = jwtService.generateToken(user);
+
+        assertThat(jwtService.extractRoles(token)).containsExactly("ROLE_ADMIN", "ROLE_USER");
+    }
+
+    @Test
+    void shouldReturnEmptyRolesWhenClaimIsNotCollection() {
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        String secret = Base64.getEncoder().encodeToString(key.getEncoded());
+        ReflectionTestUtils.setField(jwtService, "secret", secret);
+        ReflectionTestUtils.setField(jwtService, "expirationMillis", 60000L);
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + 60000L);
+
+        String token = Jwts.builder()
+                .setSubject("user@example.com")
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .claim("roles", "ROLE_USER")
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        assertThat(jwtService.extractRoles(token)).isEmpty();
+        assertThat(jwtService.extractGrantedAuthorities(token)).isEmpty();
     }
 }
