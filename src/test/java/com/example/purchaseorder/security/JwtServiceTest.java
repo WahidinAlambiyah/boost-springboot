@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Base64;
 import java.security.Key;
+import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,17 +31,22 @@ class JwtServiceTest {
         ReflectionTestUtils.setField(jwtService, "secret", secret);
         ReflectionTestUtils.setField(jwtService, "expirationMillis", 60000L);
 
-        String token = jwtService.generateToken(org.springframework.security.core.userdetails.User
-                .withUsername("user@example.com")
+        UserDetails user = User.withUsername("user@example.com")
                 .password("password")
                 .roles("USER")
-                .build());
+                .build();
+
+        String token = jwtService.generateToken(user);
 
         assertThat(jwtService.extractUsername(token)).isEqualTo("user@example.com");
-        assertThat(jwtService.isTokenValid(token, org.springframework.security.core.userdetails.User
-                .withUsername("user@example.com")
+        assertThat(jwtService.extractRoles(token)).containsExactly("ROLE_USER");
+        assertThat(jwtService.isTokenValid(token, user)).isTrue();
+
+        UserDetails mismatchedUser = User.withUsername("user@example.com")
                 .password("password")
-                .roles("USER")
-                .build())).isTrue();
+                .roles("ADMIN")
+                .build();
+
+        assertThat(jwtService.isTokenValid(token, mismatchedUser)).isFalse();
     }
 }
