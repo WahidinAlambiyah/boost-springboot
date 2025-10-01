@@ -1,6 +1,7 @@
 package com.example.purchaseorder.dto;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.domain.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class UserResponse {
     private String lastName;
     private String email;
     private String phone;
+    private UserRole role;
     private String createdBy;
     private OffsetDateTime createdDatetime;
     private String updatedBy;
@@ -34,6 +36,7 @@ public class UserResponse {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .role(user.getRole())
                 .createdBy(user.getCreatedBy())
                 .createdDatetime(user.getCreatedDatetime())
                 .updatedBy(user.getUpdatedBy())

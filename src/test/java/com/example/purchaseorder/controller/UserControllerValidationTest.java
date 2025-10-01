@@ -37,14 +37,16 @@ class UserControllerValidationTest {
                     \"lastName\": \"Seven\",
                     \"email\": \"testseven\",
                     \"phone\": \"+873594755809446\",
-                    \"password\": \"12345678\"
+                    \"password\": \"12345678\",
+                    \"role\": \"USER\"
                   },
                   {
                     \"firstName\": \"Test\",
                     \"lastName\": \"Eight\",
                     \"email\": \"testnin@gmail.com\",
                     \"phone\": \"qwe\",
-                    \"password\": \"12345678\"
+                    \"password\": \"12345678\",
+                    \"role\": \"USER\"
                   }
                 ]
                 """;

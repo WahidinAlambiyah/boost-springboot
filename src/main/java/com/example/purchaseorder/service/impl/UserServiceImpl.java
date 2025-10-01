@@ -94,6 +94,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+        user.setRole(request.getRole());
     }
 
     private void applyPatch(User user, UserPatchRequest request) {
@@ -111,6 +112,9 @@ public class UserServiceImpl implements UserService {
         }
         if (request.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
         }
     }
 

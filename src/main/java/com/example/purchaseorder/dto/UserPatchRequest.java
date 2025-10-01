@@ -1,5 +1,6 @@
 package com.example.purchaseorder.dto;
 
+import com.example.purchaseorder.domain.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -25,4 +26,6 @@ public class UserPatchRequest {
 
     @Pattern(regexp = NOT_BLANK_REGEX, message = "Password must not be blank.")
     private String password;
+
+    private UserRole role;
 }

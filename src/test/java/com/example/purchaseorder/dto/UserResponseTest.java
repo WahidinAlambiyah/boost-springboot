@@ -1,6 +1,7 @@
 package com.example.purchaseorder.dto;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.domain.UserRole;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -19,6 +20,7 @@ class UserResponseTest {
                 .lastName("Doe")
                 .email("john@example.com")
                 .phone("123456789")
+                .role(UserRole.ADMIN)
                 .createdBy("SYSTEM")
                 .createdDatetime(created)
                 .updatedBy("admin")
@@ -32,6 +34,7 @@ class UserResponseTest {
         assertThat(response.getLastName()).isEqualTo("Doe");
         assertThat(response.getEmail()).isEqualTo("john@example.com");
         assertThat(response.getPhone()).isEqualTo("123456789");
+        assertThat(response.getRole()).isEqualTo(UserRole.ADMIN);
         assertThat(response.getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(response.getCreatedDatetime()).isEqualTo(created);
         assertThat(response.getUpdatedBy()).isEqualTo("admin");
