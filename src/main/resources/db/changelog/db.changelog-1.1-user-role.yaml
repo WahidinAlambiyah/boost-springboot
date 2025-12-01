@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-user-role-column
+      author: assistant
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  defaultValue: USER
+                  constraints:
+                    nullable: false
+        - update:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  value: ADMIN
+            where: email = 'admin@example.com'
+        - update:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  value: USER
+            where: role IS NULL
+      rollback:
+        - dropColumn:
+            tableName: users
+            columnName: role

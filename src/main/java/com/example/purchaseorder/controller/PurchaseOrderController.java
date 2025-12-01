@@ -3,12 +3,14 @@ package com.example.purchaseorder.controller;
 import com.example.purchaseorder.dto.PurchaseOrderPatchRequest;
 import com.example.purchaseorder.dto.PurchaseOrderRequest;
 import com.example.purchaseorder.dto.PurchaseOrderResponse;
+import com.example.purchaseorder.security.SecurityRoles;
 import com.example.purchaseorder.service.PurchaseOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize(SecurityRoles.HAS_ANY_ROLE_ADMIN_OR_USER)
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;

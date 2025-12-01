@@ -158,6 +158,58 @@ that omit sensitive fields such as passwords and auditing metadata.
 - **Requests:** `UserRequest`, `ItemRequest`, and `PurchaseOrderRequest` accept
   business data only; auditing fields (`createdBy`, `createdDate`, `updatedBy`,
   `updatedDate`) are not present because the backend sets them automatically.
+
+## Interview talking points
+
+The following answers summarize how the current codebase could evolve when the
+discussion shifts to future enhancements during an interview.
+
+### Menambahkan role-based authorization
+- Tambahkan kolom `role` (atau tabel relasi `user_roles`) pada entitas user
+  sekaligus migrasi Liquibase baru untuk menyimpan enum/daftar peran.
+- Map kolom peran ke `GrantedAuthority` di `CustomUserDetailsService`, sehingga
+  objek `UserDetails` membawa informasi role saat autentikasi berhasil.
+- Perbarui `SecurityConfig` dengan konfigurasi `authorizeHttpRequests()` yang
+  memetakan endpoint ke `hasRole("ADMIN")`, `hasAnyRole(...)`, atau ekspresi
+  SpEL lain, lalu pastikan filter JWT ikut mengekstrak role dari token.
+- Regenerasi JWT di `JwtService` agar memasukkan klaim peran dan diverifikasi
+  ulang saat request masuk; ini menjaga konsistensi antara token dan database.
+
+### Mengeraskan konfigurasi CORS & penyimpanan secret JWT
+- Batasi asal (origin) CORS pada daftar domain yang dipercaya di profile
+  produksi, berbeda dengan profile lokal yang bisa lebih longgar.
+- Hanya izinkan metode dan header yang benar-benar digunakan oleh frontend,
+  serta nonaktifkan `allowCredentials` bila tidak diperlukan.
+- Simpan rahasia JWT dan kredensial database sebagai variabel environment atau
+  secret manager (mis. Vault, AWS Secrets Manager) lalu referensikan melalui
+  `application-prod.yml`; hindari mengkomit nilai sensitif ke repo.
+- Terapkan rotasi kunci berkala serta fallback untuk mendukung dual key saat
+  rotasi berlangsung agar tidak memutus sesi pengguna.
+
+### Strategi pengujian otomatis
+- Mulai dengan unit test untuk service dan utilitas menggunakan JUnit 5 serta
+  Mockito guna memverifikasi logika hashing password, kalkulasi total order,
+  dan audit metadata tanpa melibatkan konteks Spring penuh.
+- Tambahkan `@WebMvcTest` atau `@SpringBootTest` terpilih untuk controller agar
+  validasi DTO, keamanan, dan mapping response tetap terjaga.
+- Integrasikan pipeline CI (GitHub Actions atau GitLab CI) yang menjalankan
+  `mvn verify`, men-generate laporan JaCoCo, dan memblokir merge bila coverage
+  turun di bawah ambang batas yang disepakati.
+- Sisipkan test data minimal di folder `src/test/resources` atau gunakan
+  `@DataJpaTest` dengan database in-memory untuk menguji repository.
+
+### Patch parsial detail purchase order
+- Ubah DTO patch detail agar menyertakan identifier unik (`id` atau kombinasi
+  `itemId` + nomor baris) sehingga layanan bisa membedakan baris baru, diubah,
+  atau dihapus.
+- Refactor `PurchaseOrderServiceImpl.updatePartial` untuk:
+  1. Memuat daftar detail eksisting dari database.
+  2. Melakukan merge: perbarui baris yang ada, buat baris baru bila ID belum
+     dikenal, dan hanya hapus baris yang tidak lagi tercantum dalam payload.
+- Gunakan struktur seperti map (`detailId -> entity`) guna memudahkan pencarian
+  cepat saat memproses payload PATCH.
+- Setelah merge, jalankan ulang kalkulasi subtotal/total dan simpan perubahan
+  agar konsistensi angka tetap terjaga.
 - **Responses:** `UserResponse`, `ItemResponse`, and
   `PurchaseOrderResponse` return sanitized data that excludes passwords and
   other sensitive properties while supplying identifiers, totals, and auditing

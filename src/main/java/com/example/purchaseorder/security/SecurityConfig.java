@@ -3,6 +3,7 @@ package com.example.purchaseorder.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -31,6 +32,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/items/**").hasAnyRole(SecurityRoles.ADMIN, SecurityRoles.USER)
+                        .requestMatchers("/api/items/**").hasRole(SecurityRoles.ADMIN)
+                        .requestMatchers("/api/users/**").hasRole(SecurityRoles.ADMIN)
+                        .requestMatchers("/api/purchase-orders/**").hasAnyRole(SecurityRoles.ADMIN, SecurityRoles.USER)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

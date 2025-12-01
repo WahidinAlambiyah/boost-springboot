@@ -1,6 +1,7 @@
 package com.example.purchaseorder.service;
 
 import com.example.purchaseorder.domain.User;
+import com.example.purchaseorder.domain.UserRole;
 import com.example.purchaseorder.dto.UserPatchRequest;
 import com.example.purchaseorder.dto.UserRequest;
 import com.example.purchaseorder.exception.ResourceNotFoundException;
@@ -48,6 +49,7 @@ class UserServiceImplTest {
         request.setEmail("john.doe@example.com");
         request.setPhone("123456789");
         request.setPassword("password");
+        request.setRole(UserRole.USER);
     }
 
     @Test
@@ -182,6 +184,7 @@ class UserServiceImplTest {
         second.setEmail("jane.smith@example.com");
         second.setPhone("987654321");
         second.setPassword("secret");
+        second.setRole(UserRole.USER);
 
         when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> "encoded-" + invocation.getArgument(0));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
