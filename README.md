@@ -27,6 +27,12 @@ Key endpoints:
 - `PUT /api/projects/{id}` – update project.
 - `DELETE /api/projects/{id}` – delete project.
 - `POST /api/projects/{id}/resume` – reopen project if previously closed.
+- `POST /api/accesses` (ADMIN) – create an access/permission code.
+- `GET /api/accesses` – list access definitions.
+- `POST /api/roles` (ADMIN) – create role with access assignments.
+- `GET /api/roles` – list roles and their accesses.
+- `POST /api/users` (ADMIN) – create a user with roles (and optional division).
+- `GET /api/users` – list users with their roles and access mappings.
 
 ## Testing
 An in-memory H2 database (PostgreSQL compatibility mode) is configured for tests. Run:
