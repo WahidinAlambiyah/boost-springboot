@@ -13,6 +13,7 @@ A simple Work Order Management backend built with Java 17, Spring Boot 3, and Po
    ```bash
    mvn spring-boot:run
    ```
+3. Open API documentation is available at `http://localhost:8080/swagger-ui.html` after the app starts.
 
 ## API usage
 All protected endpoints expect an `X-ROLE` header with one of `ADMIN`, `MANAGER`, or `STAFF`. Managers and staff should also send `X-DIVISION-ID` to scope their access.
