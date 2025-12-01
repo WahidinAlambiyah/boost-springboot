@@ -14,6 +14,7 @@ Nilai koneksi default di `application.yml` mengarah ke service pada compose (Pos
 ## Konfigurasi aplikasi
 - `app.jwt.secret` dan `app.jwt.expiration-ms` mengontrol token JWT.
 - `app.redis.enabled` dan `app.kafka.enabled` dapat diubah ke `true` untuk mengaktifkan konfigurasi Redis atau Kafka ketika service tersedia.
+- `app.admin.username` dan `app.admin.password` mengatur kredensial admin awal; initializer akan memastikan user admin aktif dengan password ter-hash sesuai konfigurasi ini.
 - Liquibase dijalankan otomatis saat startup menggunakan changelog `db/changelog/db.changelog-master.yaml` yang mencakup tabel `users`, `roles`, serta data awal admin.
 
 ## Endpoint utama
