@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: boost-springboot
+  datasource:
+    url: jdbc:postgresql://localhost:5432/boost
+    username: boost
+    password: boost
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: change-me-to-a-strong-secret-key-change-me
+    expiration-ms: 3600000
+  redis:
+    enabled: false
+  kafka:
+    enabled: false
