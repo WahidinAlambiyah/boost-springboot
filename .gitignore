@@ -1,16 +1,26 @@
-# Compiled class file
-*.class
+# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
 
-# Log file
+# IDEA/VS Code
+.idea/
+.project
+.classpath
+.settings/
+.vscode/
+
+# Logs
 *.log
 
-# BlueJ files
-*.ctxt
+# OS files
+.DS_Store
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# Java
+*.class
+hs_err_pid*
+replay_pid*
 
-# Package Files #
+# Archives
 *.jar
 *.war
 *.nar
@@ -18,7 +28,3 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
