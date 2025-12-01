@@ -1,14 +1,18 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/workorder
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/workorder}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:wahidin_purchaseorder}
+    password: ${DB_PASSWORD:wahidin_purchaseorder}
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 server:
   port: 8080

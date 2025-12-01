@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:15-alpine}
+    container_name: ${CONTAINER_NAME:-wahidin_purchaseorder_postgres}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-workorder}
+      POSTGRES_USER: ${POSTGRES_USER:-wahidin_purchaseorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wahidin_purchaseorder}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - wahidin_purchaseorder_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  wahidin_purchaseorder_postgres_data:
+    driver: local
