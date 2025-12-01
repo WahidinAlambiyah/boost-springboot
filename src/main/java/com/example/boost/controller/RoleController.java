@@ -27,7 +27,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponse> getRole(@PathVariable Long id) {
+    public ResponseEntity<RoleResponse> getRole(@PathVariable("id") Long id) {
         return roleService.getRole(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -39,14 +39,14 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleResponse> updateRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request) {
+    public ResponseEntity<RoleResponse> updateRole(@PathVariable("id") Long id, @Valid @RequestBody RoleRequest request) {
         return roleService.updateRole(id, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable("id") Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
