@@ -18,7 +18,7 @@ Nilai koneksi default di `application.yml` mengarah ke service pada compose (Pos
 
 ## Endpoint utama
 - `POST /api/auth/register` — registrasi user baru.
-- `POST /api/auth/login` — login dan memperoleh JWT. Akun awal: `admin` / `password`.
+- `POST /api/auth/login` — login dan memperoleh JWT. Akun awal: `admin` / `password` (pastikan database sudah dimigrasi sehingga akun ini tersedia).
 - `GET /api/users` — daftar user (memerlukan autentikasi).
 - `GET /api/users/{id}` — detail user.
 - `POST /api/users` — buat user baru (ADMIN).
