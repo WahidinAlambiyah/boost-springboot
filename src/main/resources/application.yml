@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: boost-springboot
+  datasource:
+    url: jdbc:postgresql://localhost:5432/boost
+    username: boost
+    password: boost
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: secret
+jwt:
+  secret: "very-secret-key-change-me"
+  expiration-minutes: 120
+
+app:
+  login:
+    google-enabled: true
+    github-enabled: true
+    allowed-devices:
+      - desktop
+      - mobile
+    allowed-browsers:
+      - chrome
+      - firefox
+      - safari
+  order:
+    confirmation-required: true
