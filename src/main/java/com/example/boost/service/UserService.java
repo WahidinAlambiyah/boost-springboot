@@ -3,6 +3,7 @@ package com.example.boost.service;
 import com.example.boost.domain.Role;
 import com.example.boost.domain.User;
 import com.example.boost.dto.RegisterUserRequest;
+import com.example.boost.dto.UpdateUserRequest;
 import com.example.boost.dto.UserResponse;
 import com.example.boost.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,10 +42,39 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public UserResponse createUser(RegisterUserRequest request) {
+        User saved = register(request);
+        return mapToResponse(saved);
+    }
+
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Optional<UserResponse> getUser(Long id) {
+        return userRepository.findById(id).map(this::mapToResponse);
+    }
+
+    @Transactional
+    public Optional<UserResponse> updateUser(Long id, UpdateUserRequest request) {
+        return userRepository.findById(id).map(user -> {
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setFullName(request.getFullName());
+            user.setActive(request.isActive());
+            if (request.getPassword() != null && !request.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+            Set<Role> roles = roleService.resolveRoles(request.getRoles());
+            user.setRoles(roles);
+            return mapToResponse(user);
+        });
+    }
+
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 
     @Transactional

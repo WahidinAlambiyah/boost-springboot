@@ -18,9 +18,18 @@ Nilai koneksi default di `application.yml` mengarah ke service pada compose (Pos
 
 ## Endpoint utama
 - `POST /api/auth/register` — registrasi user baru.
-- `POST /api/auth/login` — login dan memperoleh JWT.
+- `POST /api/auth/login` — login dan memperoleh JWT. Akun awal: `admin` / `password`.
 - `GET /api/users` — daftar user (memerlukan autentikasi).
+- `GET /api/users/{id}` — detail user.
+- `POST /api/users` — buat user baru (ADMIN).
+- `PUT /api/users/{id}` — perbarui user (ADMIN).
+- `DELETE /api/users/{id}` — hapus user (ADMIN).
 - `POST /api/users/{id}/roles` — atur ulang role user, membutuhkan peran `ROLE_ADMIN`.
+- `GET /api/roles` — daftar role (ADMIN).
+- `GET /api/roles/{id}` — detail role (ADMIN).
+- `POST /api/roles` — buat role baru (ADMIN).
+- `PUT /api/roles/{id}` — perbarui role (ADMIN).
+- `DELETE /api/roles/{id}` — hapus role (ADMIN).
 
 ## Best practice untuk prototipe dan enterprise
 - **Pemisahan konfigurasi:** gunakan profil dan flag `app.redis.enabled`/`app.kafka.enabled` untuk mengaktifkan komponen tambahan hanya saat diperlukan.
