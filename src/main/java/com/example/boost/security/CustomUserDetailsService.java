@@ -28,13 +28,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toSet());
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                user.getId(),
                 user.getUsername(),
-                user.getPassword(),
+                user.getPasswordHash(),
                 user.isActive(),
-                true,
-                true,
-                true,
                 authorities
         );
     }

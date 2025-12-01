@@ -5,10 +5,12 @@ import java.time.Instant;
 public class AuthResponse {
     private String token;
     private Instant expiresAt;
+    private String sessionId;
 
-    public AuthResponse(String token, Instant expiresAt) {
+    public AuthResponse(String token, Instant expiresAt, String sessionId) {
         this.token = token;
         this.expiresAt = expiresAt;
+        this.sessionId = sessionId;
     }
 
     public String getToken() {
@@ -25,5 +27,13 @@ public class AuthResponse {
 
     public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

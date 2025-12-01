@@ -30,7 +30,7 @@ app:
     secret: change-me-to-a-strong-secret-key-change-me
     expiration-ms: 3600000
   redis:
-    enabled: false
+    enabled: true
   kafka:
     enabled: false
   admin:

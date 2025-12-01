@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +35,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setFullName(request.getFullName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
         Set<Role> roles = roleService.resolveRoles(request.getRoles());
         user.setRoles(roles);
@@ -53,19 +54,19 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<UserResponse> getUser(Long id) {
+    public Optional<UserResponse> getUser(UUID id) {
         return userRepository.findById(id).map(this::mapToResponse);
     }
 
     @Transactional
-    public Optional<UserResponse> updateUser(Long id, UpdateUserRequest request) {
+    public Optional<UserResponse> updateUser(UUID id, UpdateUserRequest request) {
         return userRepository.findById(id).map(user -> {
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
             user.setFullName(request.getFullName());
             user.setActive(request.isActive());
             if (request.getPassword() != null && !request.getPassword().isBlank()) {
-                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
             Set<Role> roles = roleService.resolveRoles(request.getRoles());
             user.setRoles(roles);
@@ -73,12 +74,12 @@ public class UserService {
         });
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(UUID id) {
         userRepository.deleteById(id);
     }
 
     @Transactional
-    public Optional<UserResponse> assignRoles(Long userId, Set<String> roleNames) {
+    public Optional<UserResponse> assignRoles(UUID userId, Set<String> roleNames) {
         return userRepository.findById(userId).map(user -> {
             Set<Role> roles = roleService.resolveRoles(roleNames);
             user.setRoles(roles);
