@@ -37,3 +37,9 @@ Nilai koneksi default di `application.yml` mengarah ke service pada compose (Pos
 mvn spring-boot:run
 ```
 Pastikan variabel lingkungan database/JWT secret telah di-set jika berbeda dari nilai default.
+
+## Dokumentasi API
+Springdoc OpenAPI tersedia di lingkungan dev untuk memudahkan eksplorasi dan testing:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
