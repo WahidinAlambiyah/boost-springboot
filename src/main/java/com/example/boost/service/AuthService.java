@@ -1,17 +1,18 @@
 package com.example.boost.service;
 
-import com.example.boost.dto.AuthRequest;
-import com.example.boost.dto.AuthResponse;
-import com.example.boost.dto.RegisterUserRequest;
-import com.example.boost.security.JwtTokenProvider;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.UUID;
+import com.example.boost.dto.AuthRequest;
+import com.example.boost.dto.AuthResponse;
+import com.example.boost.dto.RegisterUserRequest;
+import com.example.boost.security.JwtTokenProvider;
 
 @Service
 public class AuthService {

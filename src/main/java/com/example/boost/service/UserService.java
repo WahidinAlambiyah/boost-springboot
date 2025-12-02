@@ -1,20 +1,21 @@
 package com.example.boost.service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.boost.domain.Role;
 import com.example.boost.domain.User;
 import com.example.boost.dto.RegisterUserRequest;
 import com.example.boost.dto.UpdateUserRequest;
 import com.example.boost.dto.UserResponse;
 import com.example.boost.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
