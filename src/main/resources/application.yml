@@ -23,14 +23,14 @@ spring:
     bootstrap-servers: localhost:9092
 
 server:
-  port: 8080
+  port: 8123
 
 app:
   jwt:
     secret: change-me-to-a-strong-secret-key-change-me
     expiration-ms: 3600000
   redis:
-    enabled: false
+    enabled: true
   kafka:
     enabled: false
   admin:

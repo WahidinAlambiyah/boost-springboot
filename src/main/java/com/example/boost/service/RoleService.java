@@ -7,10 +7,11 @@ import com.example.boost.repository.RoleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +27,7 @@ public class RoleService {
         return roleRepository.findByName(name);
     }
 
-    public Optional<RoleResponse> getRole(Long id) {
+    public Optional<RoleResponse> getRole(UUID id) {
         return roleRepository.findById(id).map(this::mapToResponse);
     }
 
@@ -43,7 +44,7 @@ public class RoleService {
     }
 
     @Transactional
-    public Optional<RoleResponse> updateRole(Long id, RoleRequest request) {
+    public Optional<RoleResponse> updateRole(UUID id, RoleRequest request) {
         return roleRepository.findById(id).map(role -> {
             role.setName(request.getName().toUpperCase());
             role.setDescription(request.getDescription());
@@ -51,7 +52,7 @@ public class RoleService {
         });
     }
 
-    public void deleteRole(Long id) {
+    public void deleteRole(UUID id) {
         roleRepository.deleteById(id);
     }
 

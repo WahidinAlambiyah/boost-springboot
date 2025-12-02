@@ -47,8 +47,9 @@ public class AdminDataInitializer implements ApplicationRunner {
         admin.setFullName(existingAdmin.map(User::getFullName).orElse("Admin Account"));
         admin.setActive(true);
 
-        if (existingAdmin.isEmpty() || !passwordEncoder.matches(adminPassword, admin.getPassword())) {
-            admin.setPassword(passwordEncoder.encode(adminPassword));
+        if (existingAdmin.isEmpty() || admin.getPasswordHash() == null ||
+                !passwordEncoder.matches(adminPassword, admin.getPasswordHash())) {
+            admin.setPasswordHash(passwordEncoder.encode(adminPassword));
         }
 
         Set<Role> roles = new HashSet<>(admin.getRoles());

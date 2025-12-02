@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20251202-01-add-login-security-columns
+      author: wahidin
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: last_login_at
+                  type: timestamp with time zone
+              - column:
+                  name: failed_login_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: locked_until
+                  type: timestamp with time zone
+      rollback:
+        - dropColumn:
+            tableName: users
+            columnName: locked_until
+        - dropColumn:
+            tableName: users
+            columnName: failed_login_count
+        - dropColumn:
+            tableName: users
+            columnName: last_login_at

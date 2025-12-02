@@ -1,20 +1,21 @@
 package com.example.boost.dto;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class UserResponse {
-    private Long id;
+    private UUID id;
     private String username;
     private String email;
     private String fullName;
     private boolean active;
     private Set<String> roles;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

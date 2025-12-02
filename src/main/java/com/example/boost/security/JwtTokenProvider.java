@@ -10,6 +10,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
@@ -25,11 +26,12 @@ public class JwtTokenProvider {
         this.expirationMillis = expirationMillis;
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String sessionId) {
         Instant now = Instant.now();
         expiryInstant = now.plusMillis(expirationMillis);
         return Jwts.builder()
                 .setSubject(username)
+                .addClaims(Map.of("sid", sessionId))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiryInstant))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -56,5 +58,18 @@ public class JwtTokenProvider {
 
     public Instant getExpiryInstant() {
         return expiryInstant;
+    }
+
+    public String getSessionId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("sid", String.class);
+    }
+
+    public long getExpirationMillis() {
+        return expirationMillis;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -27,7 +28,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponse> getRole(@PathVariable("id") Long id) {
+    public ResponseEntity<RoleResponse> getRole(@PathVariable("id") UUID id) {
         return roleService.getRole(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -39,14 +40,14 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleResponse> updateRole(@PathVariable("id") Long id, @Valid @RequestBody RoleRequest request) {
+    public ResponseEntity<RoleResponse> updateRole(@PathVariable("id") UUID id, @Valid @RequestBody RoleRequest request) {
         return roleService.updateRole(id, request)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable("id") UUID id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
