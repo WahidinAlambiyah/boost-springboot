@@ -2,9 +2,12 @@ package com.example.boost.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.Set;
+import java.time.Instant;
 
 public class UpdateUserRequest {
 
@@ -22,6 +25,12 @@ public class UpdateUserRequest {
 
     @Size(max = 150)
     private String fullName;
+
+    @Pattern(regexp = "^\\+?[0-9]{8,15}$", message = "Nomor HP tidak valid.")
+    private String phoneNumber;
+
+    @NotNull
+    private Instant agreementAt;
 
     private boolean active = true;
 
@@ -57,6 +66,22 @@ public class UpdateUserRequest {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Instant getAgreementAt() {
+        return agreementAt;
+    }
+
+    public void setAgreementAt(Instant agreementAt) {
+        this.agreementAt = agreementAt;
     }
 
     public boolean isActive() {

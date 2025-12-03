@@ -4,11 +4,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.example.boost.domain.User;
 import com.example.boost.dto.AuthRequest;
 import com.example.boost.dto.AuthResponse;
 import com.example.boost.dto.RegisterUserRequest;
@@ -37,17 +41,26 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        UUID userId = userService.findByUsername(authentication.getName())
-                .map(com.example.boost.domain.User::getId)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
-        String sessionId = UUID.randomUUID().toString();
-        String token = jwtTokenProvider.generateToken(authentication.getName(), sessionId);
-        Instant expiresAt = jwtTokenProvider.getExpiryInstant();
-        sessionService.storeSession(sessionId, userId, Duration.ofMillis(jwtTokenProvider.getExpirationMillis()));
-        return new AuthResponse(token, expiresAt, sessionId);
+        User user = userService.findByUsername(request.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah."));
+
+        userService.ensureLoginAllowed(user);
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+            userService.recordSuccessfulLogin(user);
+            UUID userId = user.getId();
+            String sessionId = UUID.randomUUID().toString();
+            String token = jwtTokenProvider.generateToken(authentication.getName(), sessionId);
+            Instant expiresAt = jwtTokenProvider.getExpiryInstant();
+            sessionService.storeSession(sessionId, userId, Duration.ofMillis(jwtTokenProvider.getExpirationMillis()));
+            return new AuthResponse(token, expiresAt, sessionId);
+        } catch (AuthenticationException ex) {
+            userService.recordFailedLogin(user);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah.");
+        }
     }
 
     public void logout(String token) {

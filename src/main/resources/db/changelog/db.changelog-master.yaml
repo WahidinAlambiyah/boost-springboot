@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: 20251202-alter-table-users.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 20251203-enhance-user-security.yaml
+      relativeToChangelogFile: true

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +46,8 @@ public class AdminDataInitializer implements ApplicationRunner {
         admin.setUsername(adminUsername);
         admin.setEmail(existingAdmin.map(User::getEmail).orElse("admin@example.com"));
         admin.setFullName(existingAdmin.map(User::getFullName).orElse("Admin Account"));
+        admin.setPhoneNumber(existingAdmin.map(User::getPhoneNumber).orElse("0000000000"));
+        admin.setAgreementAt(existingAdmin.map(User::getAgreementAt).orElse(Instant.now()));
         admin.setActive(true);
 
         if (existingAdmin.isEmpty() || admin.getPasswordHash() == null ||

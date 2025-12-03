@@ -27,8 +27,23 @@ public class User {
     @Column(name = "full_name", length = 150)
     private String fullName;
 
+    @Column(name = "phone_number", length = 25)
+    private String phoneNumber;
+
+    @Column(name = "agreement_at", nullable = false)
+    private Instant agreementAt;
+
     @Column(name = "is_active", nullable = false)
-    private boolean active = true;
+    private boolean active = false;
+
+    @Column(name = "failed_login_count", nullable = false)
+    private int failedLoginCount = 0;
+
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -99,12 +114,52 @@ public class User {
         this.fullName = fullName;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Instant getAgreementAt() {
+        return agreementAt;
+    }
+
+    public void setAgreementAt(Instant agreementAt) {
+        this.agreementAt = agreementAt;
+    }
+
     public boolean isActive() {
         return active;
     }
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public int getFailedLoginCount() {
+        return failedLoginCount;
+    }
+
+    public void setFailedLoginCount(int failedLoginCount) {
+        this.failedLoginCount = failedLoginCount;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Instant lockedUntil) {
+        this.lockedUntil = lockedUntil;
+    }
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(Instant lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 
     public Set<Role> getRoles() {
