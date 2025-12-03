@@ -21,6 +21,22 @@ spring:
       port: 6379
   kafka:
     bootstrap-servers: localhost:9092
+  mail:
+    host: mail.alambiyah.com
+    port: 465
+    username: halo@alambiyah.com
+    password: ${MAIL_PASSWORD:change-me}
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+        imap:
+          ssl:
+            enable: true
 
 server:
   port: 8123
