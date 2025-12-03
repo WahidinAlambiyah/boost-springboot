@@ -57,3 +57,6 @@ app:
   admin:
     username: admin
     password: password
+  base-url:
+    backend: https://protobeone.alambiyah.com
+    frontend: https://protofeone.alambiyah.com

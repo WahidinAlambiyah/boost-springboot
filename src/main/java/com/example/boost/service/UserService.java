@@ -88,7 +88,7 @@ public class UserService {
             user.setAgreementAt(request.getAgreementAt());
             user.setActive(request.isActive());
             if (request.getPassword() != null && !request.getPassword().isBlank()) {
-                validatePasswordRules(request.getPassword());
+                PasswordValidator.validatePasswordRules(request.getPassword());
                 user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             }
             Set<Role> roles = roleService.resolveRoles(request.getRoles());
@@ -166,15 +166,6 @@ public class UserService {
         if (!password.equals(confirmPassword)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Konfirmasi password tidak sesuai.");
         }
-        validatePasswordRules(password);
-    }
-
-    private void validatePasswordRules(String password) {
-        boolean meetsComplexity = password.matches("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}");
-        boolean isPassphrase = password.length() >= 15 && password.contains(" ");
-        if (!meetsComplexity && !isPassphrase) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Password harus kombinasi huruf besar, huruf kecil, angka, dan simbol atau passphrase minimal 15 karakter.");
-        }
+        PasswordValidator.validatePasswordRules(password);
     }
 }

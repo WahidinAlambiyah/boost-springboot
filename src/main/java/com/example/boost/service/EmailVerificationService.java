@@ -32,7 +32,7 @@ public class EmailVerificationService {
     private final UserRepository userRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${app.verification.base-url:https://app-kamu.com}")
+    @Value("${app.verification.base-url:${app.base-url.backend:https://protobeone.alambiyah.com}}")
     private String baseUrl;
 
     public EmailVerificationService(EmailVerificationRepository emailVerificationRepository,

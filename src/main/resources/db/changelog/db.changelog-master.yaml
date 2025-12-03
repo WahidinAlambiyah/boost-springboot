@@ -8,3 +8,6 @@ databaseChangeLog:
   - include:
       file: 20251203-enhance-user-security.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 20251205-password-reset.yaml
+      relativeToChangelogFile: true
