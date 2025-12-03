@@ -4,10 +4,14 @@ import com.example.boost.domain.EmailVerification;
 import com.example.boost.domain.User;
 import com.example.boost.repository.EmailVerificationRepository;
 import com.example.boost.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
@@ -20,6 +24,8 @@ import java.util.UUID;
 public class EmailVerificationService {
 
     private static final Duration DEFAULT_EXPIRY = Duration.ofHours(2);
+
+    private static final Logger log = LoggerFactory.getLogger(EmailVerificationService.class);
 
     private final EmailVerificationRepository emailVerificationRepository;
     private final EmailService emailService;
@@ -46,7 +52,26 @@ public class EmailVerificationService {
         emailVerificationRepository.save(verification);
 
         String verificationLink = String.format("%s/verify-email?token=%s", baseUrl, verification.getToken());
-        emailService.sendEmail(user.getEmail(), "Verifikasi Email", "Silakan verifikasi akun Anda melalui tautan: " + verificationLink);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        emailService.sendEmail(user.getEmail(), "Verifikasi Email",
+                                "Silakan verifikasi akun Anda melalui tautan: " + verificationLink);
+                    } catch (ResponseStatusException ex) {
+                        log.error("Gagal mengirim email verifikasi untuk {}: {}", user.getEmail(), ex.getReason());
+                    }
+                }
+            });
+        } else {
+            try {
+                emailService.sendEmail(user.getEmail(), "Verifikasi Email",
+                        "Silakan verifikasi akun Anda melalui tautan: " + verificationLink);
+            } catch (ResponseStatusException ex) {
+                log.error("Gagal mengirim email verifikasi untuk {}: {}", user.getEmail(), ex.getReason());
+            }
+        }
     }
 
     @Transactional
