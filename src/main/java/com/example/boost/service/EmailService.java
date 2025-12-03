@@ -3,9 +3,13 @@ package com.example.boost.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class EmailService {
@@ -30,7 +34,17 @@ public class EmailService {
             message.setFrom(fromAddress);
         }
 
-        mailSender.send(message);
-        log.info("Email sent to {} with subject '{}'", to, subject);
+        try {
+            mailSender.send(message);
+            log.info("Email sent to {} with subject '{}'", to, subject);
+        } catch (MailAuthenticationException ex) {
+            log.error("Failed to send email due to authentication error", ex);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "Gagal mengirim email: kredensial SMTP tidak valid atau ditolak.");
+        } catch (MailException ex) {
+            log.error("Failed to send email", ex);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "Gagal mengirim email: layanan email tidak tersedia.");
+        }
     }
 }
