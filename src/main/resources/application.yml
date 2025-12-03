@@ -25,13 +25,18 @@ spring:
     host: mail.alambiyah.com
     port: 465
     username: halo@alambiyah.com
-    password: ${MAIL_PASSWORD:change-me}
+    # Use an environment variable for security; the default keeps special characters intact when unset
+    password: "${MAIL_PASSWORD:~5AFpa\}xED*05v9x\}}"
     protocol: smtp
     default-encoding: UTF-8
     properties:
       mail:
         smtp:
           auth: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
           ssl:
             enable: true
         imap:
