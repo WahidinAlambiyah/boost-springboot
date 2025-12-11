@@ -1,16 +1,23 @@
 spring:
   application:
     name: boost-springboot
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/boost
-    username: boost
-    password: boost
+    # url: jdbc:postgresql://localhost:5432/boost
+    # username: boost
+    # password: boost
+    url: jdbc:postgresql://${DB_1_HOST:localhost}:${DB_1_PORT:5432}/${DB_1_NAME:boost}?currentSchema=protoone
+    username: "${DB_1_USER:boost}"
+    password: "${DB_1_PASSWORD:boost}"
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
+        default_schema: protoone
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
   liquibase:
@@ -26,7 +33,7 @@ spring:
     port: 465
     username: halo@alambiyah.com
     # Use an environment variable for security; the default keeps special characters intact when unset
-    password: "${MAIL_PASSWORD:~5AFpa\}xED*05v9x\}}"
+    password: "${MAIL_PASSWORD:WlmfRTN5WScmGNHl}"
     protocol: smtp
     default-encoding: UTF-8
     properties:
