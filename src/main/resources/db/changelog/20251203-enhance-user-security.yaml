@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20251203-01-add-registration-fields
+      author: boost-assistant
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: phone_number
+                  type: VARCHAR(25)
+              - column:
+                  name: agreement_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - addDefaultValue:
+            tableName: users
+            columnName: is_active
+            defaultValueBoolean: false
+  - changeSet:
+      id: 20251203-02-create-email-verifications
+      author: boost-assistant
+      changes:
+        - createTable:
+            tableName: email_verifications
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expired_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: used_at
+                  type: TIMESTAMPTZ
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: email_verifications
+            columnNames: token
+            constraintName: uq_email_verifications_token
+        - addForeignKeyConstraint:
+            baseTableName: email_verifications
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_email_verifications_user
+            onDelete: CASCADE
