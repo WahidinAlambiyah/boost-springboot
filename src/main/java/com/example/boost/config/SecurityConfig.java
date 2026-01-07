@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/register",
+                                "/api/auth/register/**",
                                 "/api/auth/login",
                                 "/api/auth/verify-email",
                                 "/api/auth/forgot-password",
