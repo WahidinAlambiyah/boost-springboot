@@ -111,7 +111,7 @@ public class AuthService {
             Set<String> roles = user.getRoles().stream()
                     .map(role -> role.getName())
                     .collect(Collectors.toSet());
-            return new AuthResponse(token, expiresAt, sessionId, roles);
+            return new AuthResponse(token, expiresAt, sessionId, roles, userService.toResponse(user));
         } catch (AuthenticationException ex) {
             userService.recordFailedLogin(user);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah.");
