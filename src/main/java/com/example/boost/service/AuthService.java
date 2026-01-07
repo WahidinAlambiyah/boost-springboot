@@ -2,6 +2,8 @@ package com.example.boost.service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -106,7 +108,10 @@ public class AuthService {
             String token = jwtTokenProvider.generateToken(authentication.getName(), sessionId);
             Instant expiresAt = jwtTokenProvider.getExpiryInstant();
             sessionService.storeSession(sessionId, userId, Duration.ofMillis(jwtTokenProvider.getExpirationMillis()));
-            return new AuthResponse(token, expiresAt, sessionId);
+            Set<String> roles = user.getRoles().stream()
+                    .map(role -> role.getName())
+                    .collect(Collectors.toSet());
+            return new AuthResponse(token, expiresAt, sessionId, roles);
         } catch (AuthenticationException ex) {
             userService.recordFailedLogin(user);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username atau password salah.");
