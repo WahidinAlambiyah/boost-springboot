@@ -68,6 +68,10 @@ public class UserService {
         return mapToResponse(saved);
     }
 
+    public UserResponse toResponse(User user) {
+        return mapToResponse(user);
+    }
+
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::mapToResponse)
