@@ -4,10 +4,17 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
+    hikari:
+      schema: ${DB_1_SCHEMA:protoone}
+      connection-init-sql: SET search_path TO ${DB_1_SCHEMA:protoone}
+      data-source-properties:
+        prepareThreshold: 0
+        # opsional kalau masih bandel:
+        preferQueryMode: simple
     # url: jdbc:postgresql://localhost:5432/boost
     # username: boost
     # password: boost
-    url: jdbc:postgresql://${DB_1_HOST:localhost}:${DB_1_PORT:5432}/${DB_1_NAME:boost}?currentSchema=protoone
+    url: jdbc:postgresql://${DB_1_HOST:localhost}:${DB_1_PORT:5432}/${DB_1_NAME:boost}?currentSchema=${DB_1_SCHEMA:protoone}
     username: "${DB_1_USER:boost}"
     password: "${DB_1_PASSWORD:boost}"
     driver-class-name: org.postgresql.Driver
@@ -16,7 +23,7 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        default_schema: protoone
+        default_schema: ${DB_1_SCHEMA:protoone}
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
@@ -58,7 +65,7 @@ app:
     secret: change-me-to-a-strong-secret-key-change-me
     expiration-ms: 3600000
   redis:
-    enabled: true
+    enabled: false
   kafka:
     enabled: false
   admin:
