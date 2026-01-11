@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-protoone-schema
+      author: boost
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          sqlCheck:
+            expectedResult: 1
+            sql: "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'protoone'"
+      changes:
+        - createSchema:
+            schemaName: protoone

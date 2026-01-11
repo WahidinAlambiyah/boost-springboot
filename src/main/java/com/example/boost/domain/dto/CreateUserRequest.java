@@ -1,0 +1,38 @@
+package com.example.boost.domain.dto;
+
+import com.example.boost.domain.entity.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class CreateUserRequest {
+    @NotBlank
+    @Size(min = 3, max = 50)
+    private String username;
+
+    @NotBlank
+    @Email
+    @Size(max = 255)
+    private String email;
+
+    @NotBlank
+    @Size(min = 8, max = 100)
+    private String password;
+
+    @NotBlank
+    @Size(max = 255)
+    private String fullName;
+
+    @Size(max = 30)
+    private String phoneNumber;
+
+    @NotEmpty
+    private Set<Role> roles;
+
+    private boolean active = true;
+}
