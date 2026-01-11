@@ -31,11 +31,11 @@ public class JwtService {
     }
 
     public Jws<Claims> parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .requireIssuer(jwtProperties.getIssuer())
                 .build()
-                .parseClaimsJws(token);
+                .parseSignedClaims(token);
     }
 
     public boolean isTokenExpired(Claims claims) {
@@ -65,7 +65,7 @@ public class JwtService {
         String secret = jwtProperties.getSecret();
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            throw new IllegalStateException(\"JWT secret must be at least 32 bytes for HS256\");
+            throw new IllegalStateException("JWT secret must be at least 32 bytes for HS256");
         }
         return Keys.hmacShaKeyFor(keyBytes);
     }
