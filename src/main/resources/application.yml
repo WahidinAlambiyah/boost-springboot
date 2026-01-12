@@ -48,5 +48,6 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
+    default-models-expand-depth: -1
   api-docs:
     path: /v3/api-docs
