@@ -1,6 +1,6 @@
 # Quarkus User Auth (JWT + Refresh Token)
 
-Production-ready starter for authentication and user management using Quarkus 3.30.6, JDK 25, PostgreSQL, and Redis.
+Production-ready starter for authentication and user management using Quarkus 3.30.6, JDK 21, PostgreSQL, and Redis.
 
 ## 1) Bootstrap Command (Chosen)
 
@@ -53,7 +53,7 @@ mvn io.quarkus.platform:quarkus-maven-plugin:3.30.6:create \
 
 ## 3) Prerequisites
 
-- **JDK 25 (LTS)**
+- **JDK 21 (LTS)**
 - **Docker** (for PostgreSQL + Redis and Dev Services in tests)
 
 ## 4) Run Locally
