@@ -4,7 +4,7 @@ databaseChangeLog:
       author: boost
       changes:
         - createTable:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: users
             columns:
               - column:
@@ -75,7 +75,7 @@ databaseChangeLog:
                   name: deleted_at
                   type: timestamptz
         - createTable:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: user_roles
             columns:
               - column:
@@ -89,35 +89,35 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - addPrimaryKey:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: user_roles
             columnNames: user_id, role
             constraintName: pk_user_roles
         - addForeignKeyConstraint:
-            baseTableSchemaName: protoone
+            baseTableSchemaName: fastworks_springboot
             baseTableName: user_roles
             baseColumnNames: user_id
-            referencedTableSchemaName: protoone
+            referencedTableSchemaName: fastworks_springboot
             referencedTableName: users
             referencedColumnNames: id
             constraintName: fk_user_roles_user
             onDelete: CASCADE
         - createIndex:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: users
             indexName: idx_users_username
             columns:
               - column:
                   name: username
         - createIndex:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: users
             indexName: idx_users_email
             columns:
               - column:
                   name: email
         - createIndex:
-            schemaName: protoone
+            schemaName: fastworks_springboot
             tableName: users
             indexName: idx_users_deleted_at
             columns:

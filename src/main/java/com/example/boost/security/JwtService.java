@@ -9,8 +9,8 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -32,7 +32,7 @@ public class JwtService {
 
     public Jws<Claims> parseToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(getSigningKey()) // ✅ SecretKey
                 .requireIssuer(jwtProperties.getIssuer())
                 .build()
                 .parseSignedClaims(token);
@@ -57,16 +57,18 @@ public class JwtService {
                         "roles", roles,
                         "typ", type
                 ))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // ✅ SecretKey
                 .compact();
     }
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() { // ✅ ubah dari Key -> SecretKey
         String secret = jwtProperties.getSecret();
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
         if (keyBytes.length < 32) {
-            throw new IllegalStateException("JWT secret must be at least 32 bytes for HS256");
+            throw new IllegalStateException("JWT secret must be at least 32 bytes for HS256 (>= 32 chars ASCII).");
         }
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

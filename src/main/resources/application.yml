@@ -1,8 +1,17 @@
 spring:
   application:
     name: boost
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:boost}?currentSchema=protoone,public
+    hikari:
+      schema: ${DB_SCHEMA:fastworks_springboot}
+      connection-init-sql: SET search_path TO ${DB_SCHEMA:fastworks_springboot}
+      data-source-properties:
+        prepareThreshold: 0
+        # opsional kalau masih bandel:
+        preferQueryMode: simple
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:boost}?currentSchema=${DB_SCHEMA:fastworks_springboot}
     username: ${DB_USER:boost}
     password: ${DB_PASSWORD:boost}
   jpa:
@@ -10,15 +19,15 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        default_schema: protoone
+        default_schema: ${DB_SCHEMA:fastworks_springboot}
         jdbc:
           time_zone: UTC
     open-in-view: false
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    default-schema: protoone
-    liquibase-schema: protoone
+    default-schema: ${DB_SCHEMA:fastworks_springboot}
+    liquibase-schema: ${DB_SCHEMA:fastworks_springboot}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
