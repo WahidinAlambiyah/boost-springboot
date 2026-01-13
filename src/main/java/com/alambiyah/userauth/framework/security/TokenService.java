@@ -44,7 +44,7 @@ public class TokenService {
         return Jwt.subject(user.id.toString())
                 .preferredUserName(user.username)
                 .issuer(issuer)
-                .groups(user.roles.stream().map(Enum::name).toList())
+                .groups(user.roles.stream().map(Enum::name).toArray(String[]::new))
                 .issuedAt(now)
                 .expiresAt(exp)
                 .sign();
