@@ -1,13 +1,5 @@
 package com.alambiyah.userauth.framework.security;
 
-import com.alambiyah.userauth.domain.entity.User;
-import io.quarkus.redis.client.RedisClient;
-import io.vertx.redis.client.Response;
-import io.smallrye.jwt.build.Jwt;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -18,7 +10,19 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.alambiyah.userauth.domain.entity.User;
+
+import io.quarkus.redis.client.RedisClient;
+import io.smallrye.jwt.build.Jwt;
+import io.vertx.redis.client.Response;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class TokenService {
@@ -49,10 +53,17 @@ public class TokenService {
     public String generateAccessToken(User user) {
         Instant now = Instant.now();
         Instant exp = now.plus(accessTokenTtl);
+
+        Set<String> groups = (user.roles == null)
+                ? Set.of()
+                : user.roles.stream()
+                        .map(Enum::name)
+                        .collect(Collectors.toSet());
+
         return Jwt.subject(user.id.toString())
                 .preferredUserName(user.username)
                 .issuer(issuer)
-                .groups(user.roles.stream().map(Enum::name).toArray(String[]::new))
+                .groups(groups) // ✅ Set<String>
                 .issuedAt(now)
                 .expiresAt(exp)
                 .sign();

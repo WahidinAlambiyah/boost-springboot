@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
     <changeSet id="001-create-users" author="assistant">
-        <createTable tableName="users" schemaName="public">
+        <createTable tableName="users" schemaName="fastworks_quarkus">
             <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -35,7 +35,7 @@
     </changeSet>
 
     <changeSet id="002-create-user-roles" author="assistant">
-        <createTable tableName="user_roles" schemaName="public">
+        <createTable tableName="user_roles" schemaName="fastworks_quarkus">
             <column name="user_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
