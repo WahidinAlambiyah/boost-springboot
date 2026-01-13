@@ -15,7 +15,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
 public class TokenService {
@@ -32,6 +34,11 @@ public class TokenService {
 
     @ConfigProperty(name = "app.jwt.issuer")
     String issuer;
+
+    @ConfigProperty(name = "app.redis.enabled", defaultValue = "true")
+    boolean redisEnabled;
+
+    private final Map<String, TokenEntry> refreshTokenStore = new ConcurrentHashMap<>();
 
     @Inject
     public TokenService(RedisClient redisClient) {
@@ -53,24 +60,39 @@ public class TokenService {
     public String generateRefreshToken(User user) {
         String token = generateOpaqueToken();
         String key = REFRESH_PREFIX + hashToken(token);
-        redisClient.setex(key, String.valueOf(refreshTokenTtl.toSeconds()), user.id.toString());
+        if (redisEnabled) {
+            redisClient.setex(key, String.valueOf(refreshTokenTtl.toSeconds()), user.id.toString());
+        } else {
+            refreshTokenStore.put(key, new TokenEntry(user.id.toString(), Instant.now().plus(refreshTokenTtl)));
+        }
         return token;
     }
 
     public Optional<String> consumeRefreshToken(String token) {
         String key = REFRESH_PREFIX + hashToken(token);
-        Response response = redisClient.get(key);
-        if (response == null) {
+        if (redisEnabled) {
+            Response response = redisClient.get(key);
+            if (response == null) {
+                return Optional.empty();
+            }
+            String userId = response.toString();
+            redisClient.del(key);
+            return Optional.of(userId);
+        }
+        TokenEntry entry = refreshTokenStore.remove(key);
+        if (entry == null || entry.isExpired()) {
             return Optional.empty();
         }
-        String userId = response.toString();
-        redisClient.del(key);
-        return Optional.of(userId);
+        return Optional.of(entry.userId());
     }
 
     public void revokeRefreshToken(String token) {
         String key = REFRESH_PREFIX + hashToken(token);
-        redisClient.del(key);
+        if (redisEnabled) {
+            redisClient.del(key);
+        } else {
+            refreshTokenStore.remove(key);
+        }
     }
 
     private String generateOpaqueToken() {
@@ -86,6 +108,12 @@ public class TokenService {
             return HexFormat.of().formatHex(hashed);
         } catch (Exception exception) {
             throw new IllegalStateException("Unable to hash refresh token", exception);
+        }
+    }
+
+    private record TokenEntry(String userId, Instant expiresAt) {
+        boolean isExpired() {
+            return Instant.now().isAfter(expiresAt);
         }
     }
 }

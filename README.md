@@ -145,7 +145,7 @@ Tests use Quarkus Dev Services (requires Docker):
 
 - PostgreSQL via `quarkus.datasource.*`
 - Liquibase auto-migrate on startup
-- Redis via `quarkus.redis.hosts`
+- Redis via `quarkus.redis.hosts` (disable with `REDIS_ENABLED=false` to use in-memory token store + cache)
 - Swagger UI enabled in dev
 - Admin seeding controlled via env variables
 
