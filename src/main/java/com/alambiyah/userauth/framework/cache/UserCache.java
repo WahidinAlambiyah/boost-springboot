@@ -13,6 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,7 +77,7 @@ public class UserCache {
 
     public void evict(UUID userId) {
         if (redisEnabled) {
-            redisClient.del(key(userId));
+            redisClient.del(List.of(key(userId)));
         } else {
             inMemoryCache.remove(userId);
         }

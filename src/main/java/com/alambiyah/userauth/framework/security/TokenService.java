@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +77,7 @@ public class TokenService {
                 return Optional.empty();
             }
             String userId = response.toString();
-            redisClient.del(key);
+            redisClient.del(List.of(key));
             return Optional.of(userId);
         }
         TokenEntry entry = refreshTokenStore.remove(key);
@@ -89,7 +90,7 @@ public class TokenService {
     public void revokeRefreshToken(String token) {
         String key = REFRESH_PREFIX + hashToken(token);
         if (redisEnabled) {
-            redisClient.del(key);
+            redisClient.del(List.of(key));
         } else {
             refreshTokenStore.remove(key);
         }
