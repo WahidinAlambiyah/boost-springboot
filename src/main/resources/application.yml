@@ -1,6 +1,9 @@
 spring:
   application:
     name: boost
+  graphql:
+    graphiql:
+      enabled: true
   config:
     import: optional:file:.env[.properties]
   datasource:
