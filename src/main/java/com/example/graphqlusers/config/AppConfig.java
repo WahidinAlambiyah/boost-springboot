@@ -13,6 +13,7 @@ public class AppConfig {
     private final String dbPassword;
     private final String redisHost;
     private final int redisPort;
+    private final boolean redisEnabled;
     private final String jwtSecret;
     private final Duration jwtTtl;
     private final Duration refreshTtl;
@@ -24,6 +25,7 @@ public class AppConfig {
             @Value("${DB_PASSWORD:app}") String dbPassword,
             @Value("${REDIS_HOST:localhost}") String redisHost,
             @Value("${REDIS_PORT:6379}") int redisPort,
+            @Value("${REDIS_ENABLED:true}") boolean redisEnabled,
             @Value("${JWT_SECRET:dev-secret-change-me-min-32-chars}") String jwtSecret,
             @Value("${JWT_TTL_MINUTES:15}") long jwtMinutes,
             @Value("${REFRESH_TTL_DAYS:30}") long refreshDays
@@ -34,6 +36,7 @@ public class AppConfig {
         this.dbPassword = dbPassword;
         this.redisHost = redisHost;
         this.redisPort = redisPort;
+        this.redisEnabled = redisEnabled;
         this.jwtSecret = jwtSecret;
         this.jwtTtl = Duration.ofMinutes(jwtMinutes);
         this.refreshTtl = Duration.ofDays(refreshDays);
@@ -61,6 +64,10 @@ public class AppConfig {
 
     public int redisPort() {
         return redisPort;
+    }
+
+    public boolean redisEnabled() {
+        return redisEnabled;
     }
 
     public String jwtSecret() {

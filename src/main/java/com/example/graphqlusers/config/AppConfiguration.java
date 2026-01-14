@@ -2,6 +2,7 @@ package com.example.graphqlusers.config;
 
 import com.example.graphqlusers.auth.JwtService;
 import com.example.graphqlusers.db.DataSourceFactory;
+import com.example.graphqlusers.redis.InMemoryRefreshTokenStore;
 import com.example.graphqlusers.redis.RedisFactory;
 import com.example.graphqlusers.redis.RedisRefreshTokenStore;
 import com.example.graphqlusers.redis.RefreshTokenStore;
@@ -10,6 +11,7 @@ import com.example.graphqlusers.repository.UserRepository;
 import com.example.graphqlusers.service.AuthService;
 import com.example.graphqlusers.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.JedisPool;
@@ -24,13 +26,21 @@ public class AppConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "true", matchIfMissing = true)
     public JedisPool jedisPool(AppConfig config) {
         return RedisFactory.create(config.redisHost(), config.redisPort());
     }
 
     @Bean
-    public RefreshTokenStore refreshTokenStore(JedisPool jedisPool, AppConfig config) {
+    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "true", matchIfMissing = true)
+    public RefreshTokenStore redisRefreshTokenStore(JedisPool jedisPool, AppConfig config) {
         return new RedisRefreshTokenStore(jedisPool, config.refreshTtl());
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "false")
+    public RefreshTokenStore inMemoryRefreshTokenStore(AppConfig config) {
+        return new InMemoryRefreshTokenStore(config.refreshTtl());
     }
 
     @Bean

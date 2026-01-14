@@ -6,3 +6,13 @@ spring:
     banner-mode: "off"
   flyway:
     enabled: true
+
+REDIS_ENABLED: ${REDIS_ENABLED:true}
+REDIS_HOST: ${REDIS_HOST:localhost}
+REDIS_PORT: ${REDIS_PORT:6379}
+JWT_SECRET: ${JWT_SECRET:dev-secret-change-me-min-32-chars}
+JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:15}
+REFRESH_TTL_DAYS: ${REFRESH_TTL_DAYS:30}
+JDBC_URL: ${JDBC_URL:jdbc:postgresql://localhost:5432/appdb}
+DB_USER: ${DB_USER:app}
+DB_PASSWORD: ${DB_PASSWORD:app}

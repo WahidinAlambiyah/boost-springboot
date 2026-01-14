@@ -13,12 +13,16 @@ APP_PORT=8080
 JDBC_URL=jdbc:postgresql://localhost:5432/appdb
 DB_USER=app
 DB_PASSWORD=app
+REDIS_ENABLED=true
 REDIS_HOST=localhost
 REDIS_PORT=6379
 JWT_SECRET=dev-secret-change-me-min-32-chars
 JWT_TTL_MINUTES=15
 REFRESH_TTL_DAYS=30
 ```
+
+## Configuration via properties
+You can also set configuration using `src/main/resources/application.yml` (or `application.properties`) since Spring Boot loads them by default. The YAML file already maps the environment variables to properties so you can override them there instead of using a `.env` file.【F:src/main/resources/application.yml†L1-L16】
 
 ## Run
 1) Start dependencies
