@@ -7,7 +7,6 @@ import java.time.Duration;
 
 @Component
 public class AppConfig {
-    private final int appPort;
     private final String jdbcUrl;
     private final String dbUser;
     private final String dbPassword;
@@ -19,18 +18,16 @@ public class AppConfig {
     private final Duration refreshTtl;
 
     public AppConfig(
-            @Value("${APP_PORT:8080}") int appPort,
-            @Value("${JDBC_URL:jdbc:postgresql://localhost:5432/appdb}") String jdbcUrl,
-            @Value("${DB_USER:app}") String dbUser,
-            @Value("${DB_PASSWORD:app}") String dbPassword,
-            @Value("${REDIS_HOST:localhost}") String redisHost,
-            @Value("${REDIS_PORT:6379}") int redisPort,
-            @Value("${REDIS_ENABLED:true}") boolean redisEnabled,
-            @Value("${JWT_SECRET:dev-secret-change-me-min-32-chars}") String jwtSecret,
-            @Value("${JWT_TTL_MINUTES:15}") long jwtMinutes,
-            @Value("${REFRESH_TTL_DAYS:30}") long refreshDays
+            @Value("${spring.datasource.url}") String jdbcUrl,
+            @Value("${spring.datasource.username}") String dbUser,
+            @Value("${spring.datasource.password}") String dbPassword,
+            @Value("${spring.data.redis.host:localhost}") String redisHost,
+            @Value("${spring.data.redis.port:6379}") int redisPort,
+            @Value("${app.redis.enabled:true}") boolean redisEnabled,
+            @Value("${security.jwt.secret}") String jwtSecret,
+            @Value("${security.jwt.access-token-ttl-minutes:15}") long jwtMinutes,
+            @Value("${security.jwt.refresh-token-ttl-days:30}") long refreshDays
     ) {
-        this.appPort = appPort;
         this.jdbcUrl = jdbcUrl;
         this.dbUser = dbUser;
         this.dbPassword = dbPassword;
@@ -40,10 +37,6 @@ public class AppConfig {
         this.jwtSecret = jwtSecret;
         this.jwtTtl = Duration.ofMinutes(jwtMinutes);
         this.refreshTtl = Duration.ofDays(refreshDays);
-    }
-
-    public int appPort() {
-        return appPort;
     }
 
     public String jdbcUrl() {

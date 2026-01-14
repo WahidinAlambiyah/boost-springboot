@@ -26,19 +26,19 @@ public class AppConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "true", matchIfMissing = true)
     public JedisPool jedisPool(AppConfig config) {
         return RedisFactory.create(config.redisHost(), config.redisPort());
     }
 
     @Bean
-    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "true", matchIfMissing = true)
     public RefreshTokenStore redisRefreshTokenStore(JedisPool jedisPool, AppConfig config) {
         return new RedisRefreshTokenStore(jedisPool, config.refreshTtl());
     }
 
     @Bean
-    @ConditionalOnProperty(name = "REDIS_ENABLED", havingValue = "false")
+    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "false")
     public RefreshTokenStore inMemoryRefreshTokenStore(AppConfig config) {
         return new InMemoryRefreshTokenStore(config.refreshTtl());
     }

@@ -9,8 +9,11 @@ Backend GraphQL Users API using Java 21, Spring Boot, graphql-java 25, Undertow,
 
 ## Environment Variables (defaults)
 ```
-APP_PORT=8080
-JDBC_URL=jdbc:postgresql://localhost:5432/appdb
+SERVER_PORT=8080
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=appdb
+DB_SCHEMA=app
 DB_USER=app
 DB_PASSWORD=app
 REDIS_ENABLED=true
@@ -22,7 +25,7 @@ REFRESH_TTL_DAYS=30
 ```
 
 ## Configuration via properties
-You can also set configuration using `src/main/resources/application.yml` (or `application.properties`) since Spring Boot loads them by default. The YAML file already maps the environment variables to properties so you can override them there instead of using a `.env` file.【F:src/main/resources/application.yml†L1-L16】
+You can also set configuration using `src/main/resources/application.yml` (or `application.properties`) since Spring Boot loads them by default. The YAML file already maps the environment variables to properties and supports `.env` import via `spring.config.import`, so you can override them there instead of using a `.env` file.【F:src/main/resources/application.yml†L1-L43】
 
 ## Run
 1) Start dependencies

@@ -1,18 +1,52 @@
-server:
-  port: ${APP_PORT:8080}
-
 spring:
-  main:
-    banner-mode: "off"
+  application:
+    name: boost
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    hikari:
+      schema: ${DB_SCHEMA:app}
+      connection-init-sql: SET search_path TO ${DB_SCHEMA:app}
+      data-source-properties:
+        prepareThreshold: 0
+        preferQueryMode: simple
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appdb}?currentSchema=${DB_SCHEMA:app}
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:app}
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
   flyway:
     enabled: true
+    default-schema: ${DB_SCHEMA:app}
+    schemas: ${DB_SCHEMA:app}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
-REDIS_ENABLED: ${REDIS_ENABLED:true}
-REDIS_HOST: ${REDIS_HOST:localhost}
-REDIS_PORT: ${REDIS_PORT:6379}
-JWT_SECRET: ${JWT_SECRET:dev-secret-change-me-min-32-chars}
-JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:15}
-REFRESH_TTL_DAYS: ${REFRESH_TTL_DAYS:30}
-JDBC_URL: ${JDBC_URL:jdbc:postgresql://localhost:5432/appdb}
-DB_USER: ${DB_USER:app}
-DB_PASSWORD: ${DB_PASSWORD:app}
+app:
+  redis:
+    enabled: ${REDIS_ENABLED:true}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+security:
+  jwt:
+    issuer: boost-api
+    secret: ${JWT_SECRET:dev-secret-change-me-min-32-chars}
+    access-token-ttl-minutes: ${JWT_TTL_MINUTES:15}
+    refresh-token-ttl-days: ${REFRESH_TTL_DAYS:30}
