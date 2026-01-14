@@ -9,7 +9,10 @@ import com.example.graphqlusers.graphql.GraphQLProvider;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -30,10 +33,13 @@ public class GraphQLController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping("/graphql")
-    public ResponseEntity<Map<String, Object>> handle(@RequestBody GraphQLRequest request,
+    @PostMapping(value = "/graphql", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> handle(@RequestBody(required = false) GraphQLRequest request,
                                                       @RequestHeader(value = "Authorization", required = false) String authorization) {
         try {
+            if (request == null || request.query() == null || request.query().isBlank()) {
+                return ResponseEntity.badRequest().body(graphQLError("Query is required", ErrorCodes.BAD_REQUEST));
+            }
             AuthContext authContext = resolveAuth(authorization);
             GraphQLContext context = new GraphQLContext(authContext, graphQLProvider.buildRegistry());
             ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -50,6 +56,11 @@ public class GraphQLController {
         } catch (Exception e) {
             return ResponseEntity.ok(graphQLError("Internal server error", "INTERNAL"));
         }
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(graphQLError("Invalid JSON body", ErrorCodes.BAD_REQUEST));
     }
 
     private AuthContext resolveAuth(String authorization) {
