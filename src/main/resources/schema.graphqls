@@ -3,6 +3,8 @@ schema {
   mutation: Mutation
 }
 
+scalar Long
+
 type Query {
   me: User
   user(id: ID!): User

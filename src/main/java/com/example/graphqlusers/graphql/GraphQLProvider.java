@@ -6,6 +6,7 @@ import com.example.graphqlusers.service.UserService;
 import graphql.GraphQL;
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.AsyncExecutionStrategy;
+import graphql.scalars.ExtendedScalars;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -69,6 +70,7 @@ public class GraphQLProvider {
         QueryDataFetchers queryFetchers = new QueryDataFetchers(userService);
         MutationDataFetchers mutationFetchers = new MutationDataFetchers(authService, userService);
         return RuntimeWiring.newRuntimeWiring()
+                .scalar(ExtendedScalars.GraphQLLong)
                 .type("Query", typeWiring -> typeWiring
                         .dataFetcher("me", queryFetchers.me())
                         .dataFetcher("user", queryFetchers.user())
