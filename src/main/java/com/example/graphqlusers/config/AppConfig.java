@@ -1,43 +1,77 @@
 package com.example.graphqlusers.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.time.Duration;
 
-public record AppConfig(
-        int appPort,
-        String jdbcUrl,
-        String dbUser,
-        String dbPassword,
-        String redisHost,
-        int redisPort,
-        String jwtSecret,
-        Duration jwtTtl,
-        Duration refreshTtl
-) {
-    public static AppConfig fromEnv() {
-        int port = Integer.parseInt(envOrDefault("APP_PORT", "8080"));
-        String jdbcUrl = envOrDefault("JDBC_URL", "jdbc:postgresql://localhost:5432/appdb");
-        String dbUser = envOrDefault("DB_USER", "app");
-        String dbPassword = envOrDefault("DB_PASSWORD", "app");
-        String redisHost = envOrDefault("REDIS_HOST", "localhost");
-        int redisPort = Integer.parseInt(envOrDefault("REDIS_PORT", "6379"));
-        String jwtSecret = envOrDefault("JWT_SECRET", "dev-secret-change-me-min-32-chars");
-        long jwtMinutes = Long.parseLong(envOrDefault("JWT_TTL_MINUTES", "15"));
-        long refreshDays = Long.parseLong(envOrDefault("REFRESH_TTL_DAYS", "30"));
-        return new AppConfig(
-                port,
-                jdbcUrl,
-                dbUser,
-                dbPassword,
-                redisHost,
-                redisPort,
-                jwtSecret,
-                Duration.ofMinutes(jwtMinutes),
-                Duration.ofDays(refreshDays)
-        );
+@Component
+public class AppConfig {
+    private final int appPort;
+    private final String jdbcUrl;
+    private final String dbUser;
+    private final String dbPassword;
+    private final String redisHost;
+    private final int redisPort;
+    private final String jwtSecret;
+    private final Duration jwtTtl;
+    private final Duration refreshTtl;
+
+    public AppConfig(
+            @Value("${APP_PORT:8080}") int appPort,
+            @Value("${JDBC_URL:jdbc:postgresql://localhost:5432/appdb}") String jdbcUrl,
+            @Value("${DB_USER:app}") String dbUser,
+            @Value("${DB_PASSWORD:app}") String dbPassword,
+            @Value("${REDIS_HOST:localhost}") String redisHost,
+            @Value("${REDIS_PORT:6379}") int redisPort,
+            @Value("${JWT_SECRET:dev-secret-change-me-min-32-chars}") String jwtSecret,
+            @Value("${JWT_TTL_MINUTES:15}") long jwtMinutes,
+            @Value("${REFRESH_TTL_DAYS:30}") long refreshDays
+    ) {
+        this.appPort = appPort;
+        this.jdbcUrl = jdbcUrl;
+        this.dbUser = dbUser;
+        this.dbPassword = dbPassword;
+        this.redisHost = redisHost;
+        this.redisPort = redisPort;
+        this.jwtSecret = jwtSecret;
+        this.jwtTtl = Duration.ofMinutes(jwtMinutes);
+        this.refreshTtl = Duration.ofDays(refreshDays);
     }
 
-    private static String envOrDefault(String key, String defaultValue) {
-        String value = System.getenv(key);
-        return value == null || value.isBlank() ? defaultValue : value;
+    public int appPort() {
+        return appPort;
+    }
+
+    public String jdbcUrl() {
+        return jdbcUrl;
+    }
+
+    public String dbUser() {
+        return dbUser;
+    }
+
+    public String dbPassword() {
+        return dbPassword;
+    }
+
+    public String redisHost() {
+        return redisHost;
+    }
+
+    public int redisPort() {
+        return redisPort;
+    }
+
+    public String jwtSecret() {
+        return jwtSecret;
+    }
+
+    public Duration jwtTtl() {
+        return jwtTtl;
+    }
+
+    public Duration refreshTtl() {
+        return refreshTtl;
     }
 }

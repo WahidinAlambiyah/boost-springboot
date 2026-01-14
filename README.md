@@ -1,6 +1,6 @@
 # java-graphql-users
 
-Backend GraphQL Users API using Java 21, graphql-java 25, Undertow, PostgreSQL, Redis, JWT, and Flyway.
+Backend GraphQL Users API using Java 21, Spring Boot, graphql-java 25, Undertow, PostgreSQL, Redis, JWT, and Flyway.
 
 ## Prerequisites
 - Java 21 (LTS)

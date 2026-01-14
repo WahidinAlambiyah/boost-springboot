@@ -1,10 +1,11 @@
 package com.example.graphqlusers.web;
 
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-public class GraphiQLHandler implements HttpHandler {
+@RestController
+public class GraphiQLController {
     private static final String PAGE = """
             <!doctype html>
             <html>
@@ -45,9 +46,8 @@ public class GraphiQLHandler implements HttpHandler {
             </html>
             """;
 
-    @Override
-    public void handleRequest(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-        exchange.getResponseSender().send(PAGE);
+    @GetMapping(value = "/graphiql", produces = MediaType.TEXT_HTML_VALUE)
+    public String graphiql() {
+        return PAGE;
     }
 }

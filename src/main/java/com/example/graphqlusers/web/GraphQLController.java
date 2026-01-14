@@ -1,0 +1,77 @@
+package com.example.graphqlusers.web;
+
+import com.example.graphqlusers.app.AppException;
+import com.example.graphqlusers.app.ErrorCodes;
+import com.example.graphqlusers.auth.AuthContext;
+import com.example.graphqlusers.auth.JwtService;
+import com.example.graphqlusers.graphql.GraphQLContext;
+import com.example.graphqlusers.graphql.GraphQLProvider;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.Map;
+
+@RestController
+public class GraphQLController {
+    private final GraphQL graphQL;
+    private final GraphQLProvider graphQLProvider;
+    private final JwtService jwtService;
+
+    public GraphQLController(GraphQLProvider graphQLProvider, JwtService jwtService) {
+        this.graphQLProvider = graphQLProvider;
+        this.graphQL = graphQLProvider.graphQL();
+        this.jwtService = jwtService;
+    }
+
+    @PostMapping("/graphql")
+    public ResponseEntity<Map<String, Object>> handle(@RequestBody GraphQLRequest request,
+                                                      @RequestHeader(value = "Authorization", required = false) String authorization) {
+        try {
+            AuthContext authContext = resolveAuth(authorization);
+            GraphQLContext context = new GraphQLContext(authContext, graphQLProvider.buildRegistry());
+            ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+                    .query(request.query())
+                    .operationName(request.operationName())
+                    .variables(request.variables() == null ? Collections.emptyMap() : request.variables())
+                    .context(context)
+                    .dataLoaderRegistry(context.dataLoaderRegistry())
+                    .build();
+            ExecutionResult result = graphQL.execute(executionInput);
+            return ResponseEntity.ok(result.toSpecification());
+        } catch (AppException appException) {
+            return ResponseEntity.ok(graphQLError(appException.getMessage(), appException.getCode()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(graphQLError("Internal server error", "INTERNAL"));
+        }
+    }
+
+    private AuthContext resolveAuth(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return null;
+        }
+        String token = authorization.substring("Bearer ".length());
+        try {
+            return jwtService.parse(token);
+        } catch (Exception e) {
+            throw new AppException(ErrorCodes.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    private Map<String, Object> graphQLError(String message, String code) {
+        Map<String, Object> error = Map.of(
+                "message", message,
+                "extensions", Map.of("code", code)
+        );
+        return Map.of(
+                "data", null,
+                "errors", java.util.List.of(error)
+        );
+    }
+}

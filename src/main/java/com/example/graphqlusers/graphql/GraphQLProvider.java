@@ -19,18 +19,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class GraphQLProvider {
     private final UserRepository userRepository;
     private final UserService userService;
     private final AuthService authService;
+    private final GraphQL graphQL;
 
     public GraphQLProvider(UserRepository userRepository, UserService userService, AuthService authService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.authService = authService;
+        this.graphQL = buildGraphQL();
     }
 
     public GraphQL graphQL() {
+        return graphQL;
+    }
+
+    private GraphQL buildGraphQL() {
         TypeDefinitionRegistry typeRegistry = new SchemaParser()
                 .parse(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("schema.graphqls"), StandardCharsets.UTF_8));
         RuntimeWiring wiring = buildWiring();
