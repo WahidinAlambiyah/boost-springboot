@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users", schema = "protoone")
+@Table(name = "users", schema = "fastworks_springboot")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
@@ -71,7 +71,7 @@ public class User {
     private OffsetDateTime deletedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", schema = "protoone", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_roles", schema = "fastworks_springboot", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Set<Role> roles = new HashSet<>();
