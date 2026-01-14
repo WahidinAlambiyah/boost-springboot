@@ -14,6 +14,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.alambiyah.userauth.domain.entity.User;
@@ -43,6 +46,9 @@ public class TokenService {
     @ConfigProperty(name = "app.redis.enabled", defaultValue = "true")
     boolean redisEnabled;
 
+    @ConfigProperty(name = "security.jwt.secret")
+    String jwtSecret;
+
     private final Map<String, TokenEntry> refreshTokenStore = new ConcurrentHashMap<>();
 
     @Inject
@@ -60,13 +66,16 @@ public class TokenService {
                         .map(Enum::name)
                         .collect(Collectors.toSet());
 
+        // pastikan jwtSecret adalah String yang di-inject dari config, misal: @ConfigProperty(name="security.jwt.secret")
+        SecretKey key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+
         return Jwt.subject(user.id.toString())
                 .preferredUserName(user.username)
                 .issuer(issuer)
                 .groups(groups) // ✅ Set<String>
                 .issuedAt(now)
                 .expiresAt(exp)
-                .sign();
+                .sign(key);
     }
 
     public String generateRefreshToken(User user) {
