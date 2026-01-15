@@ -1,10 +1,22 @@
 schema {
   query: Query
+  mutation: Mutation
 }
 
 type Query {
   users: [User!]!
   user(id: ID!): User
+  roles: [Role!]!
+  role(id: ID!): Role
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+  createRole(input: CreateRoleInput!): Role!
+  updateRole(id: ID!, input: UpdateRoleInput!): Role!
+  deleteRole(id: ID!): Boolean!
 }
 
 type User {
@@ -12,4 +24,33 @@ type User {
   username: String!
   email: String!
   fullName: String
+  roles: [Role!]!
+}
+
+type Role {
+  id: ID!
+  name: String!
+  users: [User!]!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  fullName: String
+  roleIds: [ID!]
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  fullName: String
+  roleIds: [ID!]
+}
+
+input CreateRoleInput {
+  name: String!
+}
+
+input UpdateRoleInput {
+  name: String
 }
