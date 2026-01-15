@@ -23,6 +23,7 @@ http://localhost:8080/graphiql
 ```
 
 > GraphiQL diaktifkan lewat `spring.graphql.graphiql.enabled: true` di `application.yml`.
+> Halaman GraphiQL memakai aset lokal agar terhindar dari error CORS saat mengambil asset dari CDN eksternal.
 
 ## GraphQL Schema
 Simpan schema di `src/main/resources/graphql/schema.graphqls` agar otomatis terdeteksi oleh Spring GraphQL.
