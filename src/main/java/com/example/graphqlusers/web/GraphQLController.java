@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -76,13 +78,25 @@ public class GraphQLController {
     }
 
     private Map<String, Object> graphQLError(String message, String code) {
-        Map<String, Object> error = Map.of(
-                "message", message,
-                "extensions", Map.of("code", code)
-        );
-        return Map.of(
-                "data", null,
-                "errors", java.util.List.of(error)
-        );
+        // default non-null
+        String safeMessage = (message == null || message.isBlank())
+                ? "Unexpected error"
+                : message;
+
+        String safeCode = (code == null || code.isBlank())
+                ? "INTERNAL"
+                : code;
+
+        Map<String, Object> extensions = new LinkedHashMap<>();
+        extensions.put("code", safeCode);
+
+        Map<String, Object> error = new LinkedHashMap<>();
+        error.put("message", safeMessage);
+        error.put("extensions", extensions);
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("data", null);
+        resp.put("errors", List.of(error));
+        return resp;
     }
 }

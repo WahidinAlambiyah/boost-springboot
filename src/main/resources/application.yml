@@ -1,34 +1,34 @@
 spring:
   application:
     name: boost
-  graphql:
-    graphiql:
-      enabled: true
   config:
     import: optional:file:.env[.properties]
   datasource:
     hikari:
-      schema: ${DB_SCHEMA:app}
-      connection-init-sql: SET search_path TO ${DB_SCHEMA:app}
+      schema: ${DB_SCHEMA:fastworks_springboot_graphql}
+      connection-init-sql: SET search_path TO ${DB_SCHEMA:fastworks_springboot_graphql}
       data-source-properties:
         prepareThreshold: 0
         preferQueryMode: simple
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appdb}?currentSchema=${DB_SCHEMA:app}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:fastworks_springboot_graphql}
     username: ${DB_USER:app}
     password: ${DB_PASSWORD:app}
+  graphql:
+    graphiql:
+      enabled: true
   jpa:
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
-        default_schema: ${DB_SCHEMA:app}
+        default_schema: ${DB_SCHEMA:fastworks_springboot_graphql}
         jdbc:
           time_zone: UTC
     open-in-view: false
   flyway:
     enabled: true
-    default-schema: ${DB_SCHEMA:app}
-    schemas: ${DB_SCHEMA:app}
+    default-schema: ${DB_SCHEMA:fastworks_springboot_graphql}
+    schemas: ${DB_SCHEMA:fastworks_springboot_graphql}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -36,7 +36,7 @@ spring:
 
 app:
   redis:
-    enabled: ${REDIS_ENABLED:true}
+    enabled: ${REDIS_ENABLED:false}
 
 server:
   port: ${SERVER_PORT:8080}
