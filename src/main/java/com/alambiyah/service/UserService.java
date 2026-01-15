@@ -1,26 +1,24 @@
 package com.alambiyah.service;
 
 import com.alambiyah.app.User;
-import org.springframework.stereotype.Service;
-
+import com.alambiyah.repository.UserRepository;
 import java.util.List;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    private final List<User> users = List.of(
-            new User("1", "alice", "alice@example.com", "Alice Doe"),
-            new User("2", "bob", "bob@example.com", "Bob Smith"),
-            new User("3", "carla", "carla@example.com", "Carla Diaz")
-    );
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public List<User> listUsers() {
-        return users;
+        return userRepository.findAll();
     }
 
     public User findUser(String id) {
-        return users.stream()
-                .filter(user -> user.id().equals(id))
-                .findFirst()
-                .orElse(null);
+        return userRepository.findById(UUID.fromString(id)).orElse(null);
     }
 }
