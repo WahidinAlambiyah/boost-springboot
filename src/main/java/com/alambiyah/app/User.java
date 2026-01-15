@@ -1,4 +1,4 @@
-package com.example.graphqlusers.app;
+package com.alambiyah.app;
 
 public record User(
         String id,

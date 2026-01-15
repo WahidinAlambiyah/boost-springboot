@@ -1,6 +1,9 @@
 spring:
   application:
     name: boost-graphql-starter
+  graphql:
+    graphiql:
+      enabled: true
 
 server:
   port: ${SERVER_PORT:8080}

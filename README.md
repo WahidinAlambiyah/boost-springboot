@@ -22,6 +22,11 @@ java -jar target/java-graphql-users.jar
 http://localhost:8080/graphiql
 ```
 
+> GraphiQL diaktifkan lewat `spring.graphql.graphiql.enabled: true` di `application.yml`.
+
+## GraphQL Schema
+Simpan schema di `src/main/resources/graphql/schema.graphqls` agar otomatis terdeteksi oleh Spring GraphQL.
+
 ## GraphQL Endpoint
 - `POST /graphql`
 - Body: `{ "query": "...", "variables": { ... }, "operationName": "..." }`

@@ -1,4 +1,4 @@
-package com.example.graphqlusers.web;
+package com.alambiyah.web;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

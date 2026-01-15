@@ -1,6 +1,6 @@
-package com.example.graphqlusers.service;
+package com.alambiyah.service;
 
-import com.example.graphqlusers.app.User;
+import com.alambiyah.app.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
