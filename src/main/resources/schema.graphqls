@@ -1,0 +1,72 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+scalar Long
+
+type Query {
+  me: User
+  user(id: ID!): User
+  users(page: Int = 0, size: Int = 20): UserPage!
+}
+
+type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(usernameOrEmail: String!, password: String!): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  logout(refreshToken: String!): Boolean!
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  fullName: String
+  roles: [Role!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type UserPage {
+  items: [User!]!
+  page: Int!
+  size: Int!
+  total: Long!
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  fullName: String
+  password: String!
+  roles: [Role!] = [USER]
+}
+
+input UpdateUserInput {
+  email: String
+  fullName: String
+  password: String
+  roles: [Role!]
+}
+
+input RegisterInput {
+  username: String!
+  email: String!
+  fullName: String
+  password: String!
+}
