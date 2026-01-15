@@ -28,7 +28,7 @@ public class GraphiQLController {
                 <button onclick=\"runQuery()\">Run</button>
               </div>
               <div id=\"container\">
-                <textarea id=\"query\">query {\n  me { id username email roles }\n}\n</textarea>
+                <textarea id=\"query\">query {\n  users {\n    id\n    username\n    email\n    fullName\n  }\n}\n</textarea>
                 <pre id=\"result\"></pre>
               </div>
               <script>

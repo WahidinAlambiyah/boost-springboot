@@ -1,54 +1,23 @@
-# java-graphql-users
+# boost-springboot-graphql-starter
 
-Backend GraphQL Users API using Java 21, Spring Boot, graphql-java 25, Undertow, PostgreSQL, Redis, JWT, and Flyway.
+Starter kit GraphQL Spring Boot yang sederhana untuk belajar. Fokus hanya pada query untuk mengambil data user.
 
 ## Prerequisites
 - Java 21 (LTS)
 - Maven 3.9+
-- Docker + Docker Compose
-
-## Environment Variables (defaults)
-```
-SERVER_PORT=8080
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=appdb
-DB_SCHEMA=app
-DB_USER=app
-DB_PASSWORD=app
-REDIS_ENABLED=true
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=dev-secret-change-me-min-32-chars
-JWT_TTL_MINUTES=15
-REFRESH_TTL_DAYS=30
-```
-
-## Configuration via properties
-You can also set configuration using `src/main/resources/application.yml` (or `application.properties`) since Spring Boot loads them by default. The YAML file already maps the environment variables to properties and supports `.env` import via `spring.config.import`, so you can override them there instead of using a `.env` file.【F:src/main/resources/application.yml†L1-L43】
 
 ## Run
-1) Start dependencies
-```
-docker compose up -d
-```
-
-2) Check Java 21
-```
-mvn -v
-```
-
-3) Build
+1) Build
 ```
 mvn clean package
 ```
 
-4) Run
+2) Run
 ```
 java -jar target/java-graphql-users.jar
 ```
 
-5) Open GraphiQL
+3) Open GraphiQL
 ```
 http://localhost:8080/graphiql
 ```
@@ -57,105 +26,28 @@ http://localhost:8080/graphiql
 - `POST /graphql`
 - Body: `{ "query": "...", "variables": { ... }, "operationName": "..." }`
 
-## Sample Queries & Mutations
+## Sample Queries
 
-### Register
-```
-mutation Register($input: RegisterInput!) {
-  register(input: $input) {
-    accessToken
-    refreshToken
-    user { id username email roles }
-  }
-}
-```
-Variables:
-```
-{
-  "input": {
-    "username": "alice",
-    "email": "alice@example.com",
-    "fullName": "Alice Doe",
-    "password": "password123"
-  }
-}
-```
-
-### Login
-```
-mutation {
-  login(usernameOrEmail: "alice", password: "password123") {
-    accessToken
-    refreshToken
-    user { id username roles }
-  }
-}
-```
-
-### Me (Authorization: Bearer <accessToken>)
+### List Users
 ```
 query {
-  me { id username email roles }
-}
-```
-
-### Create User (ADMIN only)
-```
-mutation {
-  createUser(input: {
-    username: "admin",
-    email: "admin@example.com",
-    fullName: "Admin",
-    password: "password123",
-    roles: [ADMIN]
-  }) {
+  users {
     id
     username
-    roles
+    email
+    fullName
   }
 }
 ```
 
-### List Users (ADMIN only)
+### Single User
 ```
 query {
-  users(page: 0, size: 10) {
-    total
-    items { id username email roles }
-  }
-}
-```
-
-### Update User (ADMIN or owner)
-```
-mutation {
-  updateUser(id: "<USER_ID>", input: { fullName: "Alice Updated" }) {
+  user(id: "1") {
     id
+    username
+    email
     fullName
-    updatedAt
   }
 }
 ```
-
-### Refresh Token
-```
-mutation {
-  refreshToken(refreshToken: "<REFRESH_TOKEN>") {
-    accessToken
-    refreshToken
-    user { id username }
-  }
-}
-```
-
-### Logout
-```
-mutation {
-  logout(refreshToken: "<REFRESH_TOKEN>")
-}
-```
-
-## Notes
-- Access tokens are HS256 JWTs with 15-minute default TTL.
-- Refresh tokens are stored in Redis and rotated on refresh.
-- GraphQL errors include `extensions.code` (BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND).
