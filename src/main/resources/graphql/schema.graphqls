@@ -8,6 +8,10 @@ type Query {
   user(id: ID!): User
   roles: [Role!]!
   role(id: ID!): Role
+  categories: [Category!]!
+  category(id: ID!): Category
+  products: [Product!]!
+  product(id: ID!): Product
 }
 
 type Mutation {
@@ -31,6 +35,21 @@ type Role {
   id: ID!
   name: String!
   users: [User!]!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  parent: Category
+  children: [Category!]!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  sku: String!
+  price: Float!
+  category: Category
 }
 
 input CreateUserInput {

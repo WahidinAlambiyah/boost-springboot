@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,14 @@ public class UserGraphqlController {
     @QueryMapping
     public User user(@Argument String id) {
         return userService.findUser(id);
+    }
+
+    @SchemaMapping(typeName = "User", field = "roles")
+    public Set<Role> roles(User user) {
+        if (user.getId() == null) {
+            return Set.of();
+        }
+        return userRepository.findRolesByUserId(user.getId());
     }
 
     @QueryMapping
