@@ -92,6 +92,7 @@ databaseChangeLog:
   - changeSet:
       id: 002-seed-users-and-roles
       author: boost
+      validCheckSum: "9:4160e7e25bee2b41d11ddc17ae05b150"
       changes:
         - insert:
             tableName: users
