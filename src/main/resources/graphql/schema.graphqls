@@ -21,6 +21,12 @@ type Mutation {
   createRole(input: CreateRoleInput!): Role!
   updateRole(id: ID!, input: UpdateRoleInput!): Role!
   deleteRole(id: ID!): Boolean!
+  createCategory(input: CreateCategoryInput!): Category!
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category!
+  deleteCategory(id: ID!): Boolean!
+  createProduct(input: CreateProductInput!): Product!
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
+  deleteProduct(id: ID!): Boolean!
 }
 
 type User {
@@ -72,4 +78,28 @@ input CreateRoleInput {
 
 input UpdateRoleInput {
   name: String
+}
+
+input CreateCategoryInput {
+  name: String!
+  parentId: ID
+}
+
+input UpdateCategoryInput {
+  name: String
+  parentId: ID
+}
+
+input CreateProductInput {
+  name: String!
+  sku: String!
+  price: Float!
+  categoryId: ID
+}
+
+input UpdateProductInput {
+  name: String
+  sku: String
+  price: Float
+  categoryId: ID
 }
