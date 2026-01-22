@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -21,6 +23,7 @@ type DBConfig struct {
 	User     string
 	Password string
 	SSLMode  string
+	Schema   string
 }
 
 type RedisConfig struct {
@@ -40,6 +43,8 @@ type JWTConfig struct {
 }
 
 func Load() (Config, error) {
+	_ = godotenv.Load()
+
 	redisDB, err := strconv.Atoi(getEnv("REDIS_DB", "0"))
 	if err != nil {
 		return Config{}, fmt.Errorf("parse REDIS_DB: %w", err)
@@ -60,6 +65,8 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("parse REDIS_ENABLED: %w", err)
 	}
 
+	dbSchema := getEnv("DB_SCHEMA", "public")
+
 	cfg := Config{
 		AppPort: getEnv("APP_PORT", "8080"),
 		DB: DBConfig{
@@ -69,6 +76,7 @@ func Load() (Config, error) {
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			Schema:   dbSchema,
 		},
 		Redis: RedisConfig{
 			Enabled:  redisEnabled,
