@@ -7,6 +7,8 @@ import com.alambiyah.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -28,8 +30,8 @@ public class CatalogGraphqlController {
     }
 
     @QueryMapping
-    public List<Category> categories() {
-        return categoryRepository.findAll();
+    public List<Category> categories(@Argument Integer page, @Argument Integer size) {
+        return categoryRepository.findAll(resolvePageable(page, size)).getContent();
     }
 
     @QueryMapping
@@ -38,8 +40,8 @@ public class CatalogGraphqlController {
     }
 
     @QueryMapping
-    public List<Product> products() {
-        return productRepository.findAll();
+    public List<Product> products(@Argument Integer page, @Argument Integer size) {
+        return productRepository.findAll(resolvePageable(page, size)).getContent();
     }
 
     @QueryMapping
@@ -129,6 +131,12 @@ public class CatalogGraphqlController {
             return null;
         }
         return resolveCategory(id);
+    }
+
+    private Pageable resolvePageable(Integer page, Integer size) {
+        int pageNumber = page == null ? 0 : Math.max(page, 0);
+        int pageSize = size == null ? 20 : Math.max(size, 1);
+        return PageRequest.of(pageNumber, pageSize);
     }
 
     public record CreateCategoryInput(String name, String parentId) {

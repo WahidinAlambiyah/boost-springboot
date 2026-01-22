@@ -4,13 +4,13 @@ schema {
 }
 
 type Query {
-  users: [User!]!
+  users(page: Int, size: Int): [User!]!
   user(id: ID!): User
-  roles: [Role!]!
+  roles(page: Int, size: Int): [Role!]!
   role(id: ID!): Role
-  categories: [Category!]!
+  categories(page: Int, size: Int): [Category!]!
   category(id: ID!): Category
-  products: [Product!]!
+  products(page: Int, size: Int): [Product!]!
   product(id: ID!): Product
 }
 

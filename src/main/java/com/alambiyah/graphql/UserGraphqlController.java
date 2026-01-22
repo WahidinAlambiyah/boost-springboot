@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -34,8 +36,8 @@ public class UserGraphqlController {
     }
 
     @QueryMapping
-    public List<User> users() {
-        return userService.listUsers();
+    public List<User> users(@Argument Integer page, @Argument Integer size) {
+        return userService.listUsers(resolvePageable(page, size));
     }
 
     @QueryMapping
@@ -52,8 +54,8 @@ public class UserGraphqlController {
     }
 
     @QueryMapping
-    public List<Role> roles() {
-        return roleRepository.findAll();
+    public List<Role> roles(@Argument Integer page, @Argument Integer size) {
+        return roleRepository.findAll(resolvePageable(page, size)).getContent();
     }
 
     @QueryMapping
@@ -134,6 +136,12 @@ public class UserGraphqlController {
             throw new IllegalArgumentException("One or more roles not found");
         }
         return new HashSet<>(roles);
+    }
+
+    private Pageable resolvePageable(Integer page, Integer size) {
+        int pageNumber = page == null ? 0 : Math.max(page, 0);
+        int pageSize = size == null ? 20 : Math.max(size, 1);
+        return PageRequest.of(pageNumber, pageSize);
     }
 
     public record CreateUserInput(
