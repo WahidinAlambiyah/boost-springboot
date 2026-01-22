@@ -4,13 +4,13 @@ schema {
 }
 
 type Query {
-  users(page: Int, size: Int): [User!]!
+  users(page: Int, size: Int, sortBy: String, sortDirection: SortDirection, filter: UserFilter): [User!]!
   user(id: ID!): User
-  roles(page: Int, size: Int): [Role!]!
+  roles(page: Int, size: Int, sortBy: String, sortDirection: SortDirection, filter: RoleFilter): [Role!]!
   role(id: ID!): Role
-  categories(page: Int, size: Int): [Category!]!
+  categories(page: Int, size: Int, sortBy: String, sortDirection: SortDirection, filter: CategoryFilter): [Category!]!
   category(id: ID!): Category
-  products(page: Int, size: Int): [Product!]!
+  products(page: Int, size: Int, sortBy: String, sortDirection: SortDirection, filter: ProductFilter): [Product!]!
   product(id: ID!): Product
 }
 
@@ -58,6 +58,11 @@ type Product {
   category: Category
 }
 
+enum SortDirection {
+  ASC
+  DESC
+}
+
 input CreateUserInput {
   username: String!
   email: String!
@@ -78,6 +83,27 @@ input CreateRoleInput {
 
 input UpdateRoleInput {
   name: String
+}
+
+input UserFilter {
+  username: String
+  email: String
+  fullName: String
+}
+
+input RoleFilter {
+  name: String
+}
+
+input CategoryFilter {
+  name: String
+  parentId: ID
+}
+
+input ProductFilter {
+  name: String
+  sku: String
+  categoryId: ID
 }
 
 input CreateCategoryInput {

@@ -128,6 +128,38 @@ class UserRoleGraphqlControllerTest {
         Assertions.assertTrue(deleted);
     }
 
+    @Test
+    void listQueriesSupportSortingAndFiltering() {
+        graphQlTester.document("""
+                        query($filter: UserFilter, $sortBy: String, $sortDirection: SortDirection) {
+                          users(filter: $filter, sortBy: $sortBy, sortDirection: $sortDirection) {
+                            username
+                          }
+                        }
+                        """)
+                .variable("filter", Map.of("username", "alice"))
+                .variable("sortBy", "username")
+                .variable("sortDirection", "ASC")
+                .execute()
+                .path("users")
+                .entityList(Object.class)
+                .hasSize(1);
+
+        graphQlTester.document("""
+                        query($sortBy: String, $sortDirection: SortDirection) {
+                          roles(sortBy: $sortBy, sortDirection: $sortDirection) {
+                            name
+                          }
+                        }
+                        """)
+                .variable("sortBy", "name")
+                .variable("sortDirection", "DESC")
+                .execute()
+                .path("roles[0].name")
+                .entity(String.class)
+                .isEqualTo("USER");
+    }
+
     private String createRole(String name) {
         Map<String, Object> input = Map.of("name", name);
         return graphQlTester.document("""

@@ -6,9 +6,12 @@ import com.alambiyah.repository.CategoryRepository;
 import com.alambiyah.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -30,8 +33,17 @@ public class CatalogGraphqlController {
     }
 
     @QueryMapping
-    public List<Category> categories(@Argument Integer page, @Argument Integer size) {
-        return categoryRepository.findAll(resolvePageable(page, size)).getContent();
+    public List<Category> categories(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument SortDirection sortDirection,
+            @Argument CategoryFilter filter
+    ) {
+        return categoryRepository.findAll(
+                buildCategorySpecification(filter),
+                resolvePageable(page, size, sortBy, sortDirection, "name", Set.of("name"))
+        ).getContent();
     }
 
     @QueryMapping
@@ -40,8 +52,17 @@ public class CatalogGraphqlController {
     }
 
     @QueryMapping
-    public List<Product> products(@Argument Integer page, @Argument Integer size) {
-        return productRepository.findAll(resolvePageable(page, size)).getContent();
+    public List<Product> products(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument SortDirection sortDirection,
+            @Argument ProductFilter filter
+    ) {
+        return productRepository.findAll(
+                buildProductSpecification(filter),
+                resolvePageable(page, size, sortBy, sortDirection, "name", Set.of("name", "sku", "price"))
+        ).getContent();
     }
 
     @QueryMapping
@@ -133,10 +154,71 @@ public class CatalogGraphqlController {
         return resolveCategory(id);
     }
 
-    private Pageable resolvePageable(Integer page, Integer size) {
+    private Pageable resolvePageable(
+            Integer page,
+            Integer size,
+            String sortBy,
+            SortDirection sortDirection,
+            String defaultSort,
+            Set<String> allowedSorts
+    ) {
         int pageNumber = page == null ? 0 : Math.max(page, 0);
         int pageSize = size == null ? 20 : Math.max(size, 1);
-        return PageRequest.of(pageNumber, pageSize);
+        String sortField = resolveSortField(sortBy, defaultSort, allowedSorts);
+        Sort.Direction direction = resolveSortDirection(sortDirection);
+        return PageRequest.of(pageNumber, pageSize, Sort.by(direction, sortField));
+    }
+
+    private Sort.Direction resolveSortDirection(SortDirection sortDirection) {
+        if (sortDirection == null) {
+            return Sort.Direction.ASC;
+        }
+        return sortDirection == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
+    }
+
+    private String resolveSortField(String sortBy, String defaultSort, Set<String> allowedSorts) {
+        String field = (sortBy == null || sortBy.isBlank()) ? defaultSort : sortBy;
+        if (!allowedSorts.contains(field)) {
+            throw new IllegalArgumentException("Unsupported sort field: " + field);
+        }
+        return field;
+    }
+
+    private Specification<Category> buildCategorySpecification(CategoryFilter filter) {
+        if (filter == null) {
+            return emptySpecification();
+        }
+        Specification<Category> specification = this.<Category>containsIgnoreCase("name", filter.name());
+        if (filter.parentId() != null && !filter.parentId().isBlank()) {
+            UUID parentId = UUID.fromString(filter.parentId());
+            specification = specification.and((root, query, builder) -> builder.equal(root.get("parent").get("id"), parentId));
+        }
+        return specification;
+    }
+
+    private Specification<Product> buildProductSpecification(ProductFilter filter) {
+        if (filter == null) {
+            return emptySpecification();
+        }
+        Specification<Product> specification = this.<Product>containsIgnoreCase("name", filter.name())
+                .and(this.<Product>containsIgnoreCase("sku", filter.sku()));
+        if (filter.categoryId() != null && !filter.categoryId().isBlank()) {
+            UUID categoryId = UUID.fromString(filter.categoryId());
+            specification = specification.and((root, query, builder) -> builder.equal(root.get("category").get("id"), categoryId));
+        }
+        return specification;
+    }
+
+    private <T> Specification<T> containsIgnoreCase(String field, String value) {
+        if (value == null || value.isBlank()) {
+            return emptySpecification();
+        }
+        String pattern = "%" + value.trim().toLowerCase() + "%";
+        return (root, query, builder) -> builder.like(builder.lower(root.get(field)), pattern);
+    }
+
+    private <T> Specification<T> emptySpecification() {
+        return (root, query, builder) -> null;
     }
 
     public record CreateCategoryInput(String name, String parentId) {
@@ -159,5 +241,11 @@ public class CatalogGraphqlController {
             BigDecimal price,
             String categoryId
     ) {
+    }
+
+    public record CategoryFilter(String name, String parentId) {
+    }
+
+    public record ProductFilter(String name, String sku, String categoryId) {
     }
 }

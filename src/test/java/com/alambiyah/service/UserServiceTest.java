@@ -1,6 +1,7 @@
 package com.alambiyah.service;
 
 import com.alambiyah.app.User;
+import com.alambiyah.service.UserFilter;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,21 @@ class UserServiceTest {
 
     @Test
     void listUsersReturnsSeededUsers() {
-        List<User> users = userService.listUsers(PageRequest.of(0, 20));
+        List<User> users = userService.listUsers(PageRequest.of(0, 20), null);
 
         Assertions.assertEquals(3, users.size());
         Assertions.assertTrue(users.stream().anyMatch(user -> "alice".equals(user.getUsername())));
+    }
+
+    @Test
+    void listUsersFiltersByUsername() {
+        List<User> users = userService.listUsers(
+                PageRequest.of(0, 20),
+                new UserFilter("alice", null, null)
+        );
+
+        Assertions.assertEquals(1, users.size());
+        Assertions.assertEquals("alice", users.getFirst().getUsername());
     }
 
     @Test

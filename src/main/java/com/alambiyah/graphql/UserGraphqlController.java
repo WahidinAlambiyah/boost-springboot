@@ -4,6 +4,7 @@ import com.alambiyah.app.Role;
 import com.alambiyah.app.User;
 import com.alambiyah.repository.RoleRepository;
 import com.alambiyah.repository.UserRepository;
+import com.alambiyah.service.UserFilter;
 import com.alambiyah.service.UserService;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -36,8 +39,17 @@ public class UserGraphqlController {
     }
 
     @QueryMapping
-    public List<User> users(@Argument Integer page, @Argument Integer size) {
-        return userService.listUsers(resolvePageable(page, size));
+    public List<User> users(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument SortDirection sortDirection,
+            @Argument UserFilterInput filter
+    ) {
+        return userService.listUsers(
+                resolvePageable(page, size, sortBy, sortDirection, "username", Set.of("username", "email", "fullName")),
+                toUserFilter(filter)
+        );
     }
 
     @QueryMapping
@@ -54,8 +66,17 @@ public class UserGraphqlController {
     }
 
     @QueryMapping
-    public List<Role> roles(@Argument Integer page, @Argument Integer size) {
-        return roleRepository.findAll(resolvePageable(page, size)).getContent();
+    public List<Role> roles(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument SortDirection sortDirection,
+            @Argument RoleFilter filter
+    ) {
+        return roleRepository.findAll(
+                buildRoleSpecification(filter),
+                resolvePageable(page, size, sortBy, sortDirection, "name", Set.of("name"))
+        ).getContent();
     }
 
     @QueryMapping
@@ -138,10 +159,56 @@ public class UserGraphqlController {
         return new HashSet<>(roles);
     }
 
-    private Pageable resolvePageable(Integer page, Integer size) {
+    private Pageable resolvePageable(
+            Integer page,
+            Integer size,
+            String sortBy,
+            SortDirection sortDirection,
+            String defaultSort,
+            Set<String> allowedSorts
+    ) {
         int pageNumber = page == null ? 0 : Math.max(page, 0);
         int pageSize = size == null ? 20 : Math.max(size, 1);
-        return PageRequest.of(pageNumber, pageSize);
+        String sortField = resolveSortField(sortBy, defaultSort, allowedSorts);
+        Sort.Direction direction = resolveSortDirection(sortDirection);
+        return PageRequest.of(pageNumber, pageSize, Sort.by(direction, sortField));
+    }
+
+    private Sort.Direction resolveSortDirection(SortDirection sortDirection) {
+        if (sortDirection == null) {
+            return Sort.Direction.ASC;
+        }
+        return sortDirection == SortDirection.DESC ? Sort.Direction.DESC : Sort.Direction.ASC;
+    }
+
+    private String resolveSortField(String sortBy, String defaultSort, Set<String> allowedSorts) {
+        String field = (sortBy == null || sortBy.isBlank()) ? defaultSort : sortBy;
+        if (!allowedSorts.contains(field)) {
+            throw new IllegalArgumentException("Unsupported sort field: " + field);
+        }
+        return field;
+    }
+
+    private Specification<Role> buildRoleSpecification(RoleFilter filter) {
+        if (filter == null) {
+            return Specification.where(null);
+        }
+        return containsIgnoreCase("name", filter.name());
+    }
+
+    private Specification<Role> containsIgnoreCase(String field, String value) {
+        if (value == null || value.isBlank()) {
+            return Specification.where(null);
+        }
+        String pattern = "%" + value.trim().toLowerCase() + "%";
+        return (root, query, builder) -> builder.like(builder.lower(root.get(field)), pattern);
+    }
+
+    private UserFilter toUserFilter(UserFilterInput filter) {
+        if (filter == null) {
+            return null;
+        }
+        return new UserFilter(filter.username(), filter.email(), filter.fullName());
     }
 
     public record CreateUserInput(
@@ -164,5 +231,11 @@ public class UserGraphqlController {
     }
 
     public record UpdateRoleInput(String name) {
+    }
+
+    public record UserFilterInput(String username, String email, String fullName) {
+    }
+
+    public record RoleFilter(String name) {
     }
 }
