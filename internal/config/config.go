@@ -24,6 +24,7 @@ type DBConfig struct {
 }
 
 type RedisConfig struct {
+	Enabled  bool
 	Host     string
 	Port     string
 	Password string
@@ -54,6 +55,11 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("parse REFRESH_TOKEN_TTL: %w", err)
 	}
 
+	redisEnabled, err := strconv.ParseBool(getEnv("REDIS_ENABLED", "true"))
+	if err != nil {
+		return Config{}, fmt.Errorf("parse REDIS_ENABLED: %w", err)
+	}
+
 	cfg := Config{
 		AppPort: getEnv("APP_PORT", "8080"),
 		DB: DBConfig{
@@ -65,6 +71,7 @@ func Load() (Config, error) {
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		Redis: RedisConfig{
+			Enabled:  redisEnabled,
 			Host:     getEnv("REDIS_HOST", "localhost"),
 			Port:     getEnv("REDIS_PORT", "6379"),
 			Password: getEnv("REDIS_PASSWORD", ""),

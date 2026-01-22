@@ -48,16 +48,21 @@ func main() {
 		logger.Fatal("failed to ping postgres", zap.Error(err))
 	}
 
-	redisClient := cache.NewRedis(cfg.Redis)
-	if err := cache.Ping(ctx, redisClient); err != nil {
-		logger.Fatal("failed to ping redis", zap.Error(err))
-	}
-
 	userRepo := user.NewGormRepository(postgres)
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
 
-	tokenStore := auth.NewRedisTokenStore(redisClient)
+	var tokenStore auth.TokenStore
+	if cfg.Redis.Enabled {
+		redisClient := cache.NewRedis(cfg.Redis)
+		if err := cache.Ping(ctx, redisClient); err != nil {
+			logger.Fatal("failed to ping redis", zap.Error(err))
+		}
+		tokenStore = auth.NewRedisTokenStore(redisClient)
+	} else {
+		logger.Warn("redis disabled, using in-memory token store")
+		tokenStore = auth.NewMemoryTokenStore()
+	}
 	authService := auth.NewService(userRepo, tokenStore, cfg.JWT)
 	authHandler := auth.NewHandler(authService)
 

@@ -93,5 +93,6 @@ curl -X GET http://localhost:8080/api/v1/me \
 ## Catatan
 
 - Refresh token disimpan di Redis dengan key `refresh:<jti>`.
+- Set `REDIS_ENABLED=false` jika ingin menonaktifkan Redis (refresh token disimpan in-memory).
 - Access token berlaku 15 menit, refresh token 7 hari (configurable).
 - Role `ADMIN` bisa CRUD semua user; `USER` hanya boleh akses profil sendiri.
