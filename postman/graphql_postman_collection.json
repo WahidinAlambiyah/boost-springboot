@@ -1,0 +1,468 @@
+{
+  "info": {
+    "name": "GraphQL API - CRUD + Paging (Template)",
+    "_postman_id": "d2f0c6a7-7f6d-4eaa-b2f2-cc4b6b6c4a21",
+    "description": "Template Postman Collection untuk Spring Boot GraphQL.\n\nCara pakai:\n- Set variable baseUrl dan graphqlPath.\n- Untuk request yang butuh auth, isi access_token.\n\nCatatan:\n- Paging di template ini mengasumsikan return tipe page berisi: items, total, page, size.\n  Kalau schema kamu pakai `content`, ubah items -> content.\n- Folder Auth bersifat opsional (kalau schema kamu punya register/login/refresh/logout).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "graphqlPath", "value": "/graphql" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "user_id", "value": "1" },
+    { "key": "role_id", "value": "1" },
+    { "key": "category_id", "value": "1" },
+    { "key": "product_id", "value": "1" },
+    { "key": "page", "value": "1" },
+    { "key": "size", "value": "10" }
+  ],
+  "item": [
+    {
+      "name": "00 - Core / Utilities",
+      "item": [
+        {
+          "name": "Health - __typename",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { __typename }\",\n  \"variables\": {}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Introspection (optional)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { __schema { queryType { name } mutationType { name } types { name } } }\",\n  \"variables\": {}\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "01 - Auth (Optional - adjust to your schema)",
+      "item": [
+        {
+          "name": "Register (if exists)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const data = json.data || {};",
+                  "const payload = data.register;",
+                  "if (payload) {",
+                  "  if (payload.accessToken) pm.collectionVariables.set('access_token', payload.accessToken);",
+                  "  if (payload.refreshToken) pm.collectionVariables.set('refresh_token', payload.refreshToken);",
+                  "  if (payload.user && payload.user.id) pm.collectionVariables.set('user_id', payload.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { accessToken refreshToken user { id username email fullName } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"dita\",\n      \"email\": \"dita@mail.com\",\n      \"fullName\": \"Dita\",\n      \"password\": \"Password123!\"\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login (if exists)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const data = json.data || {};",
+                  "const payload = data.login;",
+                  "if (payload) {",
+                  "  if (payload.accessToken) pm.collectionVariables.set('access_token', payload.accessToken);",
+                  "  if (payload.refreshToken) pm.collectionVariables.set('refresh_token', payload.refreshToken);",
+                  "  if (payload.user && payload.user.id) pm.collectionVariables.set('user_id', payload.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Login($usernameOrEmail: String!, $password: String!) { login(usernameOrEmail: $usernameOrEmail, password: $password) { accessToken refreshToken user { id username email fullName } } }\",\n  \"variables\": {\n    \"usernameOrEmail\": \"dita\",\n    \"password\": \"Password123!\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me (if exists)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { me { id username email fullName roles { id name } } }\",\n  \"variables\": {}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token (if exists)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Refresh($refreshToken: String!) { refreshToken(refreshToken: $refreshToken) { accessToken refreshToken user { id username email fullName } } }\",\n  \"variables\": { \"refreshToken\": \"{{refresh_token}}\" }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout (if exists)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($refreshToken: String!) { logout(refreshToken: $refreshToken) }\",\n  \"variables\": { \"refreshToken\": \"{{refresh_token}}\" }\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "02 - Users",
+      "item": [
+        {
+          "name": "Get user by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetUser($id: ID!) { user(id: $id) { id username email fullName roles { id name } } }\",\n  \"variables\": { \"id\": \"{{user_id}}\" }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List users (paging)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query ListUsers($page: Int!, $size: Int!) { users(page: $page, size: $size) { items { id username email fullName } total page size } }\",\n  \"variables\": { \"page\": {{page}}, \"size\": {{size}} }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CreateUser($input: CreateUserInput!) { createUser(input: $input) { id username email fullName roles { id name } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"user01\",\n      \"email\": \"user01@mail.com\",\n      \"fullName\": \"User 01\",\n      \"roleIds\": [\"{{role_id}}\"]\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation UpdateUser($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { id username email fullName roles { id name } } }\",\n  \"variables\": {\n    \"id\": \"{{user_id}}\",\n    \"input\": {\n      \"fullName\": \"User 01 Updated\",\n      \"roleIds\": [\"{{role_id}}\"]\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteUser(id: $id) }\",\n  \"variables\": { \"id\": \"{{user_id}}\" }\n}" }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "03 - Roles",
+      "item": [
+        {
+          "name": "Get role by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($id: ID!) { role(id: $id) { id name } }\",\n  \"variables\": { \"id\": \"{{role_id}}\" }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "List roles (paging)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($page: Int!, $size: Int!) { roles(page: $page, size: $size) { items { id name } total page size } }\",\n  \"variables\": { \"page\": {{page}}, \"size\": {{size}} }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Create role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($input: CreateRoleInput!) { createRole(input: $input) { id name } }\",\n  \"variables\": { \"input\": { \"name\": \"ADMIN\" } }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Update role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateRoleInput!) { updateRole(id: $id, input: $input) { id name } }\",\n  \"variables\": { \"id\": \"{{role_id}}\", \"input\": { \"name\": \"ADMIN_UPDATED\" } }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteRole(id: $id) }\",\n  \"variables\": { \"id\": \"{{role_id}}\" }\n}" }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "04 - Categories",
+      "item": [
+        {
+          "name": "Get category by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($id: ID!) { category(id: $id) { id name parent { id name } children { id name } } }\",\n  \"variables\": { \"id\": \"{{category_id}}\" }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "List categories (paging)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($page: Int!, $size: Int!) { categories(page: $page, size: $size) { items { id name } total page size } }\",\n  \"variables\": { \"page\": {{page}}, \"size\": {{size}} }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateCategoryInput!) { createCategory(input: $input) { id name parent { id name } } }\",\n  \"variables\": { \"input\": { \"name\": \"Shoes\", \"parentId\": null } }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateCategoryInput!) { updateCategory(id: $id, input: $input) { id name } }\",\n  \"variables\": { \"id\": \"{{category_id}}\", \"input\": { \"name\": \"Shoes Updated\", \"parentId\": null } }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteCategory(id: $id) }\",\n  \"variables\": { \"id\": \"{{category_id}}\" }\n}" }
+          },
+          "response": []
+        }
+      ]
+    },
+
+    {
+      "name": "05 - Products",
+      "item": [
+        {
+          "name": "Get product by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($id: ID!) { product(id: $id) { id name sku price category { id name } } }\",\n  \"variables\": { \"id\": \"{{product_id}}\" }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "List products (paging)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($page: Int!, $size: Int!) { products(page: $page, size: $size) { items { id name sku price } total page size } }\",\n  \"variables\": { \"page\": {{page}}, \"size\": {{size}} }\n}" }
+          },
+          "response": []
+        },
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateProductInput!) { createProduct(input: $input) { id name sku price category { id name } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Running Shoes\",\n      \"sku\": \"SHOE-001\",\n      \"price\": 199000.0,\n      \"categoryId\": \"{{category_id}}\"\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateProductInput!) { updateProduct(id: $id, input: $input) { id name sku price category { id name } } }\",\n  \"variables\": {\n    \"id\": \"{{product_id}}\",\n    \"input\": {\n      \"name\": \"Running Shoes Updated\",\n      \"price\": 219000.0,\n      \"categoryId\": \"{{category_id}}\"\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}{{graphqlPath}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteProduct(id: $id) }\",\n  \"variables\": { \"id\": \"{{product_id}}\" }\n}" }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
