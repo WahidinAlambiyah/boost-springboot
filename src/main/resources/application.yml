@@ -1,6 +1,29 @@
 spring:
   application:
     name: boost-graphql-starter
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:boost}
+    username: ${DB_USER:boost}
+    password: ${DB_PASSWORD:boost}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: ${DB_SCHEMA:fastworks_springboot_graphql}
+      data-source-properties:
+        preferQueryMode: simple
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:fastworks_springboot_graphql}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yml
+    default-schema: ${DB_SCHEMA:fastworks_springboot_graphql}
+    parameters:
+      schema: ${DB_SCHEMA:fastworks_springboot_graphql}
   graphql:
     graphiql:
       enabled: true
