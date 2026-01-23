@@ -23,6 +23,8 @@ import (
 // @title Go Users API
 // @version 1.0
 // @description User management API built with Gin and GORM.
+// @tag.name Roles
+// @tag.description Roles CRUD endpoints.
 // @host localhost:8080
 // @BasePath /
 // @schemes http
