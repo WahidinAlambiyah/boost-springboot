@@ -14,7 +14,6 @@ import (
 	"github.com/yourusername/go-users-api/internal/cache"
 	"github.com/yourusername/go-users-api/internal/config"
 	"github.com/yourusername/go-users-api/internal/db"
-	"github.com/yourusername/go-users-api/internal/middleware"
 	"github.com/yourusername/go-users-api/internal/response"
 	"github.com/yourusername/go-users-api/internal/user"
 	"go.uber.org/zap"
@@ -84,17 +83,14 @@ func main() {
 		authGroup.POST("/refresh", authHandler.Refresh)
 		authGroup.POST("/logout", authHandler.Logout)
 
-		protected := api.Group("")
-		protected.Use(middleware.Auth(cfg.JWT))
-		protected.GET("/users", userHandler.List)
-		protected.POST("/users", userHandler.Create)
-		protected.GET("/users/:id", userHandler.Get)
-		protected.PUT("/users/:id", userHandler.Update)
-		protected.DELETE("/users/:id", userHandler.Delete)
-		protected.GET("/me", userHandler.Me)
+		api.GET("/users", userHandler.List)
+		api.POST("/users", userHandler.Create)
+		api.GET("/users/:id", userHandler.Get)
+		api.PUT("/users/:id", userHandler.Update)
+		api.DELETE("/users/:id", userHandler.Delete)
 	}
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.DefaultModelsExpandDepth(-1)))
 
 	server := &http.Server{
 		Addr:              ":" + cfg.AppPort,
