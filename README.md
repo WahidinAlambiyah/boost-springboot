@@ -89,6 +89,14 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 curl -X GET http://localhost:8080/api/v1/users
 ```
 
+### CRUD Roles
+
+```bash
+curl -X POST http://localhost:8080/api/v1/roles \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"ADMIN","description":"Administrator"}'
+```
+
 ## Catatan
 
 - Refresh token disimpan di Redis dengan key `refresh:<jti>`.

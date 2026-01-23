@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/go-users-api/internal/config"
 	"github.com/yourusername/go-users-api/internal/db"
 	"github.com/yourusername/go-users-api/internal/response"
+	"github.com/yourusername/go-users-api/internal/role"
 	"github.com/yourusername/go-users-api/internal/user"
 	"go.uber.org/zap"
 )
@@ -50,6 +51,10 @@ func main() {
 	userRepo := user.NewGormRepository(postgres)
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
+
+	roleRepo := role.NewGormRepository(postgres)
+	roleService := role.NewService(roleRepo)
+	roleHandler := role.NewHandler(roleService)
 
 	var tokenStore auth.TokenStore
 	if cfg.Redis.Enabled {
@@ -88,6 +93,12 @@ func main() {
 		api.GET("/users/:id", userHandler.Get)
 		api.PUT("/users/:id", userHandler.Update)
 		api.DELETE("/users/:id", userHandler.Delete)
+
+		api.GET("/roles", roleHandler.List)
+		api.POST("/roles", roleHandler.Create)
+		api.GET("/roles/:id", roleHandler.Get)
+		api.PUT("/roles/:id", roleHandler.Update)
+		api.DELETE("/roles/:id", roleHandler.Delete)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.DefaultModelsExpandDepth(-1)))
