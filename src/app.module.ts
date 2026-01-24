@@ -36,7 +36,8 @@ import { UsersModule } from './users/users.module';
         }
 
         if (redisEnabled) {
-          const redisUrl = configService.get<string>('REDIS_URL');
+          const redisUrl =
+            configService.get<string>('REDIS_URL') ?? 'redis://localhost:6379';
           const keyv = new Keyv({
             store: new KeyvRedis(redisUrl),
           });
