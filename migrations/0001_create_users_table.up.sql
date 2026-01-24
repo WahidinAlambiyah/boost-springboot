@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS fastworks_golang;
+SET search_path TO fastworks_golang;
+
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE IF NOT EXISTS users (

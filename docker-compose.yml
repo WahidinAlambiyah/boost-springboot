@@ -37,7 +37,7 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_SSLMODE: ${DB_SSLMODE:-disable}
-      DB_SCHEMA: ${DB_SCHEMA:-public}
+      DB_SCHEMA: ${DB_SCHEMA:-fastworks_golang}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}

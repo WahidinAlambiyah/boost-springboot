@@ -65,7 +65,7 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("parse REDIS_ENABLED: %w", err)
 	}
 
-	dbSchema := getEnv("DB_SCHEMA", "public")
+	dbSchema := getEnv("DB_SCHEMA", "fastworks_golang")
 
 	cfg := Config{
 		AppPort: getEnv("APP_PORT", "8080"),

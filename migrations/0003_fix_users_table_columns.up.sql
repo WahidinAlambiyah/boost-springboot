@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS fastworks_golang;
+SET search_path TO fastworks_golang;
+
 ALTER TABLE IF EXISTS users
     ADD COLUMN IF NOT EXISTS full_name VARCHAR(255) NOT NULL DEFAULT '',
     ADD COLUMN IF NOT EXISTS email VARCHAR(255) NOT NULL DEFAULT '',
