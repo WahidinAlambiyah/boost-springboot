@@ -16,7 +16,11 @@ func NewPostgres(cfg config.DBConfig) (*gorm.DB, error) {
 	gormCfg := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),
 	}
-	return gorm.Open(postgres.Open(dsn), gormCfg)
+	driverCfg := postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true,
+	}
+	return gorm.Open(postgres.New(driverCfg), gormCfg)
 }
 
 func Ping(ctx context.Context, database *gorm.DB) error {
