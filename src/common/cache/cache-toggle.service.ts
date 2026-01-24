@@ -48,6 +48,16 @@ export class CacheToggleService {
     await this.cacheManager.del(key);
   }
 
+  async reset(): Promise<void> {
+    if (!this.cacheEnabled) {
+      return;
+    }
+    const resetFn = (this.cacheManager as { reset?: () => Promise<void> }).reset;
+    if (resetFn) {
+      await resetFn.call(this.cacheManager);
+    }
+  }
+
   getStatus() {
     return {
       cacheEnabled: this.cacheEnabled,
