@@ -30,13 +30,14 @@ func (r *GormRepository) Create(ctx context.Context, user *User) error {
 
 func (r *GormRepository) GetByID(ctx context.Context, id uuid.UUID) (User, error) {
 	var user User
-	result := r.db.WithContext(ctx).First(&user, "id = ?", id)
+	result := r.db.WithContext(ctx).Preload("Role").First(&user, "id = ?", id)
 	return user, result.Error
 }
 
 func (r *GormRepository) GetByEmailOrUsername(ctx context.Context, identifier string) (User, error) {
 	var user User
 	result := r.db.WithContext(ctx).
+		Preload("Role").
 		Where("email = ? OR username = ?", identifier, identifier).
 		First(&user)
 	return user, result.Error
@@ -44,7 +45,7 @@ func (r *GormRepository) GetByEmailOrUsername(ctx context.Context, identifier st
 
 func (r *GormRepository) List(ctx context.Context) ([]User, error) {
 	var users []User
-	result := r.db.WithContext(ctx).Order("created_at desc").Find(&users)
+	result := r.db.WithContext(ctx).Preload("Role").Order("created_at desc").Find(&users)
 	return users, result.Error
 }
 

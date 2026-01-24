@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/yourusername/go-users-api/internal/config"
+	rolepkg "github.com/yourusername/go-users-api/internal/role"
 	"github.com/yourusername/go-users-api/internal/user"
 	"github.com/yourusername/go-users-api/internal/utils"
 )
@@ -24,9 +25,21 @@ func (m mockRepo) GetByID(ctx context.Context, id uuid.UUID) (user.User, error) 
 func (m mockRepo) GetByEmailOrUsername(ctx context.Context, identifier string) (user.User, error) {
 	return m.user, m.err
 }
-func (m mockRepo) List(ctx context.Context) ([]user.User, error) { return nil, m.err }
-func (m mockRepo) Update(ctx context.Context, u *user.User) error  { return m.err }
-func (m mockRepo) Delete(ctx context.Context, id uuid.UUID) error   { return m.err }
+func (m mockRepo) List(ctx context.Context) ([]user.User, error)  { return nil, m.err }
+func (m mockRepo) Update(ctx context.Context, u *user.User) error { return m.err }
+func (m mockRepo) Delete(ctx context.Context, id uuid.UUID) error { return m.err }
+
+type mockRoleRepo struct {
+	role rolepkg.Role
+	err  error
+}
+
+func (m mockRoleRepo) GetByName(ctx context.Context, name string) (rolepkg.Role, error) {
+	if m.err != nil {
+		return rolepkg.Role{}, m.err
+	}
+	return m.role, nil
+}
 
 type memoryTokenStore struct {
 	items map[string]string
@@ -63,7 +76,8 @@ func TestAuthService_TokenFlow(t *testing.T) {
 		Email:        "jane@example.com",
 		Username:     "jane",
 		PasswordHash: hashed,
-		Role:         user.RoleUser,
+		RoleID:       uuid.New(),
+		Role:         rolepkg.Role{ID: uuid.New(), Name: string(user.RoleUser)},
 		IsActive:     true,
 	}
 
@@ -76,7 +90,8 @@ func TestAuthService_TokenFlow(t *testing.T) {
 	}
 
 	store := newMemoryTokenStore()
-	svc := NewService(mockRepo{user: sampleUser}, store, cfg)
+	roleRepo := mockRoleRepo{role: rolepkg.Role{ID: uuid.New(), Name: string(user.RoleUser)}}
+	svc := NewService(mockRepo{user: sampleUser}, roleRepo, store, cfg)
 
 	loginResp, err := svc.Login(context.Background(), LoginRequest{Identifier: "jane@example.com", Password: "secret123"})
 	require.NoError(t, err)

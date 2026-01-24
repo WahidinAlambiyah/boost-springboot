@@ -40,3 +40,31 @@ func Auth(cfg config.JWTConfig) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func RequireRole(allowed ...string) gin.HandlerFunc {
+	allowedSet := make(map[string]struct{}, len(allowed))
+	for _, role := range allowed {
+		allowedSet[role] = struct{}{}
+	}
+
+	return func(c *gin.Context) {
+		value, exists := c.Get(ContextRole)
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.Failure("unauthorized", "missing role", nil))
+			return
+		}
+
+		role, ok := value.(string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.Failure("unauthorized", "invalid role", nil))
+			return
+		}
+
+		if _, ok := allowedSet[role]; !ok {
+			c.AbortWithStatusJSON(http.StatusForbidden, response.Failure("forbidden", "insufficient permissions", nil))
+			return
+		}
+
+		c.Next()
+	}
+}

@@ -34,6 +34,15 @@ func (m *memoryRoleRepo) GetByID(ctx context.Context, id uuid.UUID) (Role, error
 	return role, nil
 }
 
+func (m *memoryRoleRepo) GetByName(ctx context.Context, name string) (Role, error) {
+	for _, role := range m.items {
+		if role.Name == name {
+			return role, nil
+		}
+	}
+	return Role{}, ErrRoleNotFound
+}
+
 func (m *memoryRoleRepo) List(ctx context.Context) ([]Role, error) {
 	roles := make([]Role, 0, len(m.items))
 	for _, role := range m.items {

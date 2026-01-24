@@ -18,23 +18,24 @@ type UpdateRequest struct {
 }
 
 type Response struct {
-	ID       string `json:"id"`
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	IsActive bool   `json:"is_active"`
+	ID        string `json:"id"`
+	FullName  string `json:"full_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	IsActive  bool   `json:"is_active"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
 
 func ToResponse(u User) Response {
+	roleName := u.Role.Name
 	return Response{
 		ID:        u.ID.String(),
 		FullName:  u.FullName,
 		Email:     u.Email,
 		Username:  u.Username,
-		Role:      string(u.Role),
+		Role:      roleName,
 		IsActive:  u.IsActive,
 		CreatedAt: u.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: u.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
