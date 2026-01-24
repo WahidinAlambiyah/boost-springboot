@@ -27,6 +27,8 @@ npm install \
 # 4) Jalankan database + redis
 cp .env.example .env
 docker compose up -d
+# jika sebelumnya sudah pernah up, reset agar init script dieksekusi:
+# docker compose down -v && docker compose up -d
 
 # 5) Jalankan aplikasi
 npm run start:dev
@@ -45,6 +47,15 @@ Lihat `.env.example`:
 - `REDIS_ENABLED`: `true|false` (jika cache ON tapi Redis OFF, fallback ke memory)
 - `REDIS_URL`: URL Redis
 - `CACHE_TTL_MS`: TTL cache dalam ms
+
+## Catatan PostgreSQL UUID & Schema
+- Project ini memakai UUID untuk primary key. Untuk PostgreSQL, fungsi UUID berasal dari extension.
+- `docker-compose.yml` sudah menjalankan init script yang:
+  - membuat schema `fastworks`
+  - mengaktifkan extension `pgcrypto` (dipakai TypeORM lewat `uuidExtension: 'pgcrypto'`)
+- Jika container Postgres sudah terlanjur dibuat sebelum init script ditambahkan, jalankan:
+  - `docker compose down -v`
+  - `docker compose up -d`
 
 ## Swagger
 Swagger tersedia di `/docs`.
