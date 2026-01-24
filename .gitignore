@@ -1,4 +1,72 @@
-.env
-bin/
+########################
+# Go build artifacts
+########################
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, coverage
+*.test
+*.out
+*.cover
+coverage.*
+coverprofile
+*.prof
+
+# Go workspace/cache
+/bin/
+/dist/
+/build/
+/tmp/
+tmp/
 *.log
-vendor/
+
+# Go toolchain caches (optional; biasanya tidak di-commit)
+# (biarkan jika kamu ingin repo tetap bersih)
+# /pkg/
+# /bin/
+
+########################
+# Dependency / vendor
+########################
+/vendor/
+
+########################
+# Go modules (optional)
+########################
+# Jangan ignore go.mod & go.sum!
+# go.work juga jangan kalau dipakai
+
+########################
+# Swagger (swaggo)
+########################
+# Folder default generate docs (umumnya: docs/)
+docs/
+swagger/
+openapi/
+*.swagger.json
+*.swagger.yaml
+*.openapi.json
+*.openapi.yaml
+
+########################
+# Environment files / secrets
+########################
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+########################
+# Docker
+########################
+# Local override compose
+docker-compose.override.yml
+docker
