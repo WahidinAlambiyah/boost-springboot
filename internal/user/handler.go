@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/yourusername/go-users-api/internal/response"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -26,6 +27,7 @@ func NewHandler(svc *Service) *Handler {
 func (h *Handler) List(c *gin.Context) {
 	users, err := h.svc.List(c.Request.Context())
 	if err != nil {
+		zap.L().Error("list users failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to fetch users", err.Error()))
 		return
 	}
@@ -51,6 +53,7 @@ func (h *Handler) List(c *gin.Context) {
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("create user validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
@@ -62,6 +65,7 @@ func (h *Handler) Create(c *gin.Context) {
 
 	created, err := h.svc.Create(c.Request.Context(), req, role)
 	if err != nil {
+		zap.L().Error("create user failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to create user", err.Error()))
 		return
 	}
@@ -82,12 +86,14 @@ func (h *Handler) Create(c *gin.Context) {
 func (h *Handler) Get(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse user id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid user id", nil))
 		return
 	}
 
 	userEntity, err := h.svc.GetByID(c.Request.Context(), id)
 	if err != nil {
+		zap.L().Warn("get user failed", zap.Error(err))
 		c.JSON(http.StatusNotFound, response.Failure("not_found", "user not found", nil))
 		return
 	}
@@ -110,24 +116,28 @@ func (h *Handler) Get(c *gin.Context) {
 func (h *Handler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse user id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid user id", nil))
 		return
 	}
 
 	var req UpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("update user validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	current, err := h.svc.GetByID(c.Request.Context(), id)
 	if err != nil {
+		zap.L().Warn("get user for update failed", zap.Error(err))
 		c.JSON(http.StatusNotFound, response.Failure("not_found", "user not found", nil))
 		return
 	}
 
 	updated, err := h.svc.Update(c.Request.Context(), current, req, true)
 	if err != nil {
+		zap.L().Error("update user failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to update user", err.Error()))
 		return
 	}
@@ -148,11 +158,13 @@ func (h *Handler) Update(c *gin.Context) {
 func (h *Handler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse user id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid user id", nil))
 		return
 	}
 
 	if err := h.svc.Delete(c.Request.Context(), id); err != nil {
+		zap.L().Error("delete user failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to delete user", err.Error()))
 		return
 	}

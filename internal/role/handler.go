@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/yourusername/go-users-api/internal/response"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -26,6 +27,7 @@ func NewHandler(svc *Service) *Handler {
 func (h *Handler) List(c *gin.Context) {
 	roles, err := h.svc.List(c.Request.Context())
 	if err != nil {
+		zap.L().Error("list roles failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to fetch roles", err.Error()))
 		return
 	}
@@ -51,12 +53,14 @@ func (h *Handler) List(c *gin.Context) {
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("create role validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	created, err := h.svc.Create(c.Request.Context(), req)
 	if err != nil {
+		zap.L().Error("create role failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to create role", err.Error()))
 		return
 	}
@@ -77,12 +81,14 @@ func (h *Handler) Create(c *gin.Context) {
 func (h *Handler) Get(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse role id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid role id", nil))
 		return
 	}
 
 	roleEntity, err := h.svc.GetByID(c.Request.Context(), id)
 	if err != nil {
+		zap.L().Warn("get role failed", zap.Error(err))
 		c.JSON(http.StatusNotFound, response.Failure("not_found", "role not found", nil))
 		return
 	}
@@ -105,24 +111,28 @@ func (h *Handler) Get(c *gin.Context) {
 func (h *Handler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse role id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid role id", nil))
 		return
 	}
 
 	var req UpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("update role validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	current, err := h.svc.GetByID(c.Request.Context(), id)
 	if err != nil {
+		zap.L().Warn("get role for update failed", zap.Error(err))
 		c.JSON(http.StatusNotFound, response.Failure("not_found", "role not found", nil))
 		return
 	}
 
 	updated, err := h.svc.Update(c.Request.Context(), current, req)
 	if err != nil {
+		zap.L().Error("update role failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to update role", err.Error()))
 		return
 	}
@@ -143,11 +153,13 @@ func (h *Handler) Update(c *gin.Context) {
 func (h *Handler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
+		zap.L().Error("parse role id failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid role id", nil))
 		return
 	}
 
 	if err := h.svc.Delete(c.Request.Context(), id); err != nil {
+		zap.L().Error("delete role failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to delete role", err.Error()))
 		return
 	}

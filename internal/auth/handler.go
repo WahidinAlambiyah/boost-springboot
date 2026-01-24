@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yourusername/go-users-api/internal/response"
 	"github.com/yourusername/go-users-api/internal/user"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -29,12 +30,14 @@ func NewHandler(svc *Service) *Handler {
 func (h *Handler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("register validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	newUser, err := h.svc.Register(c.Request.Context(), req)
 	if err != nil {
+		zap.L().Error("register failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to register", err.Error()))
 		return
 	}
@@ -56,6 +59,7 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("login validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
@@ -63,9 +67,11 @@ func (h *Handler) Login(c *gin.Context) {
 	result, err := h.svc.Login(c.Request.Context(), req)
 	if err != nil {
 		if err == ErrInvalidCredentials {
+			zap.L().Warn("login invalid credentials", zap.Error(err))
 			c.JSON(http.StatusUnauthorized, response.Failure("unauthorized", "invalid credentials", nil))
 			return
 		}
+		zap.L().Error("login failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "login failed", err.Error()))
 		return
 	}
@@ -87,12 +93,14 @@ func (h *Handler) Login(c *gin.Context) {
 func (h *Handler) Refresh(c *gin.Context) {
 	var req RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("refresh validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	result, err := h.svc.Refresh(c.Request.Context(), req.RefreshToken)
 	if err != nil {
+		zap.L().Warn("refresh failed", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, response.Failure("unauthorized", "invalid refresh token", nil))
 		return
 	}
@@ -114,11 +122,13 @@ func (h *Handler) Refresh(c *gin.Context) {
 func (h *Handler) Logout(c *gin.Context) {
 	var req LogoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zap.L().Error("logout validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid payload", err.Error()))
 		return
 	}
 
 	if err := h.svc.Logout(c.Request.Context(), req.RefreshToken); err != nil {
+		zap.L().Warn("logout failed", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, response.Failure("unauthorized", "invalid refresh token", nil))
 		return
 	}

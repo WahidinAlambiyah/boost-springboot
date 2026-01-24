@@ -34,7 +34,8 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	logger, _ := zap.NewProduction()
+	logger, _ := zap.NewProduction(zap.AddCaller())
+	zap.ReplaceGlobals(logger)
 	defer func() {
 		_ = logger.Sync()
 	}()
