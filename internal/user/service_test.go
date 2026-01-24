@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+	rolepkg "github.com/yourusername/go-users-api/internal/role"
 )
 
 type mockUserRepo struct {
@@ -49,9 +50,22 @@ func (m *mockUserRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return m.err
 }
 
+type mockRoleRepo struct {
+	role rolepkg.Role
+	err  error
+}
+
+func (m *mockRoleRepo) GetByName(ctx context.Context, name string) (rolepkg.Role, error) {
+	if m.err != nil {
+		return rolepkg.Role{}, m.err
+	}
+	return m.role, nil
+}
+
 func TestUserService_CreateUpdate(t *testing.T) {
 	repo := &mockUserRepo{}
-	svc := NewService(repo)
+	roleRepo := &mockRoleRepo{role: rolepkg.Role{ID: uuid.New(), Name: string(RoleUser)}}
+	svc := NewService(repo, roleRepo)
 
 	created, err := svc.Create(context.Background(), CreateRequest{
 		FullName: "Jane Doe",
@@ -61,7 +75,7 @@ func TestUserService_CreateUpdate(t *testing.T) {
 	}, RoleUser)
 	require.NoError(t, err)
 	require.Equal(t, "Jane Doe", created.FullName)
-	require.Equal(t, RoleUser, created.Role)
+	require.Equal(t, string(RoleUser), created.Role.Name)
 
 	updateReq := UpdateRequest{FullName: "Jane Updated"}
 	updated, err := svc.Update(context.Background(), created, updateReq, false)
@@ -71,7 +85,8 @@ func TestUserService_CreateUpdate(t *testing.T) {
 
 func TestUserService_GetNotFound(t *testing.T) {
 	repo := &mockUserRepo{err: ErrUserNotFound}
-	svc := NewService(repo)
+	roleRepo := &mockRoleRepo{role: rolepkg.Role{ID: uuid.New(), Name: string(RoleUser)}}
+	svc := NewService(repo, roleRepo)
 
 	_, err := svc.GetByID(context.Background(), uuid.New())
 	require.Error(t, err)

@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+	rolepkg "github.com/yourusername/go-users-api/internal/role"
 )
 
 type memoryUserRepo struct {
@@ -61,10 +62,30 @@ func (m *memoryUserRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+type memoryRoleRepo struct {
+	roles map[string]rolepkg.Role
+}
+
+func newMemoryRoleRepo() *memoryRoleRepo {
+	return &memoryRoleRepo{roles: map[string]rolepkg.Role{
+		string(RoleUser):  {ID: uuid.New(), Name: string(RoleUser)},
+		string(RoleAdmin): {ID: uuid.New(), Name: string(RoleAdmin)},
+	}}
+}
+
+func (m *memoryRoleRepo) GetByName(ctx context.Context, name string) (rolepkg.Role, error) {
+	roleEntity, ok := m.roles[name]
+	if !ok {
+		return rolepkg.Role{}, ErrRoleNotFound
+	}
+	return roleEntity, nil
+}
+
 func TestUserHandlersCRUD(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := newMemoryUserRepo()
-	svc := NewService(repo)
+	roleRepo := newMemoryRoleRepo()
+	svc := NewService(repo, roleRepo)
 	h := NewHandler(svc)
 
 	router := gin.New()

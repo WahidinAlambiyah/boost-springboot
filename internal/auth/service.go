@@ -19,6 +19,7 @@ var (
 
 type Service struct {
 	repo      user.Repository
+	roleRepo  user.RoleRepository
 	cache     TokenStore
 	jwtConfig config.JWTConfig
 }
@@ -49,8 +50,8 @@ type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-func NewService(repo user.Repository, cache TokenStore, jwtCfg config.JWTConfig) *Service {
-	return &Service{repo: repo, cache: cache, jwtConfig: jwtCfg}
+func NewService(repo user.Repository, roleRepo user.RoleRepository, cache TokenStore, jwtCfg config.JWTConfig) *Service {
+	return &Service{repo: repo, roleRepo: roleRepo, cache: cache, jwtConfig: jwtCfg}
 }
 
 func (s *Service) Register(ctx context.Context, req RegisterRequest) (user.User, error) {
@@ -60,7 +61,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (user.User,
 		Username: req.Username,
 		Password: req.Password,
 	}
-	userService := user.NewService(s.repo)
+	userService := user.NewService(s.repo, s.roleRepo)
 	return userService.Create(ctx, createReq, user.RoleUser)
 }
 
@@ -75,7 +76,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (TokenResponse, e
 	if err := utils.VerifyPassword(entity.PasswordHash, req.Password); err != nil {
 		return TokenResponse{}, ErrInvalidCredentials
 	}
-	return s.issueTokenPair(ctx, entity.ID, string(entity.Role))
+	return s.issueTokenPair(ctx, entity.ID, entity.Role.Name)
 }
 
 func (s *Service) Refresh(ctx context.Context, refreshToken string) (TokenResponse, error) {

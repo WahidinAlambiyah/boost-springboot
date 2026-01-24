@@ -65,6 +65,10 @@ func (h *Handler) Create(c *gin.Context) {
 
 	created, err := h.svc.Create(c.Request.Context(), req, role)
 	if err != nil {
+		if err == ErrRoleNotFound {
+			c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid role", nil))
+			return
+		}
 		zap.L().Error("create user failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to create user", err.Error()))
 		return
@@ -137,6 +141,10 @@ func (h *Handler) Update(c *gin.Context) {
 
 	updated, err := h.svc.Update(c.Request.Context(), current, req, true)
 	if err != nil {
+		if err == ErrRoleNotFound {
+			c.JSON(http.StatusBadRequest, response.Failure("validation_error", "invalid role", nil))
+			return
+		}
 		zap.L().Error("update user failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, response.Failure("internal_error", "failed to update user", err.Error()))
 		return

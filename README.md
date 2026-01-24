@@ -9,10 +9,13 @@ cmd/api
 internal
   auth
   cache
+  category
   config
   db
   middleware
+  product
   response
+  role
   user
   utils
 migrations
@@ -95,6 +98,32 @@ curl -X GET http://localhost:8080/api/v1/users
 curl -X POST http://localhost:8080/api/v1/roles \
   -H 'Content-Type: application/json' \
   -d '{"name":"ADMIN","description":"Administrator"}'
+```
+
+### CRUD Categories
+
+```bash
+curl -X POST http://localhost:8080/api/v1/categories \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Electronics","slug":"electronics","description":"Kategori elektronik"}'
+```
+
+```bash
+curl -X GET http://localhost:8080/api/v1/categories
+```
+
+### CRUD Products
+
+```bash
+curl -X POST http://localhost:8080/api/v1/products \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"category_id":"<category_uuid>","name":"iPhone 15","sku":"IPHONE15","price":19999.00,"stock":10}'
+```
+
+```bash
+curl -X GET 'http://localhost:8080/api/v1/products?search=iphone&sort=-price&page=1&size=10'
 ```
 
 ## Catatan

@@ -12,8 +12,11 @@ import (
 	"github.com/yourusername/go-users-api/docs"
 	"github.com/yourusername/go-users-api/internal/auth"
 	"github.com/yourusername/go-users-api/internal/cache"
+	"github.com/yourusername/go-users-api/internal/category"
 	"github.com/yourusername/go-users-api/internal/config"
 	"github.com/yourusername/go-users-api/internal/db"
+	"github.com/yourusername/go-users-api/internal/middleware"
+	"github.com/yourusername/go-users-api/internal/product"
 	"github.com/yourusername/go-users-api/internal/response"
 	"github.com/yourusername/go-users-api/internal/role"
 	"github.com/yourusername/go-users-api/internal/user"
@@ -25,6 +28,10 @@ import (
 // @description User management API built with Gin and GORM.
 // @tag.name Roles
 // @tag.description Roles CRUD endpoints.
+// @tag.name Categories
+// @tag.description Category management endpoints.
+// @tag.name Products
+// @tag.description Product management endpoints.
 // @host localhost:8080
 // @BasePath /
 // @schemes http
@@ -52,12 +59,20 @@ func main() {
 	}
 
 	userRepo := user.NewGormRepository(postgres)
-	userService := user.NewService(userRepo)
+	roleRepo := role.NewGormRepository(postgres)
+	userService := user.NewService(userRepo, roleRepo)
 	userHandler := user.NewHandler(userService)
 
-	roleRepo := role.NewGormRepository(postgres)
 	roleService := role.NewService(roleRepo)
 	roleHandler := role.NewHandler(roleService)
+
+	categoryRepo := category.NewGormRepository(postgres)
+	categoryService := category.NewService(categoryRepo)
+	categoryHandler := category.NewHandler(categoryService)
+
+	productRepo := product.NewGormRepository(postgres)
+	productService := product.NewService(productRepo)
+	productHandler := product.NewHandler(productService)
 
 	var tokenStore auth.TokenStore
 	if cfg.Redis.Enabled {
@@ -70,7 +85,7 @@ func main() {
 		logger.Warn("redis disabled, using in-memory token store")
 		tokenStore = auth.NewMemoryTokenStore()
 	}
-	authService := auth.NewService(userRepo, tokenStore, cfg.JWT)
+	authService := auth.NewService(userRepo, roleRepo, tokenStore, cfg.JWT)
 	authHandler := auth.NewHandler(authService)
 
 	router := gin.New()
@@ -102,6 +117,21 @@ func main() {
 		api.GET("/roles/:id", roleHandler.Get)
 		api.PUT("/roles/:id", roleHandler.Update)
 		api.DELETE("/roles/:id", roleHandler.Delete)
+
+		api.GET("/categories", categoryHandler.List)
+		api.GET("/categories/:id", categoryHandler.Get)
+
+		api.GET("/products", productHandler.List)
+		api.GET("/products/:id", productHandler.Get)
+
+		adminGroup := api.Group("", middleware.Auth(cfg.JWT), middleware.RequireRole(string(user.RoleAdmin)))
+		adminGroup.POST("/categories", categoryHandler.Create)
+		adminGroup.PUT("/categories/:id", categoryHandler.Update)
+		adminGroup.DELETE("/categories/:id", categoryHandler.Delete)
+
+		adminGroup.POST("/products", productHandler.Create)
+		adminGroup.PUT("/products/:id", productHandler.Update)
+		adminGroup.DELETE("/products/:id", productHandler.Delete)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.DefaultModelsExpandDepth(-1)))

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/yourusername/go-users-api/internal/config"
+	rolepkg "github.com/yourusername/go-users-api/internal/role"
 	"github.com/yourusername/go-users-api/internal/user"
 	"github.com/yourusername/go-users-api/internal/utils"
 )
@@ -55,9 +56,29 @@ func (m *memoryAuthRepo) List(ctx context.Context) ([]user.User, error) {
 func (m *memoryAuthRepo) Update(ctx context.Context, u *user.User) error { return nil }
 func (m *memoryAuthRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
 
+type memoryRoleRepo struct {
+	roles map[string]rolepkg.Role
+}
+
+func newMemoryRoleRepo() *memoryRoleRepo {
+	return &memoryRoleRepo{roles: map[string]rolepkg.Role{
+		string(user.RoleUser):  {ID: uuid.New(), Name: string(user.RoleUser)},
+		string(user.RoleAdmin): {ID: uuid.New(), Name: string(user.RoleAdmin)},
+	}}
+}
+
+func (m *memoryRoleRepo) GetByName(ctx context.Context, name string) (rolepkg.Role, error) {
+	roleEntity, ok := m.roles[name]
+	if !ok {
+		return rolepkg.Role{}, user.ErrRoleNotFound
+	}
+	return roleEntity, nil
+}
+
 func TestAuthHandlersFlow(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := newMemoryAuthRepo()
+	roleRepo := newMemoryRoleRepo()
 	store := NewMemoryTokenStore()
 	jwtCfg := config.JWTConfig{
 		Secret:            "secret",
@@ -66,7 +87,7 @@ func TestAuthHandlersFlow(t *testing.T) {
 		AccessTokenLabel:  "access",
 		RefreshTokenLabel: "refresh",
 	}
-	svc := NewService(repo, store, jwtCfg)
+	svc := NewService(repo, roleRepo, store, jwtCfg)
 	h := NewHandler(svc)
 
 	router := gin.New()
@@ -130,6 +151,7 @@ func TestAuthHandlersFlow(t *testing.T) {
 func TestAuthHandlersLoginFailure(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := newMemoryAuthRepo()
+	roleRepo := newMemoryRoleRepo()
 	store := NewMemoryTokenStore()
 	jwtCfg := config.JWTConfig{
 		Secret:            "secret",
@@ -138,7 +160,7 @@ func TestAuthHandlersLoginFailure(t *testing.T) {
 		AccessTokenLabel:  "access",
 		RefreshTokenLabel: "refresh",
 	}
-	svc := NewService(repo, store, jwtCfg)
+	svc := NewService(repo, roleRepo, store, jwtCfg)
 	h := NewHandler(svc)
 
 	router := gin.New()
@@ -153,7 +175,8 @@ func TestAuthHandlersLoginFailure(t *testing.T) {
 		Email:        "jane@example.com",
 		Username:     "jane",
 		PasswordHash: hash,
-		Role:         user.RoleUser,
+		RoleID:       roleRepo.roles[string(user.RoleUser)].ID,
+		Role:         roleRepo.roles[string(user.RoleUser)],
 		IsActive:     true,
 	}
 	require.NoError(t, repo.Create(context.Background(), &userEntity))

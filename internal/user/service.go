@@ -5,22 +5,38 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	rolepkg "github.com/yourusername/go-users-api/internal/role"
 	"github.com/yourusername/go-users-api/internal/utils"
+	"gorm.io/gorm"
 )
 
 var (
 	ErrUserNotFound = errors.New("user not found")
+	ErrRoleNotFound = errors.New("role not found")
 )
 
 type Service struct {
-	repo Repository
+	repo     Repository
+	roleRepo RoleRepository
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+type RoleRepository interface {
+	GetByName(ctx context.Context, name string) (rolepkg.Role, error)
+}
+
+func NewService(repo Repository, roleRepo RoleRepository) *Service {
+	return &Service{repo: repo, roleRepo: roleRepo}
 }
 
 func (s *Service) Create(ctx context.Context, req CreateRequest, role Role) (User, error) {
+	roleEntity, err := s.roleRepo.GetByName(ctx, string(role))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return User{}, ErrRoleNotFound
+		}
+		return User{}, err
+	}
+
 	hash, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return User{}, err
@@ -32,7 +48,8 @@ func (s *Service) Create(ctx context.Context, req CreateRequest, role Role) (Use
 		Email:        req.Email,
 		Username:     req.Username,
 		PasswordHash: hash,
-		Role:         role,
+		RoleID:       roleEntity.ID,
+		Role:         roleEntity,
 		IsActive:     true,
 	}
 
@@ -72,7 +89,15 @@ func (s *Service) Update(ctx context.Context, target User, req UpdateRequest, ca
 		target.PasswordHash = hash
 	}
 	if req.Role != "" && canEditRole {
-		target.Role = Role(req.Role)
+		roleEntity, err := s.roleRepo.GetByName(ctx, req.Role)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return User{}, ErrRoleNotFound
+			}
+			return User{}, err
+		}
+		target.RoleID = roleEntity.ID
+		target.Role = roleEntity
 	}
 	if req.IsActive != nil {
 		target.IsActive = *req.IsActive
