@@ -62,6 +62,7 @@ import { UsersModule } from './users/users.module';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
+        schema: configService.get<string>('DB_SCHEMA') ?? 'public',
         synchronize: true,
         autoLoadEntities: true,
       }),

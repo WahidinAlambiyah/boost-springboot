@@ -40,6 +40,7 @@ npm run start:dev
 ## Environment Variables
 Lihat `.env.example`:
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`: koneksi PostgreSQL
+- `DB_SCHEMA`: schema PostgreSQL yang digunakan (contoh: `fastworks`)
 - `CACHE_ENABLED`: `true|false` untuk ON/OFF cache
 - `REDIS_ENABLED`: `true|false` (jika cache ON tapi Redis OFF, fallback ke memory)
 - `REDIS_URL`: URL Redis
