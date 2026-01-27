@@ -15,25 +15,29 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(
-        name = "roles",
+        name = "permissions",
         schema = "fastworks_springboot",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_roles_code", columnNames = "code")
+                @UniqueConstraint(name = "uk_permissions_code", columnNames = "code")
         }
 )
-public class Role {
+public class Permission {
+
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "code", nullable = false, length = 100)
-    private String code; // ADMIN, SUPPORT, ...
+    @Column(name = "code", nullable = false, length = 150)
+    private String code; // USER_READ, USER_WRITE, ...
 
     @Column(name = "name", nullable = false, length = 150)
     private String name;
 
     @Column(name = "description", length = 500)
     private String description;
+
+    @Column(name = "module", length = 100)
+    private String module; // USER / ORDER / REPORT (opsional)
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
@@ -44,11 +48,8 @@ public class Role {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
 
-    // Join entities
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserRole> userRoles = new HashSet<>();
-
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Join entity
+    @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RolePermission> rolePermissions = new HashSet<>();
 
     @PrePersist

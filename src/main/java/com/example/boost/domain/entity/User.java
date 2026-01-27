@@ -1,17 +1,6 @@
 package com.example.boost.domain.entity;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
@@ -20,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users", schema = "fastworks_springboot")
@@ -27,6 +17,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class User {
+
     @Id
     @Column(nullable = false)
     private UUID id;
@@ -70,11 +61,9 @@ public class User {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", schema = "fastworks_springboot", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Set<Role> roles = new HashSet<>();
+    // ✅ FIX: relasi ke pivot entity, bukan ElementCollection
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserRole> userRoles = new HashSet<>();
 
     @PrePersist
     public void onCreate() {
@@ -89,5 +78,36 @@ public class User {
     @PreUpdate
     public void onUpdate() {
         updatedAt = OffsetDateTime.now();
+    }
+
+    public Set<Role> getRoles() {
+        if (userRoles == null) {
+            return Set.of();
+        }
+        return userRoles.stream()
+                .map(UserRole::getRole)
+                .collect(Collectors.toSet());
+    }
+
+// OPSIONAL: supaya AuthService.register yang memanggil user.setRoles(...) tetap jalan
+    public void setRoles(Set<Role> roles) {
+        this.userRoles.clear();
+        if (roles == null) {
+            return;
+        }
+
+        // pastikan id user sudah ada (karena UserRoleId butuh userId)
+        if (this.id == null) {
+            this.id = java.util.UUID.randomUUID();
+        }
+
+        for (Role role : roles) {
+            UserRole ur = UserRole.builder()
+                    .user(this)
+                    .role(role)
+                    .id(new UserRoleId(this.id, role.getId()))
+                    .build();
+            this.userRoles.add(ur);
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.BadRequestException;
 import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
 import com.example.boost.security.JwtService;
 import io.jsonwebtoken.Claims;
@@ -27,6 +28,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final TokenService tokenService;
@@ -48,7 +50,10 @@ public class AuthService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setFullName(request.getFullName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(Set.of(Role.USER));
+        Role defaultRole = roleRepository.findByCodeIgnoreCase("USER")
+            .orElseThrow(() -> new BadRequestException("Default role USER not found in database"));
+
+        user.setRoles(Set.of(defaultRole));
         userRepository.save(user);
 
         return issueTokens(user);
@@ -97,8 +102,9 @@ public class AuthService {
         User user = userRepository.findById(java.util.UUID.fromString(userId))
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        String roles = String.join(",", user.getRoles().stream().map(Enum::name).toList());
+        String roles = String.join(",", user.getRoles().stream().map(Role::getCode).toList());
         String newAccessToken = jwtService.generateAccessToken(user.getUsername(), user.getId().toString(), roles);
+    
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(token)
@@ -123,7 +129,7 @@ public class AuthService {
     }
 
     private AuthResponse issueTokens(User user) {
-        String roles = String.join(",", user.getRoles().stream().map(Enum::name).toList());
+        String roles = String.join(",", user.getRoles().stream().map(Role::getCode).toList());
         String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getId().toString(), roles);
         String refreshToken = jwtService.generateRefreshToken(user.getUsername(), user.getId().toString(), roles);
 

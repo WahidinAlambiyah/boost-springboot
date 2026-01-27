@@ -33,28 +33,32 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(Pageable pageable) {
         Page<UserResponse> page = userService.getUsers(pageable).map(userMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Users retrieved", page));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable UUID id) {
         UserResponse response = userMapper.toResponse(userService.getById(id));
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User retrieved", response));
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    // @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<UserResponse>> getMe(Authentication authentication) {
         UserResponse response = userMapper.toResponse(userService.getCurrentUser(authentication));
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Profile retrieved", response));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserResponse response = userMapper.toResponse(userService.createUser(request));
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -62,7 +66,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(@PathVariable UUID id,
                                                                 @Valid @RequestBody UpdateUserRequest request) {
         UserResponse response = userMapper.toResponse(userService.updateUser(id, request));
@@ -70,7 +75,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@authz.has('USER_READ')")
     public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable UUID id) {
         userService.softDeleteUser(id);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User deleted", null));

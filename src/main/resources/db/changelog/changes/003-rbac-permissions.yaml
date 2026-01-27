@@ -1,0 +1,329 @@
+databaseChangeLog:
+
+  # (Opsional tapi sangat membantu) untuk gen UUID otomatis di Postgres
+  - changeSet:
+      id: 003-000-enable-pgcrypto
+      author: boost
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              create extension if not exists pgcrypto;
+      rollback:
+        - sql:
+            dbms: postgresql
+            sql: |
+              -- opsional rollback extension, biasanya dibiarkan
+              -- drop extension if exists pgcrypto;
+
+  # 1) roles
+  - changeSet:
+      id: 003-010-create-roles-table
+      author: boost
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              schemaName: fastworks_springboot
+              tableName: roles
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: code
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: roles
+            indexName: idx_roles_code
+            columns:
+              - column:
+                  name: code
+
+  # 2) permissions
+  - changeSet:
+      id: 003-020-create-permissions-table
+      author: boost
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              schemaName: fastworks_springboot
+              tableName: permissions
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: permissions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: code
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: module
+                  type: varchar(100)
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: permissions
+            indexName: idx_permissions_code
+            columns:
+              - column:
+                  name: code
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: permissions
+            indexName: idx_permissions_module
+            columns:
+              - column:
+                  name: module
+
+  # 3) role_permissions (M:N)
+  - changeSet:
+      id: 003-030-create-role-permissions-table
+      author: boost
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              schemaName: fastworks_springboot
+              tableName: role_permissions
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: role_permissions
+            columns:
+              - column:
+                  name: role_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assigned_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            schemaName: fastworks_springboot
+            tableName: role_permissions
+            columnNames: role_id, permission_id
+            constraintName: pk_role_permissions
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: role_permissions
+            baseColumnNames: role_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: roles
+            referencedColumnNames: id
+            constraintName: fk_role_permissions_role
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: role_permissions
+            baseColumnNames: permission_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: permissions
+            referencedColumnNames: id
+            constraintName: fk_role_permissions_permission
+            onDelete: RESTRICT
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: role_permissions
+            indexName: idx_role_permissions_role_id
+            columns:
+              - column:
+                  name: role_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: role_permissions
+            indexName: idx_role_permissions_permission_id
+            columns:
+              - column:
+                  name: permission_id
+
+  # 4) Upgrade user_roles dari (user_id, role varchar) -> (user_id, role_id uuid + assigned_at + assigned_by)
+  - changeSet:
+      id: 003-040-upgrade-user-roles
+      author: boost
+      changes:
+        # tambahkan kolom baru dulu
+        - addColumn:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_id
+                  type: uuid
+              - column:
+                  name: assigned_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+              - column:
+                  name: assigned_by
+                  type: uuid
+
+        # isi roles dari data existing user_roles.role
+        - sql:
+            dbms: postgresql
+            sql: |
+              insert into fastworks_springboot.roles (code, name, is_active, created_at, updated_at)
+              select distinct ur.role, ur.role, true, now(), now()
+              from fastworks_springboot.user_roles ur
+              where ur.role is not null
+              on conflict (code) do nothing;
+
+        # mapping ur.role_id berdasarkan code
+        - sql:
+            dbms: postgresql
+            sql: |
+              update fastworks_springboot.user_roles ur
+              set role_id = r.id
+              from fastworks_springboot.roles r
+              where r.code = ur.role;
+
+        # set NOT NULL untuk role_id setelah data termigrasi
+        - addNotNullConstraint:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columnName: role_id
+            columnDataType: uuid
+
+        # hapus PK lama (user_id, role) lalu buat PK baru (user_id, role_id)
+        - dropPrimaryKey:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            constraintName: pk_user_roles
+
+        - addPrimaryKey:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+
+        # FK ke roles dan assigned_by ke users
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: roles
+            referencedColumnNames: id
+            constraintName: fk_user_roles_role
+            onDelete: RESTRICT
+
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: user_roles
+            baseColumnNames: assigned_by
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_user_roles_assigned_by
+            onDelete: SET NULL
+
+        # index untuk join performa bagus
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            indexName: idx_user_roles_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            indexName: idx_user_roles_role_id
+            columns:
+              - column:
+                  name: role_id
+
+        # setelah sukses migrasi, baru drop kolom role lama
+        - dropColumn:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columnName: role
+      rollback:
+        - sql:
+            dbms: postgresql
+            sql: |
+              -- Rollback kompleks karena ada migrasi data.
+              -- Biasanya rollback untuk migrasi RBAC seperti ini tidak dipakai.
+              -- Kalau butuh, kita bisa buat rollback yang lebih lengkap sesuai kebutuhan.

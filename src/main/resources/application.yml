@@ -35,7 +35,9 @@ spring:
 
 app:
   redis:
-    enabled: ${REDIS_ENABLED:true}
+    enabled: ${REDIS_ENABLED:false}
+  security:
+    enabled: true
 
 server:
   port: ${SERVER_PORT:8080}
