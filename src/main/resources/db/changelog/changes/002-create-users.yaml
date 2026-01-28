@@ -1,13 +1,13 @@
 databaseChangeLog:
-  - changeSet:
-      id: 002-000-enable-pgcrypto
-      author: boost
-      changes:
-        - createSchema:
-            schemaName: fastworks_springboot
-        - sql:
-            dbms: postgresql
-            sql: create extension if not exists pgcrypto;
+#   - changeSet:
+#       id: 002-000-enable-pgcrypto
+#       author: boost
+#       changes:
+#         - createSchema:
+#             schemaName: fastworks_springboot
+#         - sql:
+#             dbms: postgresql
+#             sql: create extension if not exists pgcrypto;
   - changeSet:
       id: 002-create-users-table
       author: boost
