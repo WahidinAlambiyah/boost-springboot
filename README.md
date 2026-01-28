@@ -1,5 +1,31 @@
 # Boost Spring Boot RBAC API
 
+**Commercial / Proprietary (Not Open Source)** — this repository is licensed per end client only.
+
+## License Summary (Commercial, Per Client)
+- **Allowed**: Use and modify the Software for **one (1) end client** per license purchase.
+- **Allowed**: Deploy internally for the permitted client and make backups.
+- **Not allowed**: Redistribute, publish, sublicense, resell, or provide the Software to other clients.
+- **Not allowed**: Use as a template/boilerplate for multiple clients or productize it for resale.
+
+See [LICENSE](LICENSE) and [TERMS.md](TERMS.md). Indonesian summaries are in [LICENSE_ID.md](LICENSE_ID.md) and [TERMS_ID.md](TERMS_ID.md).
+
+## Do Not Commit Secrets
+Keep secrets out of git. Use `.env.example` as a template and store real secrets in `.env`, which is already ignored by `.gitignore`.
+
+If `.env` was previously committed, remove it from the repo history with:
+```bash
+git rm --cached .env
+git commit -m "chore: stop tracking .env"
+```
+Then rotate any exposed secrets.
+
+## Third-Party Licenses
+Third-party dependency notices and the update checklist live in [LICENSES/THIRD_PARTY.md](LICENSES/THIRD_PARTY.md).
+
+## Contact
+For licensing inquiries: <CONTACT_EMAIL>
+
 API backend Java 21 + Spring Boot 3.x dengan JWT, RBAC berbasis database, PostgreSQL, Redis (opsional), Liquibase, JPA, Validation, dan OpenAPI/Swagger.
 
 ## Prasyarat
