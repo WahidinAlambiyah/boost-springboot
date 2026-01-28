@@ -10,7 +10,9 @@ import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.PermissionRepository;
 import com.example.boost.repository.RoleRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,10 @@ public class RoleService {
 
     public List<Role> getRoles() {
         return roleRepository.findAll();
+    }
+
+    public Page<Role> getRoles(Pageable pageable) {
+        return roleRepository.findAll(pageable);
     }
 
     public Role getById(UUID id) {

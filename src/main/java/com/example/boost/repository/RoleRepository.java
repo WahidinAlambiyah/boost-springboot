@@ -2,6 +2,8 @@ package com.example.boost.repository;
 
 import com.example.boost.domain.entity.Role;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,4 +34,8 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
     @Override
     @EntityGraph(attributePaths = {"rolePermissions", "rolePermissions.permission"})
     List<Role> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"rolePermissions", "rolePermissions.permission"})
+    Page<Role> findAll(Pageable pageable);
 }

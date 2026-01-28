@@ -9,6 +9,8 @@ import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +37,13 @@ public class RoleController {
     @PreAuthorize("hasAuthority('ROLE_READ')")
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getRoles() {
         List<RoleResponse> responses = roleService.getRoles().stream().map(roleMapper::toResponse).toList();
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
+    }
+
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('ROLE_READ')")
+    public ResponseEntity<ApiResponse<Page<RoleResponse>>> getRolesPage(Pageable pageable) {
+        Page<RoleResponse> responses = roleService.getRoles(pageable).map(roleMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
     }
 

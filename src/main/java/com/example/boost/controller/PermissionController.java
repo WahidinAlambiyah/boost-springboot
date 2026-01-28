@@ -8,6 +8,8 @@ import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +38,14 @@ public class PermissionController {
         List<PermissionResponse> responses = permissionService.getPermissions().stream()
                 .map(permissionMapper::toResponse)
                 .toList();
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
+    }
+
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('PERMISSION_READ')")
+    public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getPermissionsPages(Pageable pageable) {
+        Page<PermissionResponse> responses = permissionService.getPermissions(pageable)
+                .map(permissionMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
     }
 

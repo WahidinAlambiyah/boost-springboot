@@ -6,12 +6,17 @@ import com.example.boost.domain.entity.Permission;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.PermissionRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,10 @@ public class PermissionService {
 
     public List<Permission> getPermissions() {
         return permissionRepository.findAll();
+    }
+
+    public Page<Permission> getPermissions(Pageable pageable) {
+        return permissionRepository.findAll(pageable);
     }
 
     public Permission getById(UUID id) {
