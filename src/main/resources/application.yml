@@ -9,7 +9,6 @@ spring:
       connection-init-sql: SET search_path TO ${DB_SCHEMA:fastworks_springboot}
       data-source-properties:
         prepareThreshold: 0
-        # opsional kalau masih bandel:
         preferQueryMode: simple
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:boost}?currentSchema=${DB_SCHEMA:fastworks_springboot}
     username: ${DB_USER:boost}
@@ -37,7 +36,9 @@ app:
   redis:
     enabled: ${REDIS_ENABLED:false}
   security:
-    enabled: true
+    enabled: ${SECURITY_ENABLED:true}
+    method-security:
+      enabled: ${METHOD_SECURITY_ENABLED:true}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -54,9 +55,6 @@ security:
     secret: ${JWT_SECRET:change-me-please-change-me-please-change-me}
     access-token-ttl-minutes: 15
     refresh-token-ttl-days: 7
-  login:
-    max-failed-attempts: 5
-    lock-minutes: 15
 
 springdoc:
   swagger-ui:

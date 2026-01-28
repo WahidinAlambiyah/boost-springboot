@@ -25,7 +25,7 @@ public class TokenService {
     private final Map<String, StoredToken> inMemoryStore = new ConcurrentHashMap<>();
     private final Map<String, StoredToken> blacklistStore = new ConcurrentHashMap<>();
 
-    @Value("${app.redis.enabled:true}")
+    @Value("${app.redis.enabled:false}")
     private boolean redisEnabled;
 
     public void storeRefreshToken(String userId, String tokenId, String token, Duration ttl) {

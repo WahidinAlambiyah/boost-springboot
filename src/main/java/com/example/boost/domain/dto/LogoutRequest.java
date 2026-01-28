@@ -1,8 +1,10 @@
 package com.example.boost.domain.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class LogoutRequest {
     private String refreshToken;
 }

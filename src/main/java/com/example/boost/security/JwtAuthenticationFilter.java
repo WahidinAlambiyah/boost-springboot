@@ -39,6 +39,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Jws<Claims> jws = jwtService.parseToken(token);
             Claims claims = jws.getBody();
+            if (!"access".equals(claims.get("typ", String.class))) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             String jti = claims.getId();
             if (tokenService.isAccessTokenBlacklisted(jti)) {
                 filterChain.doFilter(request, response);

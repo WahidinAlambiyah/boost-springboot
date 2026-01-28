@@ -4,18 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class UserResponse {
+public class PermissionResponse {
     private UUID id;
-    private String username;
-    private String email;
+    private String code;
+    private String name;
+    private String module;
     @JsonProperty("isActive")
     private boolean isActive;
-    private Set<String> roles;
-    private OffsetDateTime createdAt;
 }
