@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-seed-default-rbac
+      author: boost
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              insert into fastworks_springboot.roles (code, name, description, is_active, created_at, updated_at)
+              values
+                ('ADMIN', 'Administrator', 'Full access', true, now(), now()),
+                ('USER', 'User', 'Default user role', true, now(), now()),
+                ('SUPPORT', 'Support', 'Support team access', true, now(), now()),
+                ('FINANCE', 'Finance', 'Finance team access', true, now(), now()),
+                ('USER_MANAGER', 'User Manager', 'Manage users and roles', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('USER_READ', 'User Read', 'Read users', 'USER', true, now(), now()),
+                ('USER_WRITE', 'User Write', 'Create or update users', 'USER', true, now(), now()),
+                ('USER_DELETE', 'User Delete', 'Delete users', 'USER', true, now(), now()),
+                ('ROLE_READ', 'Role Read', 'Read roles', 'ROLE', true, now(), now()),
+                ('ROLE_WRITE', 'Role Write', 'Create or update roles', 'ROLE', true, now(), now()),
+                ('ROLE_DELETE', 'Role Delete', 'Delete roles', 'ROLE', true, now(), now()),
+                ('PERMISSION_READ', 'Permission Read', 'Read permissions', 'PERMISSION', true, now(), now()),
+                ('PERMISSION_WRITE', 'Permission Write', 'Create or update permissions', 'PERMISSION', true, now(), now()),
+                ('PERMISSION_DELETE', 'Permission Delete', 'Delete permissions', 'PERMISSION', true, now(), now()),
+                ('REPORT_EXPORT', 'Report Export', 'Export reports', 'REPORT', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              cross join fastworks_springboot.permissions p
+              where r.code = 'ADMIN'
+              on conflict (role_id, permission_id) do nothing;
+
+              insert into fastworks_springboot.users (id, username, email, password_hash, full_name, is_active, created_at, updated_at)
+              values (gen_random_uuid(), 'admin', 'admin@example.com', '$2b$12$Q3OmCaqhDeSs7YFndlmQHeyc9Nt5Z7Y1z8EuordYr0YewEOyO1r56', 'Administrator', true, now(), now())
+              on conflict (username) do nothing;
+
+              insert into fastworks_springboot.user_roles (user_id, role_id, assigned_at)
+              select u.id, r.id, now()
+              from fastworks_springboot.users u
+              join fastworks_springboot.roles r on r.code = 'ADMIN'
+              where u.username = 'admin'
+              on conflict (user_id, role_id) do nothing;

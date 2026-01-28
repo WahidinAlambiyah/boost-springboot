@@ -1,6 +1,13 @@
 package com.example.boost.domain.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
@@ -28,29 +35,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "full_name")
     private String fullName;
 
     @Column(name = "is_active", nullable = false)
-    private boolean active = true;
-
-    @Column(name = "failed_login_count", nullable = false)
-    private int failedLoginCount = 0;
-
-    @Column(name = "locked_until")
-    private OffsetDateTime lockedUntil;
-
-    @Column(name = "last_login_at")
-    private OffsetDateTime lastLoginAt;
-
-    @Column(name = "password_changed_at")
-    private OffsetDateTime passwordChangedAt;
+    private boolean isActive = true;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
@@ -61,7 +53,6 @@ public class User {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    // ✅ FIX: relasi ke pivot entity, bukan ElementCollection
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
@@ -89,25 +80,39 @@ public class User {
                 .collect(Collectors.toSet());
     }
 
-// OPSIONAL: supaya AuthService.register yang memanggil user.setRoles(...) tetap jalan
+    public Set<String> getRoleCodes() {
+        return getRoles().stream()
+                .map(Role::getCode)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getPermissionCodes() {
+        return getRoles().stream()
+                .flatMap(role -> {
+                    if (role.getRolePermissions() == null) {
+                        return java.util.stream.Stream.empty();
+                    }
+                    return role.getRolePermissions().stream();
+                })
+                .map(rolePermission -> rolePermission.getPermission().getCode())
+                .collect(Collectors.toSet());
+    }
+
     public void setRoles(Set<Role> roles) {
-        this.userRoles.clear();
+        userRoles.clear();
         if (roles == null) {
             return;
         }
-
-        // pastikan id user sudah ada (karena UserRoleId butuh userId)
         if (this.id == null) {
-            this.id = java.util.UUID.randomUUID();
+            this.id = UUID.randomUUID();
         }
-
         for (Role role : roles) {
-            UserRole ur = UserRole.builder()
+            UserRole userRole = UserRole.builder()
                     .user(this)
                     .role(role)
                     .id(new UserRoleId(this.id, role.getId()))
                     .build();
-            this.userRoles.add(ur);
+            userRoles.add(userRole);
         }
     }
 }

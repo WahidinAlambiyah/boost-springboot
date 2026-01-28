@@ -1,15 +1,16 @@
 package com.example.boost.service;
 
 import com.example.boost.config.JwtProperties;
-import com.example.boost.config.LoginProperties;
 import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
-import com.example.boost.exception.BadRequestException;
+import com.example.boost.exception.ConflictException;
+import com.example.boost.exception.NotFoundException;
 import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.repository.PermissionRepository;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
 import com.example.boost.security.JwtService;
@@ -21,39 +22,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final TokenService tokenService;
-    private final LoginProperties loginProperties;
     private final JwtProperties jwtProperties;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
-            throw new BadRequestException("Username already exists");
+            throw new ConflictException("Username already exists");
         }
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setFullName(request.getFullName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        Role defaultRole = roleRepository.findByCodeIgnoreCase("USER")
-            .orElseThrow(() -> new BadRequestException("Default role USER not found in database"));
-
-        user.setRoles(Set.of(defaultRole));
+        user.setRoles(resolveRoles(request.getRoleCodes()));
         userRepository.save(user);
 
         return issueTokens(user);
@@ -68,19 +66,9 @@ public class AuthService {
             throw new UnauthorizedException("Account is inactive");
         }
 
-        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(OffsetDateTime.now())) {
-            throw new UnauthorizedException("Account is locked. Try again later");
-        }
-
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            handleFailedLogin(user);
             throw new UnauthorizedException("Invalid credentials");
         }
-
-        user.setFailedLoginCount(0);
-        user.setLockedUntil(null);
-        user.setLastLoginAt(OffsetDateTime.now());
-        userRepository.save(user);
 
         return issueTokens(user);
     }
@@ -99,12 +87,13 @@ public class AuthService {
             throw new UnauthorizedException("Refresh token not recognized");
         }
 
-        User user = userRepository.findById(java.util.UUID.fromString(userId))
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        String roles = String.join(",", user.getRoles().stream().map(Role::getCode).toList());
-        String newAccessToken = jwtService.generateAccessToken(user.getUsername(), user.getId().toString(), roles);
-    
+        List<String> roles = roleRepository.findCodesByUserId(user.getId());
+        List<String> permissions = permissionRepository.findCodesByUserId(user.getId());
+        String newAccessToken = jwtService.generateAccessToken(user.getUsername(), user.getId(), roles, permissions);
+
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(token)
@@ -129,9 +118,11 @@ public class AuthService {
     }
 
     private AuthResponse issueTokens(User user) {
-        String roles = String.join(",", user.getRoles().stream().map(Role::getCode).toList());
-        String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getId().toString(), roles);
-        String refreshToken = jwtService.generateRefreshToken(user.getUsername(), user.getId().toString(), roles);
+        List<String> roles = roleRepository.findCodesByUserId(user.getId());
+        List<String> permissions = permissionRepository.findCodesByUserId(user.getId());
+
+        String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getId(), roles, permissions);
+        String refreshToken = jwtService.generateRefreshToken(user.getUsername(), user.getId(), roles);
 
         Jws<Claims> refreshClaims = jwtService.parseToken(refreshToken);
         Duration ttl = Duration.ofDays(jwtProperties.getRefreshTokenTtlDays());
@@ -144,13 +135,18 @@ public class AuthService {
                 .build();
     }
 
-    private void handleFailedLogin(User user) {
-        int attempts = user.getFailedLoginCount() + 1;
-        user.setFailedLoginCount(attempts);
-        if (attempts >= loginProperties.getMaxFailedAttempts()) {
-            user.setLockedUntil(OffsetDateTime.now().plusMinutes(loginProperties.getLockMinutes()));
-            user.setFailedLoginCount(0);
+    private Set<Role> resolveRoles(Set<String> roleCodes) {
+        Set<String> codes = roleCodes == null || roleCodes.isEmpty() ? Set.of("USER") : roleCodes;
+        List<Role> roles = roleRepository.findByCodeIn(codes);
+        if (roles.size() != codes.size()) {
+            Set<String> found = new HashSet<>();
+            for (Role role : roles) {
+                found.add(role.getCode());
+            }
+            Set<String> missing = new HashSet<>(codes);
+            missing.removeAll(found);
+            throw new NotFoundException("Role codes not found: " + missing);
         }
-        userRepository.save(user);
+        return new HashSet<>(roles);
     }
 }

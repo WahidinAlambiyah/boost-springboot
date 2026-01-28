@@ -1,20 +1,11 @@
 databaseChangeLog:
-#   - changeSet:
-#       id: 002-000-enable-pgcrypto
-#       author: boost
-#       changes:
-#         - createSchema:
-#             schemaName: fastworks_springboot
-#         - sql:
-#             dbms: postgresql
-#             sql: create extension if not exists pgcrypto;
   - changeSet:
-      id: 002-create-users-table
+      id: 004-create-permissions-table
       author: boost
       changes:
         - createTable:
             schemaName: fastworks_springboot
-            tableName: users
+            tableName: permissions
             columns:
               - column:
                   name: id
@@ -24,25 +15,22 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: username
-                  type: varchar(50)
+                  name: code
+                  type: varchar(150)
                   constraints:
                     nullable: false
                     unique: true
               - column:
-                  name: email
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-                    unique: true
-              - column:
-                  name: password_hash
-                  type: varchar(255)
+                  name: name
+                  type: varchar(150)
                   constraints:
                     nullable: false
               - column:
-                  name: full_name
-                  type: varchar(255)
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: module
+                  type: varchar(100)
               - column:
                   name: is_active
                   type: boolean
@@ -61,27 +49,17 @@ databaseChangeLog:
                   defaultValueComputed: now()
                   constraints:
                     nullable: false
-              - column:
-                  name: deleted_at
-                  type: timestamptz
         - createIndex:
             schemaName: fastworks_springboot
-            tableName: users
-            indexName: idx_users_username
+            tableName: permissions
+            indexName: idx_permissions_code
             columns:
               - column:
-                  name: username
+                  name: code
         - createIndex:
             schemaName: fastworks_springboot
-            tableName: users
-            indexName: idx_users_email
+            tableName: permissions
+            indexName: idx_permissions_module
             columns:
               - column:
-                  name: email
-        - createIndex:
-            schemaName: fastworks_springboot
-            tableName: users
-            indexName: idx_users_deleted_at
-            columns:
-              - column:
-                  name: deleted_at
+                  name: module

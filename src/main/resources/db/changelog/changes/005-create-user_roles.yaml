@@ -1,0 +1,74 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-user-roles-table
+      author: boost
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assigned_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assigned_by
+                  type: uuid
+        - addPrimaryKey:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_user_roles_user
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: roles
+            referencedColumnNames: id
+            constraintName: fk_user_roles_role
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: user_roles
+            baseColumnNames: assigned_by
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_user_roles_assigned_by
+            onDelete: SET NULL
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            indexName: idx_user_roles_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: user_roles
+            indexName: idx_user_roles_role_id
+            columns:
+              - column:
+                  name: role_id

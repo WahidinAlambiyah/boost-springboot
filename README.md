@@ -1,43 +1,143 @@
-# Boost Spring Boot API
+# Boost Spring Boot RBAC API
 
-Production-ready Spring Boot REST API with JWT authentication, PostgreSQL, Redis, Liquibase, and Swagger UI.
+API backend Java 21 + Spring Boot 3.x dengan JWT, RBAC berbasis database, PostgreSQL, Redis (opsional), Liquibase, JPA, Validation, dan OpenAPI/Swagger.
 
-## Prerequisites
+## Prasyarat
 
-- Java 21 (latest LTS)
+- Java 21 (LTS)
 - Maven 3.9+
 - Docker + Docker Compose
 
-## Run infrastructure (PostgreSQL + Redis)
+## Menjalankan Infrastruktur (PostgreSQL + Redis)
 
 ```bash
 docker compose --env-file .env.example up -d
 ```
 
-## Run the application
+> Redis opsional. Jika `REDIS_ENABLED=false`, aplikasi memakai in-memory store untuk refresh token/blacklist (tidak persisten).
+
+## Menjalankan Aplikasi
 
 ```bash
 mvn spring-boot:run
 ```
 
-The app starts on `http://localhost:8080`.
+Aplikasi berjalan di `http://localhost:8080`.
+
+## Konfigurasi `.env`
+
+Contoh konfigurasi ada di `.env.example`.
+
+```ini
+DB_NAME=boost
+DB_USER=boost
+DB_PASSWORD=boost
+DB_SCHEMA=fastworks_springboot
+DB_HOST=localhost
+DB_PORT=5432
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_ENABLED=false
+SECURITY_ENABLED=true
+METHOD_SECURITY_ENABLED=true
+JWT_SECRET=change-me-please-change-me-please-change-me
+```
+
+## Database Schema
+
+- Schema: `fastworks_springboot`
+- Liquibase otomatis menjalankan migrasi saat startup
+
+Jika kamu ingin membuat schema manual:
+
+```sql
+CREATE SCHEMA IF NOT EXISTS fastworks_springboot;
+```
+
+## Postgres URL (Host vs Container)
+
+- **Aplikasi berjalan di host** (default):
+  `jdbc:postgresql://localhost:5432/boost?currentSchema=fastworks_springboot`
+- **Aplikasi berjalan di container** (misal via Dockerfile):
+  `jdbc:postgresql://postgres:5432/boost?currentSchema=fastworks_springboot`
 
 ## Swagger UI
 
 `http://localhost:8080/swagger-ui.html`
 
-## Health check
+## Seed Default Admin
 
-`GET http://localhost:8080/actuator/health`
+Liquibase menyiapkan user admin default:
 
-## Sample curl commands
+- **Username:** `admin`
+- **Password:** `Admin123!`
+
+Silakan ubah via:
+- Update Liquibase seed (`db/changelog/changes/007-seed-default-rbac.yaml`), atau
+- Create user baru via endpoint `/api/users`.
+
+## Toggle Security & Redis
+
+- Nonaktifkan security:
+  - `SECURITY_ENABLED=false` → semua endpoint `permitAll()`
+- Nonaktifkan method security:
+  - `METHOD_SECURITY_ENABLED=false` → `@PreAuthorize` tidak dievaluasi
+- Nonaktifkan Redis:
+  - `REDIS_ENABLED=false` → refresh token/blacklist tersimpan in-memory (non-persisten)
+
+## Daftar Endpoint Utama
+
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+
+### Users (permission-based)
+- `GET /api/users` → `USER_READ`
+- `GET /api/users/{id}` → `USER_READ`
+- `POST /api/users` → `USER_WRITE`
+- `PUT /api/users/{id}` → `USER_WRITE`
+- `DELETE /api/users/{id}` → `USER_DELETE`
+- `PUT /api/users/{id}/roles` → `USER_WRITE`
+
+### Roles
+- `GET /api/roles` → `ROLE_READ`
+- `GET /api/roles/{id}` → `ROLE_READ`
+- `POST /api/roles` → `ROLE_WRITE`
+- `PUT /api/roles/{id}` → `ROLE_WRITE`
+- `DELETE /api/roles/{id}` → `ROLE_DELETE`
+- `PUT /api/roles/{id}/permissions` → `ROLE_WRITE`
+
+### Permissions
+- `GET /api/permissions` → `PERMISSION_READ`
+- `GET /api/permissions/{id}` → `PERMISSION_READ`
+- `POST /api/permissions` → `PERMISSION_WRITE`
+- `PUT /api/permissions/{id}` → `PERMISSION_WRITE`
+- `DELETE /api/permissions/{id}` → `PERMISSION_DELETE`
+
+## Contoh Request/Response
 
 ### Register
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"demo","email":"demo@example.com","password":"Password123!","fullName":"Demo User"}'
+  -d '{"username":"demo","email":"demo@example.com","password":"Password123!"}'
+```
+
+Response:
+
+```json
+{
+  "status": 201,
+  "message": "Registered",
+  "data": {
+    "accessToken": "<token>",
+    "refreshToken": "<token>",
+    "tokenType": "Bearer"
+  }
+}
 ```
 
 ### Login
@@ -45,60 +145,29 @@ curl -X POST http://localhost:8080/api/auth/register \
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"demo","password":"Password123!"}'
+  -d '{"username":"admin","password":"Admin123!"}'
 ```
 
-### Get current user profile
+### Contoh CRUD Role (Create)
 
 ```bash
-curl http://localhost:8080/api/users/me \
-  -H "Authorization: Bearer <accessToken>"
-```
-
-### Admin: list users
-
-```bash
-curl http://localhost:8080/api/users?page=0&size=10 \
-  -H "Authorization: Bearer <accessToken>"
-```
-
-### Admin: create user
-
-```bash
-curl -X POST http://localhost:8080/api/users \
+curl -X POST http://localhost:8080/api/roles \
   -H "Authorization: Bearer <accessToken>" \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin2","email":"admin2@example.com","password":"Password123!","fullName":"Admin Two","roles":["ADMIN"],"active":true}'
+  -d '{"code":"REPORT_VIEWER","name":"Report Viewer","description":"View reports"}'
 ```
 
-### Admin: update user
+Response:
 
-```bash
-curl -X PUT http://localhost:8080/api/users/<userId> \
-  -H "Authorization: Bearer <accessToken>" \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Updated Name","roles":["USER"]}'
+```json
+{
+  "status": 201,
+  "message": "Role created",
+  "data": {
+    "id": "<uuid>",
+    "code": "REPORT_VIEWER",
+    "name": "Report Viewer",
+    "permissions": []
+  }
+}
 ```
-
-### Admin: delete user (soft delete)
-
-```bash
-curl -X DELETE http://localhost:8080/api/users/<userId> \
-  -H "Authorization: Bearer <accessToken>"
-```
-
-## Schema usage (protoone)
-
-- The application uses schema `protoone` (not `public`).
-- PostgreSQL search path is configured with `currentSchema=protoone,public` in `application.yml`.
-- Liquibase is configured to create and manage objects in the `protoone` schema.
-
-### Create schema manually (if needed)
-
-```sql
-CREATE SCHEMA IF NOT EXISTS protoone;
-```
-
-## JWT choice
-
-This project uses HS256 with a shared secret for simplicity in single-service deployments. Update `JWT_SECRET` to a 32+ byte value before production use.

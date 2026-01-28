@@ -10,14 +10,13 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class RegisterRequest {
+public class UserCreateRequest {
     @NotBlank
     @Size(min = 3, max = 50)
     private String username;
 
     @NotBlank
     @Email
-    @Size(max = 255)
     private String email;
 
     @NotBlank
