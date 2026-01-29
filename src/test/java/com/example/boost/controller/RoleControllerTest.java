@@ -184,9 +184,9 @@ class RoleControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = "USER_READ")
     void getRolesForbidden() throws Exception {
-        mockMvc.perform(get("/api/roles")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo").authorities(() -> "USER_READ")))
+        mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isForbidden());
     }
 

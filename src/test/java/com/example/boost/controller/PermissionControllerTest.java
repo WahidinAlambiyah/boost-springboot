@@ -158,9 +158,9 @@ class PermissionControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = "USER_READ")
     void listPermissionsForbidden() throws Exception {
-        mockMvc.perform(get("/api/permissions")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo").authorities(() -> "USER_READ")))
+        mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isForbidden());
     }
 
