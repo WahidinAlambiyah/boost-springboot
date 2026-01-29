@@ -38,7 +38,7 @@ public class AuditLogController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) UUID requestId,
             Pageable pageable) {
-        Specification<AuditLog> specification = Specification.where(null)
+        Specification<AuditLog> specification = Specification.where((root, query, cb) -> cb.conjunction())
                 .and(actorId == null ? null : (root, query, cb) -> cb.equal(root.get("actorId"), actorId))
                 .and(actorUsername == null ? null : (root, query, cb) -> cb.equal(root.get("actorUsername"), actorUsername))
                 .and(eventType == null ? null : (root, query, cb) -> cb.equal(root.get("eventType"), eventType))
