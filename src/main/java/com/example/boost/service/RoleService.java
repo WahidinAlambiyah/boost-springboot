@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 public class RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final AuditLogService auditLogService;
 
     public List<Role> getRoles() {
         return roleRepository.findAll();
@@ -80,6 +81,9 @@ public class RoleService {
     @Transactional
     public Role assignPermissions(UUID roleId, Set<String> permissionCodes) {
         Role role = getById(roleId);
+        Set<String> beforePermissions = role.getRolePermissions().stream()
+                .map(rolePermission -> rolePermission.getPermission().getCode())
+                .collect(java.util.stream.Collectors.toSet());
         List<Permission> permissions = permissionRepository.findByCodeIn(permissionCodes);
         if (permissions.size() != permissionCodes.size()) {
             Set<String> found = new HashSet<>();
@@ -99,6 +103,28 @@ public class RoleService {
                     .build();
             role.getRolePermissions().add(rolePermission);
         }
-        return roleRepository.save(role);
+        Role saved = roleRepository.save(role);
+        Set<String> afterPermissions = saved.getRolePermissions().stream()
+                .map(rolePermission -> rolePermission.getPermission().getCode())
+                .collect(java.util.stream.Collectors.toSet());
+        Set<String> added = new HashSet<>(afterPermissions);
+        added.removeAll(beforePermissions);
+        Set<String> removed = new HashSet<>(beforePermissions);
+        removed.removeAll(afterPermissions);
+        if (!added.isEmpty()) {
+            auditLogService.rbacEvent("ROLE_PERMISSION_ADDED")
+                    .entity("ROLE", saved.getId().toString())
+                    .metadata(java.util.Map.of("permissions", added))
+                    .statusSuccess()
+                    .save();
+        }
+        if (!removed.isEmpty()) {
+            auditLogService.rbacEvent("ROLE_PERMISSION_REMOVED")
+                    .entity("ROLE", saved.getId().toString())
+                    .metadata(java.util.Map.of("permissions", removed))
+                    .statusSuccess()
+                    .save();
+        }
+        return saved;
     }
 }
