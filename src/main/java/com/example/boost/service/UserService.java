@@ -128,6 +128,7 @@ public class UserService {
     public void changePassword(UUID id, String newPassword) {
         User user = getById(id);
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(OffsetDateTime.now());
         userRepository.save(user);
         auditLogService.securityEvent("PASSWORD_CHANGED")
                 .entity("USER", user.getId().toString())

@@ -62,6 +62,9 @@ public class User {
     @Column(name = "disabled_reason")
     private String disabledReason;
 
+    @Column(name = "password_changed_at")
+    private OffsetDateTime passwordChangedAt;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 

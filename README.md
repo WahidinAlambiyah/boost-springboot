@@ -23,6 +23,43 @@ Then rotate any exposed secrets.
 ## Third-Party Licenses
 Third-party dependency notices and the update checklist live in [LICENSES/THIRD_PARTY.md](LICENSES/THIRD_PARTY.md).
 
+## Password Reset (Email OTP / Token)
+Password reset supports OTP or token link modes.
+
+### Request reset
+```bash
+curl -X POST http://localhost:8080/api/auth/password-reset/request \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","mode":"OTP"}'
+```
+
+### Resend OTP
+```bash
+curl -X POST http://localhost:8080/api/auth/password-reset/resend \
+  -H "Content-Type: application/json" \
+  -d '{"resetRequestId":"<uuid>"}'
+```
+
+### Confirm with OTP
+```bash
+curl -X POST http://localhost:8080/api/auth/password-reset/confirm \
+  -H "Content-Type: application/json" \
+  -d '{"resetRequestId":"<uuid>","otp":"123456","newPassword":"NewPassword123!"}'
+```
+
+### Confirm with token
+```bash
+curl -X POST http://localhost:8080/api/auth/password-reset/confirm \
+  -H "Content-Type: application/json" \
+  -d '{"token":"<token>","newPassword":"NewPassword123!"}'
+```
+
+### Email config
+Set the SMTP password in the environment:
+```
+MAIL_PASSWORD=your-smtp-password
+```
+
 ## Contact
 For licensing inquiries: <CONTACT_EMAIL>
 

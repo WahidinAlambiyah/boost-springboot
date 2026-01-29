@@ -55,6 +55,18 @@ public class TokenService {
         inMemoryStore.remove(key);
     }
 
+    public void revokeAllRefreshTokens(String userId) {
+        String prefix = "refresh:" + userId + ":";
+        if (useRedis()) {
+            var keys = redisTemplateProvider.getObject().keys(prefix + "*");
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplateProvider.getObject().delete(keys);
+            }
+            return;
+        }
+        inMemoryStore.keySet().removeIf(key -> key.startsWith(prefix));
+    }
+
     public void blacklistAccessToken(String jti, Date expiresAt) {
         Duration ttl = Duration.between(Instant.now(), expiresAt.toInstant());
         if (!ttl.isNegative() && !ttl.isZero()) {
