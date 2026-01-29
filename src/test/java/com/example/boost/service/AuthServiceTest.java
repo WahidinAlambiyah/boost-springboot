@@ -4,6 +4,7 @@ import com.example.boost.config.JwtProperties;
 import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.RefreshRequest;
+import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.UnauthorizedException;
 import com.example.boost.repository.PermissionRepository;
@@ -13,10 +14,12 @@ import com.example.boost.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -62,6 +65,15 @@ class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
+
+    @BeforeEach
+    void setUpAuditLog() {
+        AuditLogService.AuditLogBuilder builder = mock(AuditLogService.AuditLogBuilder.class, Mockito.RETURNS_SELF);
+        Mockito.lenient().when(builder.save()).thenReturn(new AuditLog());
+        Mockito.lenient().when(auditLogService.securityEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.rbacEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.dataEvent(any())).thenReturn(builder);
+    }
 
     @Test
     void loginSuccessResetsFailureCount() {

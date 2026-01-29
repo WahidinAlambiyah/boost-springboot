@@ -8,7 +8,10 @@ import com.example.boost.domain.dto.RoleUpdateRequest;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.security.JwtService;
+import com.example.boost.service.AuditLogService;
 import com.example.boost.service.RoleService;
+import com.example.boost.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -52,6 +56,18 @@ class RoleControllerTest {
 
     @MockBean
     private RoleMapper roleMapper;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private TokenService tokenService;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     @WithMockUser(authorities = "ROLE_READ")

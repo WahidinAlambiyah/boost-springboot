@@ -7,7 +7,10 @@ import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.security.JwtService;
+import com.example.boost.service.AuditLogService;
 import com.example.boost.service.AuthService;
+import com.example.boost.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +42,18 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private TokenService tokenService;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     void registerSuccess() throws Exception {
