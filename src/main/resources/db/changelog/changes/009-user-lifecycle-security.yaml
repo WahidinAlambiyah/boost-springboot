@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-user-lifecycle-fields
+      author: boost
+      changes:
+        - addColumn:
+            schemaName: fastworks_springboot
+            tableName: users
+            columns:
+              - column:
+                  name: failed_login_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: locked_until
+                  type: timestamptz
+              - column:
+                  name: last_login_at
+                  type: timestamptz
+              - column:
+                  name: last_failed_login_at
+                  type: timestamptz
+              - column:
+                  name: disabled_at
+                  type: timestamptz
+              - column:
+                  name: disabled_reason
+                  type: varchar(255)
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_locked_until
+            columns:
+              - column:
+                  name: locked_until
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_failed_login_count
+            columns:
+              - column:
+                  name: failed_login_count
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_is_active
+            columns:
+              - column:
+                  name: is_active
+  - changeSet:
+      id: 009-add-user-lifecycle-permissions
+      author: boost
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('USER_DISABLE', 'User Disable', 'Disable user account', 'USER', true, now(), now()),
+                ('USER_ENABLE', 'User Enable', 'Enable user account', 'USER', true, now(), now()),
+                ('USER_UNLOCK', 'User Unlock', 'Unlock user account', 'USER', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p on p.code in ('USER_DISABLE', 'USER_ENABLE', 'USER_UNLOCK')
+              where r.code = 'ADMIN'
+              on conflict (role_id, permission_id) do nothing;

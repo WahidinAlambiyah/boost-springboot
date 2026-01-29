@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changes/007-seed-default-rbac.yaml
   - include:
       file: db/changelog/changes/008-create-audit-log.yaml
+  - include:
+      file: db/changelog/changes/009-user-lifecycle-security.yaml

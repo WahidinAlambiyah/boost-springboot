@@ -135,6 +135,45 @@ public class UserService {
                 .save();
     }
 
+    @Transactional
+    public void disableUser(UUID id, String reason) {
+        User user = getById(id);
+        user.setActive(false);
+        user.setDisabledAt(OffsetDateTime.now());
+        user.setDisabledReason(reason);
+        userRepository.save(user);
+        auditLogService.securityEvent("USER_DISABLED")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .metadata(java.util.Map.of("reason", reason))
+                .save();
+    }
+
+    @Transactional
+    public void enableUser(UUID id) {
+        User user = getById(id);
+        user.setActive(true);
+        user.setDisabledAt(null);
+        user.setDisabledReason(null);
+        userRepository.save(user);
+        auditLogService.securityEvent("USER_ENABLED")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
+    }
+
+    @Transactional
+    public void unlockUser(UUID id) {
+        User user = getById(id);
+        user.setFailedLoginCount(0);
+        user.setLockedUntil(null);
+        userRepository.save(user);
+        auditLogService.securityEvent("ACCOUNT_UNLOCKED")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
+    }
+
     public User getCurrentUser(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
             throw new NotFoundException("User not found");

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.example.boost.context.AppRequestContextFilter;
+import com.example.boost.security.LoginRateLimitFilter;
 
 @Configuration
 @EnableConfigurationProperties(AppSecurityProperties.class)
@@ -20,10 +21,13 @@ public class SecurityConfig {
 
     @Bean
     @ConditionalOnProperty(prefix = "app.security", name = "enabled", havingValue = "false")
-    SecurityFilterChain openChain(HttpSecurity http, AppRequestContextFilter requestContextFilter) throws Exception {
+    SecurityFilterChain openChain(HttpSecurity http,
+                                  AppRequestContextFilter requestContextFilter,
+                                  LoginRateLimitFilter loginRateLimitFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .addFilterBefore(requestContextFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(requestContextFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(loginRateLimitFilter, AppRequestContextFilter.class);
         return http.build();
     }
 
@@ -32,6 +36,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
             AppRequestContextFilter requestContextFilter,
+            LoginRateLimitFilter loginRateLimitFilter,
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler) throws Exception {
         http
@@ -51,6 +56,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(requestContextFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(loginRateLimitFilter, AppRequestContextFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

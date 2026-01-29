@@ -30,6 +30,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
+    private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
@@ -73,21 +75,51 @@ public class AuthService {
         if (!user.isActive()) {
             auditLogService.securityEvent("LOGIN_FAILED")
                     .actor(user.getId(), user.getUsername(), "USER")
-                    .statusFailure("Account is inactive")
+                    .statusFailure("Account disabled")
                     .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("reason", user.getDisabledReason()))
                     .save();
             throw new UnauthorizedException("Account is inactive");
         }
 
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(java.time.OffsetDateTime.now())) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Account locked")
+                    .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("lockedUntil", user.getLockedUntil()))
+                    .save();
+            throw new UnauthorizedException("Account is locked");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            user.setFailedLoginCount(user.getFailedLoginCount() + 1);
+            user.setLastFailedLoginAt(java.time.OffsetDateTime.now());
+            if (user.getFailedLoginCount() >= MAX_FAILED_LOGIN_ATTEMPTS) {
+                user.setLockedUntil(java.time.OffsetDateTime.now().plus(LOCK_DURATION));
+                auditLogService.securityEvent("ACCOUNT_LOCKED")
+                        .actor(user.getId(), user.getUsername(), "USER")
+                        .statusFailure("Failed login threshold reached")
+                        .entity("USER", user.getId().toString())
+                        .metadata(java.util.Map.of(
+                                "failedLoginCount", user.getFailedLoginCount(),
+                                "lockedUntil", user.getLockedUntil()))
+                        .save();
+            }
+            userRepository.save(user);
             auditLogService.securityEvent("LOGIN_FAILED")
                     .actor(user.getId(), user.getUsername(), "USER")
                     .statusFailure("Invalid credentials")
                     .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("failedLoginCount", user.getFailedLoginCount()))
                     .save();
             throw new UnauthorizedException("Invalid credentials");
         }
 
+        user.setFailedLoginCount(0);
+        user.setLockedUntil(null);
+        user.setLastLoginAt(java.time.OffsetDateTime.now());
+        userRepository.save(user);
         AuthResponse response = issueTokens(user);
         auditLogService.securityEvent("LOGIN_SUCCESS")
                 .actor(user.getId(), user.getUsername(), "USER")
