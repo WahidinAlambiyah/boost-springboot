@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changes/006-create-role_permissions.yaml
   - include:
       file: db/changelog/changes/007-seed-default-rbac.yaml
+  - include:
+      file: db/changelog/changes/008-create-audit-log.yaml

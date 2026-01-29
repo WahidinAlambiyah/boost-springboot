@@ -29,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public Page<User> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -59,6 +60,7 @@ public class UserService {
     @Transactional
     public User updateUser(UUID id, UserUpdateRequest request) {
         User user = getById(id);
+        boolean wasActive = user.isActive();
         if (request.getEmail() != null && !request.getEmail().equalsIgnoreCase(user.getEmail())) {
             if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
                 throw new ConflictException("Email already exists");
@@ -71,14 +73,44 @@ public class UserService {
         if (request.getIsActive() != null) {
             user.setActive(request.getIsActive());
         }
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        if (request.getIsActive() != null && wasActive != saved.isActive()) {
+            auditLogService.dataEvent(saved.isActive() ? "USER_ENABLED" : "USER_DISABLED")
+                    .entity("USER", saved.getId().toString())
+                    .before(java.util.Map.of("isActive", wasActive))
+                    .after(java.util.Map.of("isActive", saved.isActive()))
+                    .statusSuccess()
+                    .save();
+        }
+        return saved;
     }
 
     @Transactional
     public User assignRoles(UUID id, Set<String> roleCodes) {
         User user = getById(id);
+        Set<String> beforeRoles = user.getRoleCodes();
         user.setRoles(resolveRoles(roleCodes));
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        Set<String> afterRoles = saved.getRoleCodes();
+        Set<String> added = new HashSet<>(afterRoles);
+        added.removeAll(beforeRoles);
+        Set<String> removed = new HashSet<>(beforeRoles);
+        removed.removeAll(afterRoles);
+        if (!added.isEmpty()) {
+            auditLogService.rbacEvent("USER_ROLE_ASSIGNED")
+                    .entity("USER", saved.getId().toString())
+                    .metadata(java.util.Map.of("roles", added))
+                    .statusSuccess()
+                    .save();
+        }
+        if (!removed.isEmpty()) {
+            auditLogService.rbacEvent("USER_ROLE_REMOVED")
+                    .entity("USER", saved.getId().toString())
+                    .metadata(java.util.Map.of("roles", removed))
+                    .statusSuccess()
+                    .save();
+        }
+        return saved;
     }
 
     @Transactional
@@ -86,6 +118,21 @@ public class UserService {
         User user = getById(id);
         user.setDeletedAt(OffsetDateTime.now());
         userRepository.save(user);
+        auditLogService.dataEvent("USER_DELETED")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
+    }
+
+    @Transactional
+    public void changePassword(UUID id, String newPassword) {
+        User user = getById(id);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        auditLogService.securityEvent("PASSWORD_CHANGED")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
     }
 
     public User getCurrentUser(Authentication authentication) {

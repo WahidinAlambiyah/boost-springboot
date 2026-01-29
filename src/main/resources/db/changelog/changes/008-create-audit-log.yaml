@@ -1,0 +1,135 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-audit-log-table
+      author: boost
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: actor_id
+                  type: uuid
+              - column:
+                  name: actor_username
+                  type: varchar(150)
+              - column:
+                  name: actor_type
+                  type: varchar(50)
+              - column:
+                  name: action
+                  type: varchar(100)
+              - column:
+                  name: event_type
+                  type: varchar(50)
+              - column:
+                  name: entity_type
+                  type: varchar(100)
+              - column:
+                  name: entity_id
+                  type: varchar(150)
+              - column:
+                  name: before_json
+                  type: jsonb
+              - column:
+                  name: after_json
+                  type: jsonb
+              - column:
+                  name: metadata_json
+                  type: jsonb
+              - column:
+                  name: occurred_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ip
+                  type: varchar(64)
+              - column:
+                  name: user_agent
+                  type: varchar(512)
+              - column:
+                  name: request_id
+                  type: uuid
+              - column:
+                  name: status
+                  type: varchar(30)
+              - column:
+                  name: reason
+                  type: text
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_occurred_at
+            columns:
+              - column:
+                  name: occurred_at
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_actor_id
+            columns:
+              - column:
+                  name: actor_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_event_type
+            columns:
+              - column:
+                  name: event_type
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_entity
+            columns:
+              - column:
+                  name: entity_type
+              - column:
+                  name: entity_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_request_id
+            columns:
+              - column:
+                  name: request_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_action
+            columns:
+              - column:
+                  name: action
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: audit_log
+            indexName: idx_audit_log_status
+            columns:
+              - column:
+                  name: status
+  - changeSet:
+      id: 008-seed-audit-permission
+      author: boost
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values ('AUDIT_READ', 'Audit Read', 'Read audit logs', 'AUDIT', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p on p.code = 'AUDIT_READ'
+              where r.code = 'ADMIN'
+              on conflict (role_id, permission_id) do nothing;
