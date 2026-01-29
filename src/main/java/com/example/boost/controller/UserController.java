@@ -2,6 +2,8 @@ package com.example.boost.controller;
 
 import com.example.boost.domain.dto.ApiResponse;
 import com.example.boost.domain.dto.UserCreateRequest;
+import com.example.boost.domain.dto.UserDisableRequest;
+import com.example.boost.domain.dto.UserPasswordUpdateRequest;
 import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserRolesUpdateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
@@ -83,5 +85,35 @@ public class UserController {
     public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable UUID id) {
         userService.softDeleteUser(id);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User deleted", null));
+    }
+
+    @PutMapping("/{id}/password")
+    @PreAuthorize("hasAuthority('USER_WRITE')")
+    public ResponseEntity<ApiResponse<Object>> updatePassword(@PathVariable UUID id,
+                                                              @Valid @RequestBody UserPasswordUpdateRequest request) {
+        userService.changePassword(id, request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Password updated", null));
+    }
+
+    @PostMapping("/{id}/disable")
+    @PreAuthorize("hasAuthority('USER_DISABLE')")
+    public ResponseEntity<ApiResponse<Object>> disableUser(@PathVariable UUID id,
+                                                           @Valid @RequestBody UserDisableRequest request) {
+        userService.disableUser(id, request.getReason());
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User disabled", null));
+    }
+
+    @PostMapping("/{id}/enable")
+    @PreAuthorize("hasAuthority('USER_ENABLE')")
+    public ResponseEntity<ApiResponse<Object>> enableUser(@PathVariable UUID id) {
+        userService.enableUser(id);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User enabled", null));
+    }
+
+    @PostMapping("/{id}/unlock")
+    @PreAuthorize("hasAuthority('USER_UNLOCK')")
+    public ResponseEntity<ApiResponse<Object>> unlockUser(@PathVariable UUID id) {
+        userService.unlockUser(id);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User unlocked", null));
     }
 }

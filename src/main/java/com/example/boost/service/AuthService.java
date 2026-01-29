@@ -30,6 +30,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
+    private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
@@ -37,6 +39,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final TokenService tokenService;
     private final JwtProperties jwtProperties;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -59,18 +62,71 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsernameIgnoreCase(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
-
-        if (!user.isActive()) {
-            throw new UnauthorizedException("Account is inactive");
-        }
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        User user = userRepository.findByUsernameIgnoreCase(request.getUsername()).orElse(null);
+        if (user == null) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(null, request.getUsername(), "UNKNOWN")
+                    .statusFailure("Invalid credentials")
+                    .metadata(java.util.Map.of("username", request.getUsername()))
+                    .save();
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        return issueTokens(user);
+        if (!user.isActive()) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Account disabled")
+                    .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("reason", user.getDisabledReason()))
+                    .save();
+            throw new UnauthorizedException("Account is inactive");
+        }
+
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(java.time.OffsetDateTime.now())) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Account locked")
+                    .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("lockedUntil", user.getLockedUntil()))
+                    .save();
+            throw new UnauthorizedException("Account is locked");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            user.setFailedLoginCount(user.getFailedLoginCount() + 1);
+            user.setLastFailedLoginAt(java.time.OffsetDateTime.now());
+            if (user.getFailedLoginCount() >= MAX_FAILED_LOGIN_ATTEMPTS) {
+                user.setLockedUntil(java.time.OffsetDateTime.now().plus(LOCK_DURATION));
+                auditLogService.securityEvent("ACCOUNT_LOCKED")
+                        .actor(user.getId(), user.getUsername(), "USER")
+                        .statusFailure("Failed login threshold reached")
+                        .entity("USER", user.getId().toString())
+                        .metadata(java.util.Map.of(
+                                "failedLoginCount", user.getFailedLoginCount(),
+                                "lockedUntil", user.getLockedUntil()))
+                        .save();
+            }
+            userRepository.save(user);
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Invalid credentials")
+                    .entity("USER", user.getId().toString())
+                    .metadata(java.util.Map.of("failedLoginCount", user.getFailedLoginCount()))
+                    .save();
+            throw new UnauthorizedException("Invalid credentials");
+        }
+
+        user.setFailedLoginCount(0);
+        user.setLockedUntil(null);
+        user.setLastLoginAt(java.time.OffsetDateTime.now());
+        userRepository.save(user);
+        AuthResponse response = issueTokens(user);
+        auditLogService.securityEvent("LOGIN_SUCCESS")
+                .actor(user.getId(), user.getUsername(), "USER")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
+        return response;
     }
 
     public AuthResponse refresh(RefreshRequest request) {
@@ -102,18 +158,29 @@ public class AuthService {
     }
 
     public void logout(String accessToken, String refreshToken) {
-        if (accessToken != null) {
-            Jws<Claims> jws = jwtService.parseToken(accessToken);
-            Claims claims = jws.getBody();
-            tokenService.blacklistAccessToken(claims.getId(), claims.getExpiration());
-        }
+        try {
+            if (accessToken != null && !accessToken.isBlank()) {
+                Jws<Claims> jws = jwtService.parseToken(accessToken);
+                Claims claims = jws.getBody();
+                tokenService.blacklistAccessToken(claims.getId(), claims.getExpiration());
+            }
 
-        if (refreshToken != null && !refreshToken.isBlank()) {
-            Jws<Claims> refreshClaims = jwtService.parseToken(refreshToken);
-            Claims claims = refreshClaims.getBody();
-            String userId = claims.get("uid", String.class);
-            String jti = claims.getId();
-            tokenService.revokeRefreshToken(userId, jti);
+            if (refreshToken != null && !refreshToken.isBlank()) {
+                Jws<Claims> refreshClaims = jwtService.parseToken(refreshToken);
+                Claims claims = refreshClaims.getBody();
+                String userId = claims.get("uid", String.class);
+                String jti = claims.getId();
+                tokenService.revokeRefreshToken(userId, jti);
+            }
+
+            auditLogService.securityEvent("LOGOUT_SUCCESS")
+                    .statusSuccess()
+                    .save();
+        } catch (io.jsonwebtoken.JwtException ex) {
+            auditLogService.securityEvent("LOGOUT_FAILED")
+                    .statusFailure("Invalid token")
+                    .save();
+            throw new UnauthorizedException("Invalid token");
         }
     }
 

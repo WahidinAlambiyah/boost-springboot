@@ -11,3 +11,11 @@ databaseChangeLog:
       file: db/changelog/changes/006-create-role_permissions.yaml
   - include:
       file: db/changelog/changes/007-seed-default-rbac.yaml
+  - include:
+      file: db/changelog/changes/008-create-audit-log.yaml
+  - include:
+      file: db/changelog/changes/009-user-lifecycle-security.yaml
+  - include:
+      file: db/changelog/changes/010-add-password-changed-at.yaml
+  - include:
+      file: db/changelog/changes/011-create-password-reset-requests.yaml

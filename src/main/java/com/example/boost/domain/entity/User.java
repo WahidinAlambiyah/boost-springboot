@@ -44,6 +44,27 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "failed_login_count", nullable = false)
+    private int failedLoginCount = 0;
+
+    @Column(name = "locked_until")
+    private OffsetDateTime lockedUntil;
+
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
+
+    @Column(name = "last_failed_login_at")
+    private OffsetDateTime lastFailedLoginAt;
+
+    @Column(name = "disabled_at")
+    private OffsetDateTime disabledAt;
+
+    @Column(name = "disabled_reason")
+    private String disabledReason;
+
+    @Column(name = "password_changed_at")
+    private OffsetDateTime passwordChangedAt;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 

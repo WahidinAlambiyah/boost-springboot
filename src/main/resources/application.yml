@@ -31,6 +31,17 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  mail:
+    host: ${MAIL_HOST:mail.alambiyah.com}
+    port: 465
+    username: ${MAIL_USERNAME:halo@alambiyah.com}
+    password: ${MAIL_PASSWORD:password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
 
 app:
   redis:
