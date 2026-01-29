@@ -48,7 +48,10 @@ public class AuthController {
             @RequestBody(required = false) LogoutRequest request) {
         String accessToken = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            accessToken = authHeader.substring(7);
+            accessToken = authHeader.substring(7).trim();
+            if (accessToken.isBlank()) {
+                accessToken = null;
+            }
         }
         String refreshToken = request != null ? request.getRefreshToken() : null;
         authService.logout(accessToken, refreshToken);

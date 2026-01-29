@@ -102,7 +102,7 @@ public class AuthService {
     }
 
     public void logout(String accessToken, String refreshToken) {
-        if (accessToken != null) {
+        if (accessToken != null && !accessToken.isBlank()) {
             Jws<Claims> jws = jwtService.parseToken(accessToken);
             Claims claims = jws.getBody();
             tokenService.blacklistAccessToken(claims.getId(), claims.getExpiration());
