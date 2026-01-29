@@ -7,6 +7,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @Configuration
 @EnableMethodSecurity
 @ConditionalOnProperty(prefix = "app.security", name = "enabled", havingValue = "true", matchIfMissing = true)
-@ConditionalOnProperty(prefix = "app.security.method-security", name = "enabled", havingValue = "true", matchIfMissing = true)
+// @ConditionalOnProperty(prefix = "app.security.method-security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class MethodSecurityConfig {
 }
