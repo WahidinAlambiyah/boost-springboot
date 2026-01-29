@@ -37,6 +37,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final TokenService tokenService;
     private final JwtProperties jwtProperties;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -59,18 +60,41 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsernameIgnoreCase(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+        User user = userRepository.findByUsernameIgnoreCase(request.getUsername()).orElse(null);
+        if (user == null) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(null, request.getUsername(), "UNKNOWN")
+                    .statusFailure("Invalid credentials")
+                    .metadata(java.util.Map.of("username", request.getUsername()))
+                    .save();
+            throw new UnauthorizedException("Invalid credentials");
+        }
 
         if (!user.isActive()) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Account is inactive")
+                    .entity("USER", user.getId().toString())
+                    .save();
             throw new UnauthorizedException("Account is inactive");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            auditLogService.securityEvent("LOGIN_FAILED")
+                    .actor(user.getId(), user.getUsername(), "USER")
+                    .statusFailure("Invalid credentials")
+                    .entity("USER", user.getId().toString())
+                    .save();
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        return issueTokens(user);
+        AuthResponse response = issueTokens(user);
+        auditLogService.securityEvent("LOGIN_SUCCESS")
+                .actor(user.getId(), user.getUsername(), "USER")
+                .entity("USER", user.getId().toString())
+                .statusSuccess()
+                .save();
+        return response;
     }
 
     public AuthResponse refresh(RefreshRequest request) {
@@ -102,18 +126,29 @@ public class AuthService {
     }
 
     public void logout(String accessToken, String refreshToken) {
-        if (accessToken != null && !accessToken.isBlank()) {
-            Jws<Claims> jws = jwtService.parseToken(accessToken);
-            Claims claims = jws.getBody();
-            tokenService.blacklistAccessToken(claims.getId(), claims.getExpiration());
-        }
+        try {
+            if (accessToken != null && !accessToken.isBlank()) {
+                Jws<Claims> jws = jwtService.parseToken(accessToken);
+                Claims claims = jws.getBody();
+                tokenService.blacklistAccessToken(claims.getId(), claims.getExpiration());
+            }
 
-        if (refreshToken != null && !refreshToken.isBlank()) {
-            Jws<Claims> refreshClaims = jwtService.parseToken(refreshToken);
-            Claims claims = refreshClaims.getBody();
-            String userId = claims.get("uid", String.class);
-            String jti = claims.getId();
-            tokenService.revokeRefreshToken(userId, jti);
+            if (refreshToken != null && !refreshToken.isBlank()) {
+                Jws<Claims> refreshClaims = jwtService.parseToken(refreshToken);
+                Claims claims = refreshClaims.getBody();
+                String userId = claims.get("uid", String.class);
+                String jti = claims.getId();
+                tokenService.revokeRefreshToken(userId, jti);
+            }
+
+            auditLogService.securityEvent("LOGOUT_SUCCESS")
+                    .statusSuccess()
+                    .save();
+        } catch (io.jsonwebtoken.JwtException ex) {
+            auditLogService.securityEvent("LOGOUT_FAILED")
+                    .statusFailure("Invalid token")
+                    .save();
+            throw new UnauthorizedException("Invalid token");
         }
     }
 
