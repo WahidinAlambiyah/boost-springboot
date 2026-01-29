@@ -10,8 +10,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.UUID;
 
-@Component
-public class RequestContextFilter extends OncePerRequestFilter {
+@Component("appRequestContextFilter")
+public class AppRequestContextFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
