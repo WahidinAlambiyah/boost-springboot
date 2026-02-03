@@ -80,8 +80,8 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE')")
-    public ResponseEntity<ApiResponse<Object>> deleteRole(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable UUID id) {
         roleService.deleteRole(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Role deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }
