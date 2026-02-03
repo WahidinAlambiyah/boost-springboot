@@ -7,7 +7,10 @@ import com.example.boost.domain.dto.PermissionUpdateRequest;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.security.JwtService;
+import com.example.boost.service.AuditLogService;
 import com.example.boost.service.PermissionService;
+import com.example.boost.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -50,6 +54,18 @@ class PermissionControllerTest {
 
     @MockBean
     private PermissionMapper permissionMapper;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private TokenService tokenService;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     @WithMockUser(authorities = "PERMISSION_READ")
@@ -142,9 +158,9 @@ class PermissionControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = "USER_READ")
     void listPermissionsForbidden() throws Exception {
-        mockMvc.perform(get("/api/permissions")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo").authorities(() -> "USER_READ")))
+        mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isForbidden());
     }
 

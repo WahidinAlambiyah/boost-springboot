@@ -2,15 +2,18 @@ package com.example.boost.service;
 
 import com.example.boost.domain.dto.UserCreateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
+import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +47,18 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @BeforeEach
+    void setUpAuditLog() {
+        AuditLogService.AuditLogBuilder builder = Mockito.mock(
+                AuditLogService.AuditLogBuilder.class,
+                Mockito.RETURNS_SELF
+        );
+        Mockito.lenient().when(builder.save()).thenReturn(new AuditLog());
+        Mockito.lenient().when(auditLogService.securityEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.rbacEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.dataEvent(any())).thenReturn(builder);
+    }
 
     @Test
     void createUserHashesPassword() {

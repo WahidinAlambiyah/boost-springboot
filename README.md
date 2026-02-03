@@ -87,6 +87,36 @@ mvn spring-boot:run
 
 Aplikasi berjalan di `http://localhost:8080`.
 
+## Observability (Logging, Metrics, Tracing)
+
+### JSON Logging + Correlation ID
+Log output menggunakan format JSON dengan field MDC `correlationId`. Setiap request akan membawa header `X-Correlation-Id`. Jika header tidak dikirim, server akan membuat UUID baru dan selalu mengembalikan header tersebut di response.
+
+### Metrics & Health (Actuator)
+Endpoint yang diekspos:
+- `GET /actuator/health`
+- `GET /actuator/info`
+- `GET /actuator/metrics`
+- `GET /actuator/prometheus`
+
+### Tracing (Optional)
+Gunakan salah satu opsi berikut:
+- **Option A: OpenTelemetry Java Agent**  
+  Jalankan aplikasi dengan agent OpenTelemetry:
+  ```bash
+  java -javaagent:/path/to/opentelemetry-javaagent.jar \
+    -Dotel.service.name=boost \
+    -jar target/boost-0.0.1-SNAPSHOT.jar
+  ```
+- **Option B: Micrometer Tracing Bridge**  
+  Tambahkan dependency Micrometer tracing bridge yang kompatibel dengan Spring Boot 3.x (misalnya `micrometer-tracing-bridge-otel`) lalu konfigurasi exporter sesuai kebutuhan.
+
+## Menjalankan Test
+
+```bash
+mvn test
+```
+
 ## Konfigurasi `.env`
 
 Contoh konfigurasi ada di `.env.example`.

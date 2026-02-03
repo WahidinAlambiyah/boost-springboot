@@ -10,7 +10,10 @@ import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.domain.entity.User;
 import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.security.JwtService;
+import com.example.boost.service.AuditLogService;
 import com.example.boost.service.UserService;
+import com.example.boost.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -55,6 +59,18 @@ class UserControllerTest {
 
     @MockBean
     private UserMapper userMapper;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private TokenService tokenService;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
+
+    @MockBean
+    private AuditLogService auditLogService;
 
     @Test
     @WithMockUser(authorities = "USER_READ")
@@ -199,9 +215,9 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = "USER_READ")
     void enableUserForbiddenWithoutAuthority() throws Exception {
-        mockMvc.perform(post("/api/users/{id}/enable", UUID.randomUUID())
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("demo").authorities(() -> "USER_READ")))
+        mockMvc.perform(post("/api/users/{id}/enable", UUID.randomUUID()))
                 .andExpect(status().isForbidden());
     }
 

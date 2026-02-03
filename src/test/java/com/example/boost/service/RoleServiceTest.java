@@ -1,14 +1,17 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.RoleCreateRequest;
+import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.repository.PermissionRepository;
 import com.example.boost.repository.RoleRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -34,6 +37,18 @@ class RoleServiceTest {
 
     @InjectMocks
     private RoleService roleService;
+
+    @BeforeEach
+    void setUpAuditLog() {
+        AuditLogService.AuditLogBuilder builder = Mockito.mock(
+                AuditLogService.AuditLogBuilder.class,
+                Mockito.RETURNS_SELF
+        );
+        Mockito.lenient().when(builder.save()).thenReturn(new AuditLog());
+        Mockito.lenient().when(auditLogService.securityEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.rbacEvent(any())).thenReturn(builder);
+        Mockito.lenient().when(auditLogService.dataEvent(any())).thenReturn(builder);
+    }
 
     @Test
     void createRoleSavesEntity() {
