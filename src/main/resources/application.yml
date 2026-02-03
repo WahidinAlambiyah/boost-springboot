@@ -52,7 +52,7 @@ app:
       enabled: ${METHOD_SECURITY_ENABLED:true}
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8123}
 
 management:
   endpoints:
