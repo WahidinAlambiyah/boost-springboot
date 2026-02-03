@@ -14,7 +14,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-    @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
+    @EntityGraph(attributePaths = {
+            "userRoles",
+            "userRoles.role",
+            "userRoles.assignedBy",
+            "userRoles.role.rolePermissions",
+            "userRoles.role.rolePermissions.permission"
+    })
     Optional<User> findByUsernameIgnoreCase(String username);
 
     Optional<User> findByEmailIgnoreCase(String email);
@@ -28,8 +34,23 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailIgnoreCase(String email);
 
     @Override
-    @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
+    @EntityGraph(attributePaths = {
+            "userRoles",
+            "userRoles.role",
+            "userRoles.assignedBy",
+            "userRoles.role.rolePermissions",
+            "userRoles.role.rolePermissions.permission"
+    })
     Page<User> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "userRoles",
+            "userRoles.role",
+            "userRoles.assignedBy",
+            "userRoles.role.rolePermissions",
+            "userRoles.role.rolePermissions.permission"
+    })
+    Optional<User> findWithRolesById(UUID id);
 
 }
                                                                                                                                                                                                                                                                                                                                                                                                                                                         

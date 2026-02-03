@@ -36,7 +36,7 @@ public class UserService {
     }
 
     public User getById(UUID id) {
-        return userRepository.findById(id)
+        return userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
@@ -179,7 +179,8 @@ public class UserService {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
             throw new NotFoundException("User not found");
         }
-        return principal.getUser();
+        return userRepository.findWithRolesById(principal.getUser().getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     private Set<Role> resolveRoles(Set<String> roleCodes) {
