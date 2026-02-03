@@ -43,7 +43,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Object>> logout(
+    public ResponseEntity<Void> logout(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody(required = false) LogoutRequest request) {
         String accessToken = null;
@@ -55,6 +55,6 @@ public class AuthController {
         }
         String refreshToken = request != null ? request.getRefreshToken() : null;
         authService.logout(accessToken, refreshToken);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Logged out", null));
+        return ResponseEntity.noContent().build();
     }
 }

@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -35,14 +34,7 @@ public class RoleController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_READ')")
-    public ResponseEntity<ApiResponse<List<RoleResponse>>> getRoles() {
-        List<RoleResponse> responses = roleService.getRoles().stream().map(roleMapper::toResponse).toList();
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
-    }
-
-    @GetMapping("/page")
-    @PreAuthorize("hasAuthority('ROLE_READ')")
-    public ResponseEntity<ApiResponse<Page<RoleResponse>>> getRolesPage(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<RoleResponse>>> getRoles(Pageable pageable) {
         Page<RoleResponse> responses = roleService.getRoles(pageable).map(roleMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
     }
@@ -80,8 +72,8 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_DELETE')")
-    public ResponseEntity<ApiResponse<Object>> deleteRole(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteRole(@PathVariable UUID id) {
         roleService.deleteRole(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Role deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }
