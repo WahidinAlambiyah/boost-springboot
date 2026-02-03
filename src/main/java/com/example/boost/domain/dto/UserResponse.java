@@ -17,5 +17,7 @@ public class UserResponse {
     @JsonProperty("isActive")
     private boolean isActive;
     private Set<String> roles;
+    private Set<UserRoleAssignmentResponse> roleAssignments;
+    private Set<String> permissions;
     private OffsetDateTime createdAt;
 }

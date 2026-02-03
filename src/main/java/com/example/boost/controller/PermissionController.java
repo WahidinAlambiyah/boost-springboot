@@ -74,8 +74,8 @@ public class PermissionController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('PERMISSION_DELETE')")
-    public ResponseEntity<ApiResponse<Object>> deletePermission(@PathVariable UUID id) {
+    public ResponseEntity<Void> deletePermission(@PathVariable UUID id) {
         permissionService.deletePermission(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permission deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

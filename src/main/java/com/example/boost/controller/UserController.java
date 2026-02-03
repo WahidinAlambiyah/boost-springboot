@@ -82,38 +82,38 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_DELETE')")
-    public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.softDeleteUser(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User deleted", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/password")
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<ApiResponse<Object>> updatePassword(@PathVariable UUID id,
-                                                              @Valid @RequestBody UserPasswordUpdateRequest request) {
+    public ResponseEntity<Void> updatePassword(@PathVariable UUID id,
+                                               @Valid @RequestBody UserPasswordUpdateRequest request) {
         userService.changePassword(id, request.getNewPassword());
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Password updated", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/disable")
     @PreAuthorize("hasAuthority('USER_DISABLE')")
-    public ResponseEntity<ApiResponse<Object>> disableUser(@PathVariable UUID id,
-                                                           @Valid @RequestBody UserDisableRequest request) {
+    public ResponseEntity<Void> disableUser(@PathVariable UUID id,
+                                            @Valid @RequestBody UserDisableRequest request) {
         userService.disableUser(id, request.getReason());
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User disabled", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/enable")
     @PreAuthorize("hasAuthority('USER_ENABLE')")
-    public ResponseEntity<ApiResponse<Object>> enableUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> enableUser(@PathVariable UUID id) {
         userService.enableUser(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User enabled", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/unlock")
     @PreAuthorize("hasAuthority('USER_UNLOCK')")
-    public ResponseEntity<ApiResponse<Object>> unlockUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> unlockUser(@PathVariable UUID id) {
         userService.unlockUser(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User unlocked", null));
+        return ResponseEntity.noContent().build();
     }
 }
