@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -34,16 +33,7 @@ public class PermissionController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('PERMISSION_READ')")
-    public ResponseEntity<ApiResponse<List<PermissionResponse>>> getPermissions() {
-        List<PermissionResponse> responses = permissionService.getPermissions().stream()
-                .map(permissionMapper::toResponse)
-                .toList();
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
-    }
-
-    @GetMapping("/page")
-    @PreAuthorize("hasAuthority('PERMISSION_READ')")
-    public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getPermissionsPages(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getPermissions(Pageable pageable) {
         Page<PermissionResponse> responses = permissionService.getPermissions(pageable)
                 .map(permissionMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
