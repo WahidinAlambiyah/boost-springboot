@@ -1,6 +1,7 @@
 package com.example.boost.controller;
 
 import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
 import com.example.boost.domain.dto.RoleResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -36,6 +38,18 @@ public class RoleController {
     @PreAuthorize("hasAuthority('ROLE_READ')")
     public ResponseEntity<ApiResponse<Page<RoleResponse>>> getRoles(Pageable pageable) {
         Page<RoleResponse> responses = roleService.getRoles(pageable).map(roleMapper::toResponse);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
+    }
+
+    @GetMapping("/lookup")
+    @PreAuthorize("hasAuthority('ROLE_READ')")
+    public ResponseEntity<ApiResponse<List<IdNameResponse>>> getRoleLookups() {
+        List<IdNameResponse> responses = roleService.getRolesSortedByName().stream()
+                .map(role -> IdNameResponse.builder()
+                        .id(role.getId())
+                        .name(role.getName())
+                        .build())
+                .toList();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
     }
 

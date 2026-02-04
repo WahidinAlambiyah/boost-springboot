@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,10 @@ public class RoleService {
 
     public Page<Role> getRoles(Pageable pageable) {
         return roleRepository.findAll(pageable);
+    }
+
+    public List<Role> getRolesSortedByName() {
+        return roleRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
     }
 
     public Role getById(UUID id) {

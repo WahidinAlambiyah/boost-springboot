@@ -1,6 +1,7 @@
 package com.example.boost.controller;
 
 import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -36,6 +38,18 @@ public class PermissionController {
     public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getPermissions(Pageable pageable) {
         Page<PermissionResponse> responses = permissionService.getPermissions(pageable)
                 .map(permissionMapper::toResponse);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
+    }
+
+    @GetMapping("/lookup")
+    @PreAuthorize("hasAuthority('PERMISSION_READ')")
+    public ResponseEntity<ApiResponse<List<IdNameResponse>>> getPermissionLookups() {
+        List<IdNameResponse> responses = permissionService.getPermissionsSortedByName().stream()
+                .map(permission -> IdNameResponse.builder()
+                        .id(permission.getId())
+                        .name(permission.getName())
+                        .build())
+                .toList();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
     }
 

@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,10 @@ public class PermissionService {
 
     public Page<Permission> getPermissions(Pageable pageable) {
         return permissionRepository.findAll(pageable);
+    }
+
+    public List<Permission> getPermissionsSortedByName() {
+        return permissionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
     }
 
     public Permission getById(UUID id) {
