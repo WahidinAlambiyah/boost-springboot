@@ -82,7 +82,7 @@ class UserServiceTest {
     @Test
     void updateUserNotFound() {
         UUID id = UUID.randomUUID();
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        when(userRepository.findWithRolesById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(id, new UserUpdateRequest()))
                 .isInstanceOf(NotFoundException.class);
@@ -90,10 +90,10 @@ class UserServiceTest {
 
     @Test
     void getUsersUsesRepositoryPaging() {
-        when(userRepository.findAll(any(PageRequest.class)))
+        when(userRepository.findAll(any(), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
-        userService.getUsers(PageRequest.of(0, 20));
-        verify(userRepository).findAll(any(PageRequest.class));
+        userService.getUsers(PageRequest.of(0, 20), null);
+        verify(userRepository).findAll(any(), any(PageRequest.class));
     }
 
     @Test
@@ -101,7 +101,7 @@ class UserServiceTest {
         User user = new User();
         user.setId(UUID.randomUUID());
         user.setActive(true);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findWithRolesById(user.getId())).thenReturn(Optional.of(user));
 
         userService.disableUser(user.getId(), "policy");
 
@@ -115,7 +115,7 @@ class UserServiceTest {
         user.setId(UUID.randomUUID());
         user.setFailedLoginCount(5);
         user.setLockedUntil(java.time.OffsetDateTime.now().plusMinutes(5));
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findWithRolesById(user.getId())).thenReturn(Optional.of(user));
 
         userService.unlockUser(user.getId());
 

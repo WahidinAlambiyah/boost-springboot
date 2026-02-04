@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -76,7 +77,8 @@ class UserControllerTest {
     @WithMockUser(authorities = "USER_READ")
     void getUsersSuccess() throws Exception {
         User user = TestDataFactory.user();
-        when(userService.getUsers(any())).thenReturn(new PageImpl<>(List.of(user), PageRequest.of(0, 20), 1));
+        when(userService.getUsers(any(), nullable(String.class)))
+                .thenReturn(new PageImpl<>(List.of(user), PageRequest.of(0, 20), 1));
         UserResponse response = new UserResponse();
         response.setId(user.getId());
         response.setUsername(user.getUsername());
@@ -134,7 +136,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.username").value("demo"));
+                .andExpect(jsonPath("$.data").value("demo@example.com"));
     }
 
     @Test
@@ -184,8 +186,7 @@ class UserControllerTest {
     @WithMockUser(authorities = "USER_DELETE")
     void deleteUserSuccess() throws Exception {
         mockMvc.perform(delete("/api/users/{id}", UUID.randomUUID()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User deleted"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -197,8 +198,7 @@ class UserControllerTest {
         mockMvc.perform(put("/api/users/{id}/password", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Password updated"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -210,8 +210,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/users/{id}/disable", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User disabled"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -225,14 +224,13 @@ class UserControllerTest {
     @WithMockUser(authorities = "USER_UNLOCK")
     void unlockUserSuccess() throws Exception {
         mockMvc.perform(post("/api/users/{id}/unlock", UUID.randomUUID()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User unlocked"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
     @WithMockUser(authorities = "USER_READ")
     void getUsersServerError() throws Exception {
-        when(userService.getUsers(any())).thenThrow(new RuntimeException("boom"));
+        when(userService.getUsers(any(), nullable(String.class))).thenThrow(new RuntimeException("boom"));
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Unexpected error"));
