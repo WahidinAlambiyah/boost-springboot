@@ -1,5 +1,6 @@
 package com.example.boost.domain.mapper;
 
+import com.example.boost.domain.dto.UserIdentifierResponse;
 import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserRoleAssignmentResponse;
 import com.example.boost.domain.entity.UserRole;
@@ -22,6 +23,14 @@ public class UserMapper {
         response.setRoleAssignments(mapRoleAssignments(user));
         response.setCreatedAt(user.getCreatedAt());
         return response;
+    }
+
+    public UserIdentifierResponse toIdentifier(User user) {
+        String identifier = user.getEmail();
+        if (identifier == null || identifier.isBlank()) {
+            identifier = user.getUsername();
+        }
+        return new UserIdentifierResponse(identifier);
     }
 
     private Set<UserRoleAssignmentResponse> mapRoleAssignments(User user) {

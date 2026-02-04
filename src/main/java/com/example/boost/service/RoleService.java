@@ -1,11 +1,14 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.RoleCreateRequest;
+import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
+import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.RolePermission;
 import com.example.boost.domain.entity.RolePermissionId;
+import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.PermissionRepository;
@@ -31,26 +34,30 @@ public class RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final AuditLogService auditLogService;
+    private final RoleMapper roleMapper;
 
-    public List<Role> getRoles() {
-        return roleRepository.findAll();
+    @Transactional(readOnly = true)
+    public Page<RoleResponse> getRoles(Pageable pageable) {
+        return roleRepository.findAll(pageable)
+                .map(roleMapper::toResponse);
     }
 
-    public Page<Role> getRoles(Pageable pageable) {
-        return roleRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public List<IdNameResponse> getRoleLookups() {
+        return roleRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+                .map(roleMapper::toLookupResponse)
+                .toList();
     }
 
-    public List<Role> getRolesSortedByName() {
-        return roleRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
-    }
-
-    public Role getById(UUID id) {
-        return roleRepository.findById(id)
+    @Transactional(readOnly = true)
+    public RoleResponse getById(UUID id) {
+        Role role = roleRepository.findWithPermissionsById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
+        return roleMapper.toResponse(role);
     }
 
     @Transactional
-    public Role createRole(RoleCreateRequest request) {
+    public RoleResponse createRole(RoleCreateRequest request) {
         if (roleRepository.existsByCode(request.getCode())) {
             throw new ConflictException("Role code already exists");
         }
@@ -59,12 +66,14 @@ public class RoleService {
         role.setName(request.getName());
         role.setDescription(request.getDescription());
         role.setActive(request.getIsActive() == null || request.getIsActive());
-        return roleRepository.save(role);
+        Role saved = roleRepository.save(role);
+        return roleMapper.toResponse(saved);
     }
 
     @Transactional
-    public Role updateRole(UUID id, RoleUpdateRequest request) {
-        Role role = getById(id);
+    public RoleResponse updateRole(UUID id, RoleUpdateRequest request) {
+        Role role = roleRepository.findWithPermissionsById(id)
+                .orElseThrow(() -> new NotFoundException("Role not found"));
         if (request.getName() != null) {
             role.setName(request.getName());
         }
@@ -74,18 +83,21 @@ public class RoleService {
         if (request.getIsActive() != null) {
             role.setActive(request.getIsActive());
         }
-        return roleRepository.save(role);
+        Role saved = roleRepository.save(role);
+        return roleMapper.toResponse(saved);
     }
 
     @Transactional
     public void deleteRole(UUID id) {
-        Role role = getById(id);
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Role not found"));
         roleRepository.delete(role);
     }
 
     @Transactional
-    public Role assignPermissions(UUID roleId, Set<String> permissionCodes) {
-        Role role = getById(roleId);
+    public RoleResponse assignPermissions(UUID roleId, Set<String> permissionCodes) {
+        Role role = roleRepository.findWithPermissionsById(roleId)
+                .orElseThrow(() -> new NotFoundException("Role not found"));
         Set<String> beforePermissions = role.getRolePermissions().stream()
                 .map(rolePermission -> rolePermission.getPermission().getCode())
                 .collect(java.util.stream.Collectors.toSet());
@@ -105,6 +117,7 @@ public class RoleService {
                     .role(role)
                     .permission(permission)
                     .id(new RolePermissionId(role.getId(), permission.getId()))
+                    .assignedAt(java.time.OffsetDateTime.now())
                     .build();
             role.getRolePermissions().add(rolePermission);
         }
@@ -130,6 +143,6 @@ public class RoleService {
                     .statusSuccess()
                     .save();
         }
-        return saved;
+        return roleMapper.toResponse(saved);
     }
 }

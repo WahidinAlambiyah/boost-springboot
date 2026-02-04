@@ -3,12 +3,11 @@ package com.example.boost.controller;
 import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.UserCreateRequest;
 import com.example.boost.domain.dto.UserDisableRequest;
+import com.example.boost.domain.dto.UserIdentifierResponse;
 import com.example.boost.domain.dto.UserPasswordUpdateRequest;
 import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserRolesUpdateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
-import com.example.boost.domain.entity.User;
-import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.service.AuditLogService;
@@ -59,9 +58,6 @@ class UserControllerTest {
     private UserService userService;
 
     @MockBean
-    private UserMapper userMapper;
-
-    @MockBean
     private JwtService jwtService;
 
     @MockBean
@@ -76,13 +72,10 @@ class UserControllerTest {
     @Test
     @WithMockUser(authorities = "USER_READ")
     void getUsersSuccess() throws Exception {
-        User user = TestDataFactory.user();
-        when(userService.getUsers(any(), nullable(String.class)))
-                .thenReturn(new PageImpl<>(List.of(user), PageRequest.of(0, 20), 1));
         UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        when(userMapper.toResponse(user)).thenReturn(response);
+        response.setUsername("demo");
+        when(userService.getUsers(any(), nullable(String.class)))
+                .thenReturn(new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
@@ -98,14 +91,12 @@ class UserControllerTest {
     @Test
     @WithMockUser(authorities = "USER_READ")
     void getUserSuccess() throws Exception {
-        User user = TestDataFactory.user();
         UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        when(userService.getById(user.getId())).thenReturn(user);
-        when(userMapper.toResponse(user)).thenReturn(response);
+        response.setId(UUID.randomUUID());
+        response.setUsername("demo");
+        when(userService.getById(response.getId())).thenReturn(response);
 
-        mockMvc.perform(get("/api/users/{id}", user.getId()))
+        mockMvc.perform(get("/api/users/{id}", response.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value("demo"));
     }
@@ -125,18 +116,14 @@ class UserControllerTest {
     @WithMockUser(authorities = "USER_WRITE")
     void createUserSuccess() throws Exception {
         UserCreateRequest request = TestDataFactory.userCreateRequest();
-        User user = TestDataFactory.user();
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        when(userService.createUser(any(UserCreateRequest.class))).thenReturn(user);
-        when(userMapper.toResponse(user)).thenReturn(response);
+        when(userService.createUser(any(UserCreateRequest.class)))
+                .thenReturn(new UserIdentifierResponse("demo@example.com"));
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data").value("demo@example.com"));
+                .andExpect(jsonPath("$.data.identifier").value("demo@example.com"));
     }
 
     @Test
@@ -165,17 +152,15 @@ class UserControllerTest {
     @Test
     @WithMockUser(authorities = "USER_WRITE")
     void assignRolesSuccess() throws Exception {
-        User user = TestDataFactory.user();
         UserResponse response = new UserResponse();
-        response.setId(user.getId());
+        response.setId(UUID.randomUUID());
         response.setRoles(Set.of("ADMIN"));
-        when(userService.assignRoles(eq(user.getId()), any())).thenReturn(user);
-        when(userMapper.toResponse(user)).thenReturn(response);
+        when(userService.assignRoles(eq(response.getId()), any())).thenReturn(response);
 
         UserRolesUpdateRequest request = new UserRolesUpdateRequest();
         request.setRoleCodes(Set.of("ADMIN"));
 
-        mockMvc.perform(put("/api/users/{id}/roles", user.getId())
+        mockMvc.perform(put("/api/users/{id}/roles", response.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

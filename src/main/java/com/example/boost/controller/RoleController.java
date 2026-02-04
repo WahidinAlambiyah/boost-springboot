@@ -6,7 +6,6 @@ import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
-import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,38 +31,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoleController {
     private final RoleService roleService;
-    private final RoleMapper roleMapper;
 
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_READ')")
     public ResponseEntity<ApiResponse<Page<RoleResponse>>> getRoles(Pageable pageable) {
-        Page<RoleResponse> responses = roleService.getRoles(pageable).map(roleMapper::toResponse);
+        Page<RoleResponse> responses = roleService.getRoles(pageable);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
     }
 
     @GetMapping("/lookup")
     @PreAuthorize("hasAuthority('ROLE_READ')")
     public ResponseEntity<ApiResponse<List<IdNameResponse>>> getRoleLookups() {
-        List<IdNameResponse> responses = roleService.getRolesSortedByName().stream()
-                .map(role -> IdNameResponse.builder()
-                        .id(role.getId())
-                        .name(role.getName())
-                        .build())
-                .toList();
+        List<IdNameResponse> responses = roleService.getRoleLookups();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Roles retrieved", responses));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_READ')")
     public ResponseEntity<ApiResponse<RoleResponse>> getRole(@PathVariable UUID id) {
-        RoleResponse response = roleMapper.toResponse(roleService.getById(id));
+        RoleResponse response = roleService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Role retrieved", response));
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(@Valid @RequestBody RoleCreateRequest request) {
-        RoleResponse response = roleMapper.toResponse(roleService.createRole(request));
+        RoleResponse response = roleService.createRole(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Role created", response));
     }
@@ -72,7 +65,7 @@ public class RoleController {
     @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(@PathVariable UUID id,
                                                                 @Valid @RequestBody RoleUpdateRequest request) {
-        RoleResponse response = roleMapper.toResponse(roleService.updateRole(id, request));
+        RoleResponse response = roleService.updateRole(id, request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Role updated", response));
     }
 
@@ -80,7 +73,7 @@ public class RoleController {
     @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public ResponseEntity<ApiResponse<RoleResponse>> assignPermissions(@PathVariable UUID id,
                                                                        @Valid @RequestBody RolePermissionsUpdateRequest request) {
-        RoleResponse response = roleMapper.toResponse(roleService.assignPermissions(id, request.getPermissionCodes()));
+        RoleResponse response = roleService.assignPermissions(id, request.getPermissionCodes());
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions updated", response));
     }
 

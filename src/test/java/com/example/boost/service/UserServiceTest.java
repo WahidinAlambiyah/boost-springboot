@@ -1,11 +1,14 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.UserCreateRequest;
+import com.example.boost.domain.dto.UserIdentifierResponse;
+import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +49,9 @@ class UserServiceTest {
     @Mock
     private AuditLogService auditLogService;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
     private UserService userService;
 
@@ -74,6 +80,8 @@ class UserServiceTest {
         role.setCode("USER");
         when(roleRepository.findByCodeIn(Set.of("USER"))).thenReturn(List.of(role));
         when(passwordEncoder.encode("Password123!")).thenReturn("hashed");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userMapper.toIdentifier(any(User.class))).thenReturn(new UserIdentifierResponse("demo@example.com"));
 
         userService.createUser(request);
 

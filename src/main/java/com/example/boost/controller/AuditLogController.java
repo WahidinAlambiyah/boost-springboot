@@ -3,7 +3,6 @@ package com.example.boost.controller;
 import com.example.boost.domain.dto.ApiResponse;
 import com.example.boost.domain.dto.AuditLogResponse;
 import com.example.boost.domain.entity.AuditLog;
-import com.example.boost.domain.mapper.AuditLogMapper;
 import com.example.boost.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,7 +23,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuditLogController {
     private final AuditLogService auditLogService;
-    private final AuditLogMapper auditLogMapper;
 
     @GetMapping
     @PreAuthorize("hasAuthority('AUDIT_READ')")
@@ -48,8 +46,7 @@ public class AuditLogController {
                 .and(status == null ? null : (root, query, cb) -> cb.equal(root.get("status"), status))
                 .and(requestId == null ? null : (root, query, cb) -> cb.equal(root.get("requestId"), requestId));
 
-        Page<AuditLogResponse> page = auditLogService.findAll(specification, pageable)
-                .map(auditLogMapper::toResponse);
+        Page<AuditLogResponse> page = auditLogService.findAllResponses(specification, pageable);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Audit logs retrieved", page));
     }
 }

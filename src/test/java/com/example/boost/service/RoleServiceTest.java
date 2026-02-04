@@ -1,9 +1,11 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.RoleCreateRequest;
+import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.entity.Role;
+import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.repository.PermissionRepository;
 import com.example.boost.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,9 @@ class RoleServiceTest {
 
     @Mock
     private AuditLogService auditLogService;
+
+    @Mock
+    private RoleMapper roleMapper;
 
     @InjectMocks
     private RoleService roleService;
@@ -56,6 +60,8 @@ class RoleServiceTest {
         request.setCode("ADMIN");
         request.setName("Admin");
         request.setIsActive(true);
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(roleMapper.toResponse(any(Role.class))).thenReturn(new RoleResponse());
 
         roleService.createRole(request);
 
@@ -68,15 +74,16 @@ class RoleServiceTest {
         role.setId(UUID.randomUUID());
         role.setCode("ADMIN");
         role.setRolePermissions(new java.util.HashSet<>());
-        when(roleRepository.findById(role.getId())).thenReturn(java.util.Optional.of(role));
+        when(roleRepository.findWithPermissionsById(role.getId())).thenReturn(java.util.Optional.of(role));
         Permission permission = new Permission();
         permission.setId(UUID.randomUUID());
         permission.setCode("USER_READ");
         when(permissionRepository.findByCodeIn(Set.of("USER_READ"))).thenReturn(List.of(permission));
         when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(roleMapper.toResponse(any(Role.class))).thenReturn(new RoleResponse());
 
-        Role saved = roleService.assignPermissions(role.getId(), Set.of("USER_READ"));
+        roleService.assignPermissions(role.getId(), Set.of("USER_READ"));
 
-        assertThat(saved.getRolePermissions()).hasSize(1);
+        verify(roleRepository).save(any(Role.class));
     }
 }

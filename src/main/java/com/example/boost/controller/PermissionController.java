@@ -5,7 +5,6 @@ import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
-import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,39 +30,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PermissionController {
     private final PermissionService permissionService;
-    private final PermissionMapper permissionMapper;
 
     @GetMapping
     @PreAuthorize("hasAuthority('PERMISSION_READ')")
     public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getPermissions(Pageable pageable) {
-        Page<PermissionResponse> responses = permissionService.getPermissions(pageable)
-                .map(permissionMapper::toResponse);
+        Page<PermissionResponse> responses = permissionService.getPermissions(pageable);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
     }
 
     @GetMapping("/lookup")
     @PreAuthorize("hasAuthority('PERMISSION_READ')")
     public ResponseEntity<ApiResponse<List<IdNameResponse>>> getPermissionLookups() {
-        List<IdNameResponse> responses = permissionService.getPermissionsSortedByName().stream()
-                .map(permission -> IdNameResponse.builder()
-                        .id(permission.getId())
-                        .name(permission.getName())
-                        .build())
-                .toList();
+        List<IdNameResponse> responses = permissionService.getPermissionLookups();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permissions retrieved", responses));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('PERMISSION_READ')")
     public ResponseEntity<ApiResponse<PermissionResponse>> getPermission(@PathVariable UUID id) {
-        PermissionResponse response = permissionMapper.toResponse(permissionService.getById(id));
+        PermissionResponse response = permissionService.getById(id);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permission retrieved", response));
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('PERMISSION_WRITE')")
     public ResponseEntity<ApiResponse<PermissionResponse>> createPermission(@Valid @RequestBody PermissionCreateRequest request) {
-        PermissionResponse response = permissionMapper.toResponse(permissionService.createPermission(request));
+        PermissionResponse response = permissionService.createPermission(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Permission created", response));
     }
@@ -72,7 +64,7 @@ public class PermissionController {
     @PreAuthorize("hasAuthority('PERMISSION_WRITE')")
     public ResponseEntity<ApiResponse<PermissionResponse>> updatePermission(@PathVariable UUID id,
                                                                             @Valid @RequestBody PermissionUpdateRequest request) {
-        PermissionResponse response = permissionMapper.toResponse(permissionService.updatePermission(id, request));
+        PermissionResponse response = permissionService.updatePermission(id, request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Permission updated", response));
     }
 

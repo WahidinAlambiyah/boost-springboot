@@ -1,8 +1,11 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.PermissionCreateRequest;
+import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
+import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.entity.Permission;
+import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.PermissionRepository;
@@ -23,26 +26,30 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class PermissionService {
     private final PermissionRepository permissionRepository;
+    private final PermissionMapper permissionMapper;
 
-    public List<Permission> getPermissions() {
-        return permissionRepository.findAll();
+    @Transactional(readOnly = true)
+    public Page<PermissionResponse> getPermissions(Pageable pageable) {
+        return permissionRepository.findAll(pageable)
+                .map(permissionMapper::toResponse);
     }
 
-    public Page<Permission> getPermissions(Pageable pageable) {
-        return permissionRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public List<IdNameResponse> getPermissionLookups() {
+        return permissionRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+                .map(permissionMapper::toLookupResponse)
+                .toList();
     }
 
-    public List<Permission> getPermissionsSortedByName() {
-        return permissionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
-    }
-
-    public Permission getById(UUID id) {
-        return permissionRepository.findById(id)
+    @Transactional(readOnly = true)
+    public PermissionResponse getById(UUID id) {
+        Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Permission not found"));
+        return permissionMapper.toResponse(permission);
     }
 
     @Transactional
-    public Permission createPermission(PermissionCreateRequest request) {
+    public PermissionResponse createPermission(PermissionCreateRequest request) {
         if (permissionRepository.existsByCode(request.getCode())) {
             throw new ConflictException("Permission code already exists");
         }
@@ -52,12 +59,14 @@ public class PermissionService {
         permission.setModule(request.getModule());
         permission.setDescription(request.getDescription());
         permission.setActive(request.getIsActive() == null || request.getIsActive());
-        return permissionRepository.save(permission);
+        Permission saved = permissionRepository.save(permission);
+        return permissionMapper.toResponse(saved);
     }
 
     @Transactional
-    public Permission updatePermission(UUID id, PermissionUpdateRequest request) {
-        Permission permission = getById(id);
+    public PermissionResponse updatePermission(UUID id, PermissionUpdateRequest request) {
+        Permission permission = permissionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Permission not found"));
         if (request.getName() != null) {
             permission.setName(request.getName());
         }
@@ -70,12 +79,14 @@ public class PermissionService {
         if (request.getIsActive() != null) {
             permission.setActive(request.getIsActive());
         }
-        return permissionRepository.save(permission);
+        Permission saved = permissionRepository.save(permission);
+        return permissionMapper.toResponse(saved);
     }
 
     @Transactional
     public void deletePermission(UUID id) {
-        Permission permission = getById(id);
+        Permission permission = permissionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Permission not found"));
         permissionRepository.delete(permission);
     }
 }

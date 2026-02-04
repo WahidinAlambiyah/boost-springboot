@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
     @EntityGraph(attributePaths = {
@@ -43,6 +44,16 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
             "userRoles.role.rolePermissions.permission"
     })
     Page<User> findAll(Pageable pageable);
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "userRoles",
+            "userRoles.role",
+            "userRoles.assignedBy",
+            "userRoles.role.rolePermissions",
+            "userRoles.role.rolePermissions.permission"
+    })
+    Page<User> findAll(Specification<User> specification, Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "userRoles",
