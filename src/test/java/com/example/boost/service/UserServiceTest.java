@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -90,10 +91,10 @@ class UserServiceTest {
 
     @Test
     void getUsersUsesRepositoryPaging() {
-        when(userRepository.findAll(any(), any(PageRequest.class)))
+        when(userRepository.findAll(any(Specification.class), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
         userService.getUsers(PageRequest.of(0, 20), null);
-        verify(userRepository).findAll(any(), any(PageRequest.class));
+        verify(userRepository).findAll(any(Specification.class), any(PageRequest.class));
     }
 
     @Test
