@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -37,8 +38,9 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER_READ')")
-    public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(Pageable pageable) {
-        Page<UserResponse> page = userService.getUsers(pageable).map(userMapper::toResponse);
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(Pageable pageable,
+                                                                    @RequestParam(value = "search", required = false) String search) {
+        Page<UserResponse> page = userService.getUsers(pageable, search).map(userMapper::toResponse);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Users retrieved", page));
     }
 
@@ -58,18 +60,18 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody UserCreateRequest request) {
+    public ResponseEntity<ApiResponse<String>> createUser(@Valid @RequestBody UserCreateRequest request) {
         UserResponse response = userMapper.toResponse(userService.createUser(request));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User created", response));
+                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User created", resolveIdentifier(response)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_WRITE')")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@PathVariable UUID id,
-                                                                @Valid @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<ApiResponse<String>> updateUser(@PathVariable UUID id,
+                                                          @Valid @RequestBody UserUpdateRequest request) {
         UserResponse response = userMapper.toResponse(userService.updateUser(id, request));
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User updated", response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "User updated", resolveIdentifier(response)));
     }
 
     @PutMapping("/{id}/roles")
@@ -115,5 +117,12 @@ public class UserController {
     public ResponseEntity<Void> unlockUser(@PathVariable UUID id) {
         userService.unlockUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String resolveIdentifier(UserResponse response) {
+        if (response.getEmail() != null && !response.getEmail().isBlank()) {
+            return response.getEmail();
+        }
+        return response.getUsername();
     }
 }

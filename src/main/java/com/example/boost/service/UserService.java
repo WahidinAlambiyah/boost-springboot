@@ -8,6 +8,7 @@ import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
+import com.example.boost.repository.UserSpecifications;
 import com.example.boost.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,8 +32,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
 
-    public Page<User> getUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<User> getUsers(Pageable pageable, String search) {
+        return userRepository.findAll(UserSpecifications.searchByKeyword(search), pageable);
     }
 
     public User getById(UUID id) {
