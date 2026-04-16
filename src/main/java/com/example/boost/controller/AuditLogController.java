@@ -4,7 +4,9 @@ import com.example.boost.domain.dto.ApiResponse;
 import com.example.boost.domain.dto.AuditLogResponse;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.service.AuditLogService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Audit Log")
 @RestController
 @RequestMapping("/api/audit-logs")
 @RequiredArgsConstructor

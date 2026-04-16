@@ -7,8 +7,10 @@ import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
 import com.example.boost.service.RoleService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Role Management")
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor

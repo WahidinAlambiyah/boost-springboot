@@ -7,8 +7,11 @@ import com.example.boost.domain.dto.LogoutRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
 import com.example.boost.service.AuthService;
+
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Authentication", description = "Login, logout, refresh token")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ public class AuthController {
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Registered", response));
     }
 
+    @Operation(summary = "Login user", description = "Authenticate user and return JWT token")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);

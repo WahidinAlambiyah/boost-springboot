@@ -6,8 +6,10 @@ import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
 import com.example.boost.service.PermissionService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Permission Management")
 @RestController
 @RequestMapping("/api/permissions")
 @RequiredArgsConstructor

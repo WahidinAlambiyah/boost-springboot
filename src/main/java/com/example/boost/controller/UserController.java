@@ -9,8 +9,10 @@ import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserRolesUpdateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.service.UserService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "User Management", description = "Manage users and their access")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -58,7 +63,7 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('USER_WRITE')")
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<UserIdentifierResponse>> createUser(@Valid @RequestBody UserCreateRequest request) {
         UserIdentifierResponse response = userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -66,7 +71,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER_WRITE')")
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<UserIdentifierResponse>> updateUser(@PathVariable UUID id,
                                                                           @Valid @RequestBody UserUpdateRequest request) {
         UserIdentifierResponse response = userService.updateUser(id, request);
@@ -74,7 +79,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/roles")
-    @PreAuthorize("hasAuthority('USER_WRITE')")
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> assignRoles(@PathVariable UUID id,
                                                                  @Valid @RequestBody UserRolesUpdateRequest request) {
         UserResponse response = userService.assignRoles(id, request.getRoleCodes());
@@ -82,14 +87,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER_DELETE')")
+    @PreAuthorize("hasAuthority('USER_DELETE') and hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.softDeleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/password")
-    @PreAuthorize("hasAuthority('USER_WRITE')")
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> updatePassword(@PathVariable UUID id,
                                                @Valid @RequestBody UserPasswordUpdateRequest request) {
         userService.changePassword(id, request.getNewPassword());

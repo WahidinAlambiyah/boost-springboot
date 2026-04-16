@@ -42,6 +42,10 @@ spring:
           auth: true
           ssl:
             enable: true
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: false 
 
 app:
   redis:
