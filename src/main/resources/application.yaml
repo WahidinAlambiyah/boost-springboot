@@ -1,0 +1,19 @@
+frankfurter:
+  base-url: https://api.frankfurter.app
+
+server:
+  port: 8124
+
+spring:
+  application:
+    name: exchangerate
+  config:
+    import: optional:file:.env[.properties]
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html
+      tags-sorter: alpha
+      operations-sorter: alpha
+      default-models-expand-depth: -1
+    api-docs:
+      path: /v3/api-docs  

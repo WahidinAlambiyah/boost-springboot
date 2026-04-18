@@ -1,0 +1,101 @@
+package id.allobank.exchangerate.strategy;
+
+import id.allobank.exchangerate.model.dto.HistoricalResponse;
+import id.allobank.exchangerate.model.dto.LatestRatesResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class LatestRatesStrategyTest {
+
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
+
+    private LatestRatesStrategy strategy;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        strategy = new LatestRatesStrategy(webClient);
+    }
+
+    @Test
+    void testFetch_success() {
+
+        // mock response DTO
+        LatestRatesResponse mockResponse = new LatestRatesResponse();
+        mockResponse.setRates(Map.of("USD", 0.000065));
+
+        // mock chain WebClient
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri("/latest?base=IDR")).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(LatestRatesResponse.class))
+                .thenReturn(Mono.just(mockResponse));
+
+        Object result = strategy.fetch();
+
+        assertNotNull(result);
+
+        LatestRatesResponse res = (LatestRatesResponse) result;
+
+        assertNotNull(res.getUSD_BuySpread_IDR());
+    }
+
+    @Test
+    void testFetch_nullResponse_shouldThrow() {
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(LatestRatesResponse.class))
+                .thenReturn(Mono.empty());
+
+        assertThrows(RuntimeException.class, () -> strategy.fetch());
+    }
+
+    @Test
+    void testHistoricalFetch() {
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(HistoricalResponse.class))
+                .thenReturn(Mono.just(new HistoricalResponse()));
+
+        Object result = strategy.fetch();
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testCurrencyFetch() {
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri("/currencies")).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Map.class))
+                .thenReturn(Mono.just(Map.of("USD", "US Dollar")));
+
+        Object result = strategy.fetch();
+
+        assertNotNull(result);
+    }
+}
