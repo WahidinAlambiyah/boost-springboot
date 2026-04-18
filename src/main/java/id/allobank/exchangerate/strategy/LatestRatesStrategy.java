@@ -3,6 +3,7 @@ package id.allobank.exchangerate.strategy;
 import id.allobank.exchangerate.model.dto.LatestRatesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,6 +17,9 @@ import java.util.Map;
 public class LatestRatesStrategy implements IDRDataFetcher{
 
     private final WebClient webClient;
+
+    @Value("${app.github-username}")
+    private String username;
 
     @Override
     public String getType() {
@@ -43,7 +47,7 @@ public class LatestRatesStrategy implements IDRDataFetcher{
                 throw new RuntimeException("USD rate not found");
             }
 
-            double spread = calculateSpread("yourgithubusername");
+            double spread = calculateSpread(username);
 
             double result = (1 / usdRate) * (1 + spread);
 

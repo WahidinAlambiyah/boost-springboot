@@ -1,5 +1,6 @@
 package id.allobank.exchangerate.controller;
 
+import id.allobank.exchangerate.service.FinanceService;
 import id.allobank.exchangerate.store.InMemoryDataStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FinanceController {
 
-    private final InMemoryDataStore store;
+    private final FinanceService service;
 
     @GetMapping("/{type}")
     public ResponseEntity<?> get(@PathVariable String type) {
-
-        Object data = store.get(type);
-
-        if (data == null) {
-            throw new RuntimeException("Invalid resourceType");
-        }
-
-        return ResponseEntity.ok(data);
+        return ResponseEntity.ok(service.getData(type));
     }
 }
