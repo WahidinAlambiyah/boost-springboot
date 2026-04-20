@@ -2,7 +2,7 @@ app:
   github-username: WahidinAlambiyah
 
 frankfurter:
-  base-url: https://api.frankfurter.app
+  base-url: https://api.frankfurter.dev/v1
 
 server:
   port: 8124

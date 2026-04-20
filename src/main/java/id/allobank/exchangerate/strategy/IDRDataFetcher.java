@@ -1,6 +1,6 @@
 package id.allobank.exchangerate.strategy;
 
-public interface IDRDataFetcher {
+public interface IDRDataFetcher<T> {
     String getType();
-    Object fetch();
+    T fetch();
 }

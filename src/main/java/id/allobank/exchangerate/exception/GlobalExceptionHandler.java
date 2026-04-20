@@ -40,8 +40,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<?> handleApi(ApiException ex) {
         log.error("API Exception: {}", ex.getMessage());
+
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(buildError("Unexpected error", 500));
+                .status(ex.getStatus())
+                .body(buildError(ex.getMessage(), ex.getStatus().value()));
     }
 }

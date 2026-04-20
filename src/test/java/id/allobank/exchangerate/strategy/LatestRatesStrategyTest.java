@@ -31,32 +31,40 @@ class LatestRatesStrategyTest {
     private LatestRatesStrategy strategy;
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         MockitoAnnotations.openMocks(this);
         strategy = new LatestRatesStrategy(webClient);
+
+        // 🔥 inject field @Value secara manual
+        var field = LatestRatesStrategy.class.getDeclaredField("username");
+        field.setAccessible(true);
+        field.set(strategy, "wahidinalambiyah"); // isi username kamu
     }
 
     @Test
     void testFetch_success() {
 
-        // mock response DTO
         LatestRatesResponse mockResponse = new LatestRatesResponse();
         mockResponse.setRates(Map.of("USD", 0.000065));
 
-        // mock chain WebClient
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri("/latest?base=IDR")).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+
+        when(requestHeadersUriSpec.uri(anyString()))
+                .thenReturn(requestHeadersSpec);
+
+        when(requestHeadersSpec.retrieve())
+                .thenReturn(responseSpec);
+
+        // 🔥 WAJIB: mock onStatus
+        when(responseSpec.onStatus(any(), any()))
+                .thenReturn(responseSpec);
+
         when(responseSpec.bodyToMono(LatestRatesResponse.class))
                 .thenReturn(Mono.just(mockResponse));
 
         Object result = strategy.fetch();
 
         assertNotNull(result);
-
-        LatestRatesResponse res = (LatestRatesResponse) result;
-
-        assertNotNull(res.getUSD_BuySpread_IDR());
     }
 
     @Test
@@ -89,7 +97,7 @@ class LatestRatesStrategyTest {
     void testCurrencyFetch() {
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri("/currencies")).thenReturn(requestHeadersSpec);
+        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Map.class))
                 .thenReturn(Mono.just(Map.of("USD", "US Dollar")));

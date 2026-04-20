@@ -13,6 +13,10 @@ public class FinanceService {
 
     public Object getData(String type) {
 
+        if (type == null || type.isBlank()) {
+            throw new ApiException("resourceType cannot be empty");
+        }
+
         Object data = store.get(type);
 
         if (data == null) {

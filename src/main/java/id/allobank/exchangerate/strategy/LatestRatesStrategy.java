@@ -1,5 +1,6 @@
 package id.allobank.exchangerate.strategy;
 
+import id.allobank.exchangerate.exception.ApiException;
 import id.allobank.exchangerate.model.dto.LatestRatesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LatestRatesStrategy implements IDRDataFetcher{
+public class LatestRatesStrategy implements IDRDataFetcher {
 
     private final WebClient webClient;
 
@@ -29,31 +30,37 @@ public class LatestRatesStrategy implements IDRDataFetcher{
     @Override
     public Object fetch() {
 //        try {
-            LatestRatesResponse response = webClient.get()
-                    .uri("/latest?base=IDR")
-                    .retrieve()
-                    .onStatus(status -> status.isError(), r ->
-                            Mono.error(new RuntimeException("API Error")))
-                    .bodyToMono(LatestRatesResponse.class)
-                    .block();
+        LatestRatesResponse response = webClient.get()
+                .uri("/latest?base=IDR")
+                .retrieve()
+                .onStatus(status -> status.isError(), r ->
+                        Mono.error(new RuntimeException("API Error")))
+                .bodyToMono(LatestRatesResponse.class)
+                .block();
 
-            if (response == null) {
-                throw new RuntimeException("Null response from API");
-            }
+        if (response == null) {
+            throw new RuntimeException("Null response from API");
+        }
 
-            Double usdRate = response.getRates().get("USD");
+        if (response.getRates() == null) {
+            throw new ApiException("Rates data missing");
+        }
 
-            if (usdRate == null) {
-                throw new RuntimeException("USD rate not found");
-            }
+        Double usdRate = response.getRates().get("USD");
+        log.info("USD Rate: {}", usdRate);
 
-            double spread = calculateSpread(username);
+        if (usdRate == null) {
+            throw new RuntimeException("USD rate not found");
+        }
 
-            double result = (1 / usdRate) * (1 + spread);
+        double spread = calculateSpread(username);
+        log.info("Spread: {}", spread);
 
-            response.setUSD_BuySpread_IDR(result);
+        double result = (1 / usdRate) * (1 + spread);
 
-            return response;
+        response.setUSD_BuySpread_IDR(result);
+
+        return response;
 //        } catch (Exception e) {
 //            return Map.of(
 //                    "error", "Failed to fetch latest rates",

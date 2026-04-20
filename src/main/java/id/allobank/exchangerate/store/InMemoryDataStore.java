@@ -9,7 +9,7 @@ import java.util.Map;
 @Service
 public class InMemoryDataStore {
 
-    private Map<String, Object> data = Map.of();
+    private volatile Map<String, Object> data = Map.of();
 
     public synchronized void setAll(Map<String, Object> newData){
         this.data = Collections.unmodifiableMap(new HashMap<>(newData));
