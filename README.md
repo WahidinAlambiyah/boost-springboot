@@ -17,7 +17,7 @@ The application is designed with production-ready practices, including:
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/<your-username>/allo-backend-test
+git clone https://github.com/WahidinAlambiyah/allo-backend-test
 cd allo-backend-test
 ```
 
@@ -46,21 +46,21 @@ GET /api/finance/data/{resourceType}
 ## 📊 Available Resource Types
 ### 1. Latest IDR Rates
 ```bash
-curl localhost:8080/api/finance/data/latest_idr_rates
+curl localhost:8124/api/finance/data/latest_idr_rates
 ```
 
 ### 2. Historical IDR → USD
 ```bash
-curl localhost:8080/api/finance/data/historical_idr_usd
+curl localhost:8124/api/finance/data/historical_idr_usd
 ```
 
-### 13 Supported Currencies
+### 3. Supported Currencies
 ```bash
-curl localhost:8080/api/finance/data/supported_currencies
+curl localhost:8124/api/finance/data/supported_currencies
 ```
 ---
 ## 🧮 Personalization (Spread Factor)
-GitHub Username: <your-username>
+GitHub Username: `WahidinAlambiyah`
 
 ### Spread Calculation
 - Sum of ASCII values of username characters
@@ -68,9 +68,9 @@ GitHub Username: <your-username>
 ```
 Spread Factor = (Sum % 1000) / 100000.0
 ```
-### Example Result
+### Actual Result
 ```
-Spread Factor: 0.00765
+Spread Factor: 0.00676
 ```
 ### Final Formula
 ```
@@ -79,11 +79,14 @@ USD_BuySpread_IDR = (1 / Rate_USD) * (1 + Spread Factor)
 ---
 ## 🏗️ Architecture
 ### 1. Strategy Pattern (Polymorphism)
-The application uses the Strategy Design Pattern to handle multiple resource types dynamically.
+The application uses the Strategy Design Pattern to handle resource types dynamically through the `IDRDataFetcher` contract and concrete strategy classes:
+- `LatestRatesStrategy` → `latest_idr_rates`
+- `HistoricalStrategy` → `historical_idr_usd`
+- `CurrencyStrategy` → `supported_currencies`
 
 **Why Strategy Pattern?**
 
-Instead of using conditional logic (if/else or switch), each resource type is encapsulated in its own strategy implementation.
+Instead of hardcoding large conditional blocks in the controller/service layer, each resource type is encapsulated in its own strategy class and registered in `StrategyRegistry`. `FinanceService` resolves strategy by `resourceType` and delegates execution.
 
 **Benefits**:
 - **Extensibility**: New resource types can be added without modifying existing code
@@ -93,12 +96,12 @@ Instead of using conditional logic (if/else or switch), each resource type is en
 ---
 
 ### 2. FactoryBean for WebClient
-The WebClient instance is created using a custom `FactoryBean`.
+The WebClient instance is created using a custom `FactoryBean` (`FrankfurterClientFactory`) that builds a dedicated client for Frankfurter API access.
 
 **Why FactoryBean?**
 
 - Centralized configuration of external API client
-- Encapsulates complex setup (timeouts, base URL, headers)
+- Encapsulates client setup (e.g., base URL) in one place
 - Cleaner lifecycle management compared to standard @Bean
 
 **Advantages:**
@@ -121,7 +124,7 @@ All external API data is fetched once at application startup using `ApplicationR
 
 ### 4. In-Memory Data Store (Thread-Safe & Immutable)
 
-All fetched data is stored in an immutable in-memory store.
+All external API data is fetched once at application startup using `DataLoaderRunner` (an `ApplicationRunner` implementation), then written into `InMemoryDataStore`.
 
 **Design:**
 - Data loaded once at startup

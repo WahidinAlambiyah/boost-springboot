@@ -1,0 +1,13 @@
+spring:
+  web:
+    error:
+      include-stacktrace: never
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO

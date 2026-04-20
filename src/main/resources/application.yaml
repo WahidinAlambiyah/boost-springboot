@@ -1,14 +1,16 @@
 app:
-  github-username: WahidinAlambiyah
+  github-username: ${APP_GITHUB_USERNAME:defaultuser}
 
 frankfurter:
-  base-url: https://api.frankfurter.dev/v1
+  base-url: ${EXTERNAL_API_BASE_URL:https://api.frankfurter.app}
 
 server:
   port: 8124
 
 spring:
   application:
+    admin:
+      enabled: true
     name: exchangerate
   config:
     import: optional:file:.env[.properties]
