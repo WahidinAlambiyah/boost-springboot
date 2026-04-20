@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Component
@@ -22,12 +23,18 @@ public class HistoricalStrategy implements IDRDataFetcher {
 
     @Override
     public Object fetch() {
-        return webClient.get()
+        HistoricalResponse response = webClient.get()
                 .uri("/2024-01-01..2024-01-05?from=IDR&to=USD")
                 .retrieve()
                 .onStatus(status -> status.isError(),
                         r -> Mono.error(new ApiException("Failed fetching historical data")))
                 .bodyToMono(HistoricalResponse.class)
                 .block();
+
+        return Map.of(
+                "resourceType", getType(),
+                "data", response,
+                "fetchedAt", Instant.now().toString()
+        );
     }
 }
