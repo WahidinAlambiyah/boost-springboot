@@ -10,12 +10,10 @@ import org.springframework.stereotype.Service;
 public class FinanceService {
 
     private final InMemoryDataStore store;
+    private final StrategyRegistry strategyRegistry;
 
     public Object getData(String type) {
-
-        if (type == null || type.isBlank()) {
-            throw new ApiException("resourceType cannot be empty");
-        }
+        strategyRegistry.get(type);
 
         Object data = store.get(type);
 
