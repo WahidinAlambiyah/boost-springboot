@@ -1,18 +1,22 @@
 package id.allobank.exchangerate.strategy;
 
-import id.allobank.exchangerate.model.dto.HistoricalResponse;
+import id.allobank.exchangerate.exception.ApiException;
 import id.allobank.exchangerate.model.dto.LatestRatesResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 class LatestRatesStrategyTest {
 
@@ -35,75 +39,81 @@ class LatestRatesStrategyTest {
         MockitoAnnotations.openMocks(this);
         strategy = new LatestRatesStrategy(webClient);
 
-        // 🔥 inject field @Value secara manual
         var field = LatestRatesStrategy.class.getDeclaredField("username");
         field.setAccessible(true);
-        field.set(strategy, "wahidinalambiyah"); // isi username kamu
+        field.set(strategy, "wahidinalambiyah");
     }
 
     @Test
-    void testFetch_success() {
-
+    void fetch_success_shouldCalculateUsdBuySpreadIdr() {
         LatestRatesResponse mockResponse = new LatestRatesResponse();
+        mockResponse.setBase("IDR");
+        mockResponse.setDate("2024-01-01");
         mockResponse.setRates(Map.of("USD", 0.000065));
 
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        mockWebClientChain();
+        when(responseSpec.bodyToMono(LatestRatesResponse.class)).thenReturn(Mono.just(mockResponse));
 
-        when(requestHeadersUriSpec.uri(anyString()))
-                .thenReturn(requestHeadersSpec);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) strategy.fetch();
 
-        when(requestHeadersSpec.retrieve())
-                .thenReturn(responseSpec);
+        assertNotNull(result.get("fetchedAt"));
+        assertEquals("latest_idr_rates", result.get("resourceType"));
 
-        // 🔥 WAJIB: mock onStatus
-        when(responseSpec.onStatus(any(), any()))
-                .thenReturn(responseSpec);
+        LatestRatesResponse data = (LatestRatesResponse) result.get("data");
+        assertEquals(15488.615384615388, data.getUSD_BuySpread_IDR(), 1e-9);
+    }
 
+    @Test
+    void fetch_whenUsdRateMissing_shouldThrowApiException() {
+        LatestRatesResponse mockResponse = new LatestRatesResponse();
+        mockResponse.setBase("IDR");
+        mockResponse.setDate("2024-01-01");
+        mockResponse.setRates(Map.of("EUR", 0.000059));
+
+        mockWebClientChain();
+        when(responseSpec.bodyToMono(LatestRatesResponse.class)).thenReturn(Mono.just(mockResponse));
+
+        ApiException ex = assertThrows(ApiException.class, () -> strategy.fetch());
+
+        assertEquals(HttpStatus.BAD_GATEWAY, ex.getStatus());
+        assertTrue(ex.getMessage().contains("Field rates.USD is required"));
+    }
+
+    @Test
+    void fetch_whenUsdRateNull_shouldThrowApiException() {
+        LatestRatesResponse mockResponse = new LatestRatesResponse();
+        mockResponse.setBase("IDR");
+        mockResponse.setDate("2024-01-01");
+        Map<String, Double> rates = new HashMap<>();
+        rates.put("USD", null);
+        mockResponse.setRates(rates);
+
+        mockWebClientChain();
+        when(responseSpec.bodyToMono(LatestRatesResponse.class)).thenReturn(Mono.just(mockResponse));
+
+        ApiException ex = assertThrows(ApiException.class, () -> strategy.fetch());
+
+        assertEquals(HttpStatus.BAD_GATEWAY, ex.getStatus());
+        assertTrue(ex.getMessage().contains("Field rates.USD is required"));
+    }
+
+    @Test
+    void fetch_whenHttpError_shouldPropagateApiException() {
+        mockWebClientChain();
         when(responseSpec.bodyToMono(LatestRatesResponse.class))
-                .thenReturn(Mono.just(mockResponse));
+                .thenReturn(Mono.error(new ApiException("External API returned 4xx for endpoint /latest?base=IDR", HttpStatus.BAD_GATEWAY)));
 
-        Object result = strategy.fetch();
+        ApiException ex = assertThrows(ApiException.class, () -> strategy.fetch());
 
-        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_GATEWAY, ex.getStatus());
+        assertTrue(ex.getMessage().contains("External API returned 4xx"));
     }
 
-    @Test
-    void testFetch_nullResponse_shouldThrow() {
-
+    private void mockWebClientChain() {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(LatestRatesResponse.class))
-                .thenReturn(Mono.empty());
-
-        assertThrows(RuntimeException.class, () -> strategy.fetch());
-    }
-
-    @Test
-    void testHistoricalFetch() {
-
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(HistoricalResponse.class))
-                .thenReturn(Mono.just(new HistoricalResponse()));
-
-        Object result = strategy.fetch();
-
-        assertNotNull(result);
-    }
-
-    @Test
-    void testCurrencyFetch() {
-
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class))
-                .thenReturn(Mono.just(Map.of("USD", "US Dollar")));
-
-        Object result = strategy.fetch();
-
-        assertNotNull(result);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
     }
 }
