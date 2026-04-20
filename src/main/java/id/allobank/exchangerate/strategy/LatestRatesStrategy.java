@@ -5,11 +5,11 @@ import id.allobank.exchangerate.model.dto.LatestRatesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
@@ -60,7 +60,11 @@ public class LatestRatesStrategy implements IDRDataFetcher {
 
         response.setUSD_BuySpread_IDR(result);
 
-        return response;
+        return Map.of(
+                "resourceType", getType(),
+                "data", response,
+                "fetchedAt", Instant.now().toString()
+        );
 //        } catch (Exception e) {
 //            return Map.of(
 //                    "error", "Failed to fetch latest rates",
