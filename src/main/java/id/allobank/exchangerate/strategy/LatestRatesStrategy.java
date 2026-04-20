@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -75,7 +76,11 @@ public class LatestRatesStrategy implements IDRDataFetcher {
     }
 
     private double calculateSpread(String username) {
-        int sum = username.chars().sum();
+        if (username == null || username.isBlank()) {
+            throw new ApiException("Invalid GitHub username: must not be null or blank");
+        }
+
+        int sum = username.toLowerCase(Locale.ROOT).chars().sum();
         return (sum % 1000) / 100000.0;
     }
 }
