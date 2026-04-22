@@ -6,7 +6,7 @@ import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.LogoutRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
-import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,26 +38,46 @@ public class AuthController {
 
     @Operation(
             summary = "Register user",
-            description = "Registrrasi user dan mengembalikan access token"
+            description = "Register user baru"
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
+                    responseCode = "201",
                     description = "Register berhasil",
                     useReturnTypeSchema = true,
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponse.class),
                             examples = @ExampleObject(
-                                    name = "rergisterSuccess",
+                                    name = "registerSuccess",
                                     value = """
                                         {
-                                          "status": 200,
-                                          "message": "Registered",
+                                          "status": 201,
+                                          "message": "User registered successfully",
                                           "data": {
-                                            "accessToken": "xxx",
-                                            "refreshToken": "xxx",
-                                            "tokenType": "Bearer"
+                                            "username": "admin",
+                                            "email": "legio@example.com",
+                                            "roleCodes": ["ADMIN"]
+                                          }
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "422",
+                    description = "Validation failed",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                                        {
+                                          "status": 422,
+                                          "message": "Validation failed",
+                                          "data": {
+                                            "errors": {
+                                              "email": "must be a well-formed email address"
+                                            }
                                           }
                                         }
                                         """
@@ -67,10 +86,26 @@ public class AuthController {
             )
     })
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Register request",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = RegisterRequest.class),
+                            examples = @ExampleObject(value = """
+                                {
+                                  "username": "admin",
+                                  "email": "legio@example.com",
+                                  "password": "123456789",
+                                  "roleCodes": ["ADMIN"]
+                                }
+                            """)
+                    )
+            )
+            @Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED.value(), "Registered", response));
+                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
     }
 
     @Operation(

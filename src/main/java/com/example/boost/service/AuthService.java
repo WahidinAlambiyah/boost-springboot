@@ -5,11 +5,12 @@ import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
+import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.ConflictException;
-import com.example.boost.exception.NotFoundException;
 import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.exception.UnprocessableEntityException;
 import com.example.boost.repository.PermissionRepository;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
@@ -17,6 +18,10 @@ import com.example.boost.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,22 +47,28 @@ public class AuthService {
     private final AuditLogService auditLogService;
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
             throw new ConflictException("Username already exists");
         }
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
-            throw new ConflictException("Email already exists");
+            throw new ConflictException("Email already registered");
         }
+
+        enforcePrivilegedRoleAssignment(request.getRoleCodes());
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRoles(resolveRoles(request.getRoleCodes()));
-        userRepository.save(user);
+        User saved = userRepository.save(user);
 
-        return issueTokens(user);
+        return RegisterResponse.builder()
+                .username(saved.getUsername())
+                .email(saved.getEmail())
+                .roleCodes(saved.getRoleCodes())
+                .build();
     }
 
     @Transactional
@@ -212,8 +223,25 @@ public class AuthService {
             }
             Set<String> missing = new HashSet<>(codes);
             missing.removeAll(found);
-            throw new NotFoundException("Role codes not found: " + missing);
+            throw new UnprocessableEntityException("Invalid role code(s): " + missing);
         }
         return new HashSet<>(roles);
+    }
+
+    private void enforcePrivilegedRoleAssignment(Set<String> roleCodes) {
+        if (roleCodes == null || !roleCodes.contains("ADMIN")) {
+            return;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            throw new UnauthorizedException("Unauthorized");
+        }
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
+        if (!isAdmin) {
+            throw new AccessDeniedException("Forbidden");
+        }
     }
 }
