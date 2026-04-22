@@ -6,14 +6,20 @@ import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.LogoutRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
+import com.example.boost.exception.UnauthorizedException;
 import com.example.boost.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,11 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Authentication", description = "Login, logout, refresh token")
+@Tag(name = "1. Authentication", description = "Login, logout, refresh token")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService authService;
 
     @PostMapping("/register")
@@ -37,9 +44,32 @@ public class AuthController {
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Registered", response));
     }
 
-    @Operation(summary = "Login user", description = "Authenticate user and return JWT token")
+    @Operation(
+            summary = "Login user",
+            description = "Authenticate user dan mengembalikan access token"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login berhasil",
+                content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized",
+                content = @Content(schema = @Schema(implementation = UnauthorizedException.class)))
+    })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Credential user",
+                required = true,
+                content = @Content(
+                    schema = @Schema(implementation = LoginRequest.class),
+                    examples = @ExampleObject(value = """
+                        {
+                          "email": "user@mail.com",
+                          "password": "password123"
+                        }
+                    """)
+                )
+            )
+        @Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Logged in", response));
     }

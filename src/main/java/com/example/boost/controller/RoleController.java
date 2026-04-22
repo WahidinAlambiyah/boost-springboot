@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Role Management")
+@Tag(name = "4. Role Management")
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor

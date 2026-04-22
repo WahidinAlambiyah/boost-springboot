@@ -33,7 +33,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "User Management", description = "Manage users and their access")
+@Tag(name = "3. User Management", description = "Manage users and their access")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor

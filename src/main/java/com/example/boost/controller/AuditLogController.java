@@ -22,7 +22,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Audit Log")
+@Tag(name = "6. Audit Log")
 @RestController
 @RequestMapping("/api/audit-logs")
 @RequiredArgsConstructor

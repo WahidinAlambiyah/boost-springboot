@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Permission Management")
+@Tag(name = "5. Permission Management")
 @RestController
 @RequestMapping("/api/permissions")
 @RequiredArgsConstructor

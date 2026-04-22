@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Password Management", description = "Password reset & recovery")
+@Tag(name = "2. Password Management", description = "Password reset & recovery")
 @RestController
 @RequestMapping("/api/auth/password-reset")
 @RequiredArgsConstructor
