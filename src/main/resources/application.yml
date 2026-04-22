@@ -66,6 +66,9 @@ server:
   port: ${SERVER_PORT:8123}
 
 management:
+  health:
+    redis:
+      enabled: ${MANAGEMENT_HEALTH_REDIS_ENABLED:false}
   endpoints:
     web:
       exposure:

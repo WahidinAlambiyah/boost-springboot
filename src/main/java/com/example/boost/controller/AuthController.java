@@ -37,6 +37,35 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @Operation(
+            summary = "Register user",
+            description = "Registrrasi user dan mengembalikan access token"
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Register berhasil",
+                    useReturnTypeSchema = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "rergisterSuccess",
+                                    value = """
+                                        {
+                                          "status": 200,
+                                          "message": "Registered",
+                                          "data": {
+                                            "accessToken": "xxx",
+                                            "refreshToken": "xxx",
+                                            "tokenType": "Bearer"
+                                          }
+                                        }
+                                        """
+                            )
+                    )
+            )
+    })
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
@@ -49,10 +78,46 @@ public class AuthController {
             description = "Authenticate user dan mengembalikan access token"
     )
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login berhasil",
-                content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized",
-                content = @Content(schema = @Schema(implementation = UnauthorizedException.class)))
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Login berhasil",
+                    useReturnTypeSchema = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "loginSuccess",
+                                    value = """
+                                        {
+                                          "status": 200,
+                                          "message": "Logged in",
+                                          "data": {
+                                            "accessToken": "xxx",
+                                            "refreshToken": "xxx",
+                                            "tokenType": "Bearer"
+                                          }
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "unauthorized",
+                                    value = """
+                                        {
+                                          "status": 401,
+                                          "message": "Invalid credentials",
+                                          "data": null
+                                        }
+                                        """
+                            )
+                    )
+            )
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
@@ -63,7 +128,7 @@ public class AuthController {
                     schema = @Schema(implementation = LoginRequest.class),
                     examples = @ExampleObject(value = """
                         {
-                          "email": "user@mail.com",
+                          "username": "user",
                           "password": "password123"
                         }
                     """)

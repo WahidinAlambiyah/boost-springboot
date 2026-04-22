@@ -36,3 +36,4 @@ replay_pid*
 
 .env
 .env.*
+.secret
