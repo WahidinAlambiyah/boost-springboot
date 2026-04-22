@@ -1,11 +1,14 @@
 package com.example.boost.service;
 
 import com.example.boost.domain.dto.UserCreateRequest;
+import com.example.boost.domain.dto.UserIdentifierResponse;
+import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +20,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -44,6 +48,9 @@ class UserServiceTest {
 
     @Mock
     private AuditLogService auditLogService;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private UserService userService;
@@ -73,6 +80,8 @@ class UserServiceTest {
         role.setCode("USER");
         when(roleRepository.findByCodeIn(Set.of("USER"))).thenReturn(List.of(role));
         when(passwordEncoder.encode("Password123!")).thenReturn("hashed");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userMapper.toIdentifier(any(User.class))).thenReturn(new UserIdentifierResponse("demo@example.com"));
 
         userService.createUser(request);
 
@@ -82,7 +91,7 @@ class UserServiceTest {
     @Test
     void updateUserNotFound() {
         UUID id = UUID.randomUUID();
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        when(userRepository.findWithRolesById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(id, new UserUpdateRequest()))
                 .isInstanceOf(NotFoundException.class);
@@ -90,10 +99,10 @@ class UserServiceTest {
 
     @Test
     void getUsersUsesRepositoryPaging() {
-        when(userRepository.findAll(any(PageRequest.class)))
+        when(userRepository.findAll(any(Specification.class), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(List.of()));
-        userService.getUsers(PageRequest.of(0, 20));
-        verify(userRepository).findAll(any(PageRequest.class));
+        userService.getUsers(PageRequest.of(0, 20), null);
+        verify(userRepository).findAll(any(Specification.class), any(PageRequest.class));
     }
 
     @Test
@@ -101,7 +110,7 @@ class UserServiceTest {
         User user = new User();
         user.setId(UUID.randomUUID());
         user.setActive(true);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findWithRolesById(user.getId())).thenReturn(Optional.of(user));
 
         userService.disableUser(user.getId(), "policy");
 
@@ -115,7 +124,7 @@ class UserServiceTest {
         user.setId(UUID.randomUUID());
         user.setFailedLoginCount(5);
         user.setLockedUntil(java.time.OffsetDateTime.now().plusMinutes(5));
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findWithRolesById(user.getId())).thenReturn(Optional.of(user));
 
         userService.unlockUser(user.getId());
 

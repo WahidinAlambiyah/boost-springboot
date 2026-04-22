@@ -6,8 +6,12 @@ import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.NotFoundException;
+import com.example.boost.domain.dto.UserIdentifierResponse;
+import com.example.boost.domain.dto.UserResponse;
+import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.repository.RoleRepository;
 import com.example.boost.repository.UserRepository;
+import com.example.boost.repository.UserSpecifications;
 import com.example.boost.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,18 +34,23 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
+    private final UserMapper userMapper;
 
-    public Page<User> getUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getUsers(Pageable pageable, String search) {
+        return userRepository.findAll(UserSpecifications.searchByKeyword(search), pageable)
+                .map(userMapper::toResponse);
     }
 
-    public User getById(UUID id) {
-        return userRepository.findWithRolesById(id)
+    @Transactional(readOnly = true)
+    public UserResponse getById(UUID id) {
+        User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        return userMapper.toResponse(user);
     }
 
     @Transactional
-    public User createUser(UserCreateRequest request) {
+    public UserIdentifierResponse createUser(UserCreateRequest request) {
         if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
             throw new ConflictException("Username already exists");
         }
@@ -54,12 +63,14 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setActive(true);
         user.setRoles(resolveRoles(request.getRoleCodes()));
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        return userMapper.toIdentifier(saved);
     }
 
     @Transactional
-    public User updateUser(UUID id, UserUpdateRequest request) {
-        User user = getById(id);
+    public UserIdentifierResponse updateUser(UUID id, UserUpdateRequest request) {
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         boolean wasActive = user.isActive();
         if (request.getEmail() != null && !request.getEmail().equalsIgnoreCase(user.getEmail())) {
             if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
@@ -82,12 +93,13 @@ public class UserService {
                     .statusSuccess()
                     .save();
         }
-        return saved;
+        return userMapper.toIdentifier(saved);
     }
 
     @Transactional
-    public User assignRoles(UUID id, Set<String> roleCodes) {
-        User user = getById(id);
+    public UserResponse assignRoles(UUID id, Set<String> roleCodes) {
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Set<String> beforeRoles = user.getRoleCodes();
         user.setRoles(resolveRoles(roleCodes));
         User saved = userRepository.save(user);
@@ -110,12 +122,13 @@ public class UserService {
                     .statusSuccess()
                     .save();
         }
-        return saved;
+        return userMapper.toResponse(saved);
     }
 
     @Transactional
     public void softDeleteUser(UUID id) {
-        User user = getById(id);
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setDeletedAt(OffsetDateTime.now());
         userRepository.save(user);
         auditLogService.dataEvent("USER_DELETED")
@@ -126,7 +139,8 @@ public class UserService {
 
     @Transactional
     public void changePassword(UUID id, String newPassword) {
-        User user = getById(id);
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordChangedAt(OffsetDateTime.now());
         userRepository.save(user);
@@ -138,7 +152,8 @@ public class UserService {
 
     @Transactional
     public void disableUser(UUID id, String reason) {
-        User user = getById(id);
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setActive(false);
         user.setDisabledAt(OffsetDateTime.now());
         user.setDisabledReason(reason);
@@ -152,7 +167,8 @@ public class UserService {
 
     @Transactional
     public void enableUser(UUID id) {
-        User user = getById(id);
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setActive(true);
         user.setDisabledAt(null);
         user.setDisabledReason(null);
@@ -165,7 +181,8 @@ public class UserService {
 
     @Transactional
     public void unlockUser(UUID id) {
-        User user = getById(id);
+        User user = userRepository.findWithRolesById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
         user.setFailedLoginCount(0);
         user.setLockedUntil(null);
         userRepository.save(user);
@@ -175,12 +192,14 @@ public class UserService {
                 .save();
     }
 
-    public User getCurrentUser(Authentication authentication) {
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
             throw new NotFoundException("User not found");
         }
-        return userRepository.findWithRolesById(principal.getUser().getId())
+        User user = userRepository.findWithRolesById(principal.getUser().getId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        return userMapper.toResponse(user);
     }
 
     private Set<Role> resolveRoles(Set<String> roleCodes) {

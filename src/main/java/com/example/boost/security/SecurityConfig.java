@@ -4,7 +4,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.example.boost.config.AppCorsProperties;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,7 +18,7 @@ import com.example.boost.context.AppRequestContextFilter;
 import com.example.boost.security.LoginRateLimitFilter;
 
 @Configuration
-@EnableConfigurationProperties(AppSecurityProperties.class)
+@EnableConfigurationProperties({AppSecurityProperties.class, AppCorsProperties.class})
 public class SecurityConfig {
 
     @Bean
@@ -25,6 +27,7 @@ public class SecurityConfig {
                                   AppRequestContextFilter requestContextFilter,
                                   LoginRateLimitFilter loginRateLimitFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .addFilterBefore(requestContextFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(loginRateLimitFilter, AppRequestContextFilter.class);
@@ -41,6 +44,7 @@ public class SecurityConfig {
             RestAccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(authenticationEntryPoint)

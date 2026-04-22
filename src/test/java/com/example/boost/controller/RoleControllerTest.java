@@ -5,8 +5,6 @@ import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
-import com.example.boost.domain.entity.Role;
-import com.example.boost.domain.mapper.RoleMapper;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.service.AuditLogService;
@@ -55,9 +53,6 @@ class RoleControllerTest {
     private RoleService roleService;
 
     @MockBean
-    private RoleMapper roleMapper;
-
-    @MockBean
     private JwtService jwtService;
 
     @MockBean
@@ -72,29 +67,16 @@ class RoleControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_READ")
     void getRolesSuccess() throws Exception {
-        Role role = TestDataFactory.role();
         RoleResponse response = new RoleResponse();
-        response.setId(role.getId());
-        response.setCode(role.getCode());
+        response.setId(UUID.randomUUID());
+        response.setCode("ADMIN");
         response.setPermissions(Set.of("USER_READ"));
-        when(roleService.getRoles()).thenReturn(List.of(role));
-        when(roleMapper.toResponse(role)).thenReturn(response);
+        when(roleService.getRoles(any()))
+                .thenReturn(new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].code").value("ADMIN"));
-    }
-
-    @Test
-    @WithMockUser(authorities = "ROLE_READ")
-    void getRolesPageSuccess() throws Exception {
-        Role role = TestDataFactory.role();
-        when(roleService.getRoles(any())).thenReturn(new PageImpl<>(List.of(role), PageRequest.of(0, 20), 1));
-        when(roleMapper.toResponse(role)).thenReturn(new RoleResponse());
-
-        mockMvc.perform(get("/api/roles/page"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content[0].code").value("ADMIN"));
     }
 
     @Test
@@ -110,12 +92,10 @@ class RoleControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_WRITE")
     void createRoleSuccess() throws Exception {
-        Role role = TestDataFactory.role();
         RoleResponse response = new RoleResponse();
-        response.setId(role.getId());
-        response.setCode(role.getCode());
-        when(roleService.createRole(any(RoleCreateRequest.class))).thenReturn(role);
-        when(roleMapper.toResponse(role)).thenReturn(response);
+        response.setId(UUID.randomUUID());
+        response.setCode("ADMIN");
+        when(roleService.createRole(any(RoleCreateRequest.class))).thenReturn(response);
 
         RoleCreateRequest request = TestDataFactory.roleCreateRequest();
 
@@ -152,25 +132,22 @@ class RoleControllerTest {
     @WithMockUser(authorities = "ROLE_DELETE")
     void deleteRoleSuccess() throws Exception {
         mockMvc.perform(delete("/api/roles/{id}", UUID.randomUUID()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Role deleted"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
     @WithMockUser(authorities = "ROLE_WRITE")
     void assignPermissionsSuccess() throws Exception {
-        Role role = TestDataFactory.role();
         RoleResponse response = new RoleResponse();
-        response.setId(role.getId());
-        response.setCode(role.getCode());
+        response.setId(UUID.randomUUID());
+        response.setCode("ADMIN");
         response.setPermissions(Set.of("USER_READ"));
-        when(roleService.assignPermissions(eq(role.getId()), any())).thenReturn(role);
-        when(roleMapper.toResponse(role)).thenReturn(response);
+        when(roleService.assignPermissions(eq(response.getId()), any())).thenReturn(response);
 
         RolePermissionsUpdateRequest request = new RolePermissionsUpdateRequest();
         request.setPermissionCodes(Set.of("USER_READ"));
 
-        mockMvc.perform(put("/api/roles/{id}/permissions", role.getId())
+        mockMvc.perform(put("/api/roles/{id}/permissions", response.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -193,7 +170,7 @@ class RoleControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_READ")
     void getRolesServerError() throws Exception {
-        when(roleService.getRoles()).thenThrow(new RuntimeException("boom"));
+        when(roleService.getRoles(any())).thenThrow(new RuntimeException("boom"));
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Unexpected error"));

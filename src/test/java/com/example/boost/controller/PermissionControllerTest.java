@@ -4,8 +4,6 @@ import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
-import com.example.boost.domain.entity.Permission;
-import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.service.AuditLogService;
@@ -53,9 +51,6 @@ class PermissionControllerTest {
     private PermissionService permissionService;
 
     @MockBean
-    private PermissionMapper permissionMapper;
-
-    @MockBean
     private JwtService jwtService;
 
     @MockBean
@@ -70,28 +65,15 @@ class PermissionControllerTest {
     @Test
     @WithMockUser(authorities = "PERMISSION_READ")
     void listPermissionsSuccess() throws Exception {
-        Permission permission = TestDataFactory.permission();
         PermissionResponse response = new PermissionResponse();
-        response.setId(permission.getId());
-        response.setCode(permission.getCode());
-        when(permissionService.getPermissions()).thenReturn(List.of(permission));
-        when(permissionMapper.toResponse(permission)).thenReturn(response);
+        response.setId(UUID.randomUUID());
+        response.setCode("USER_READ");
+        when(permissionService.getPermissions(any()))
+                .thenReturn(new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].code").value("USER_READ"));
-    }
-
-    @Test
-    @WithMockUser(authorities = "PERMISSION_READ")
-    void listPermissionsPageSuccess() throws Exception {
-        Permission permission = TestDataFactory.permission();
-        when(permissionService.getPermissions(any())).thenReturn(new PageImpl<>(List.of(permission), PageRequest.of(0, 20), 1));
-        when(permissionMapper.toResponse(permission)).thenReturn(new PermissionResponse());
-
-        mockMvc.perform(get("/api/permissions/page"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content[0].code").value("USER_READ"));
     }
 
     @Test
@@ -107,12 +89,10 @@ class PermissionControllerTest {
     @Test
     @WithMockUser(authorities = "PERMISSION_WRITE")
     void createPermissionSuccess() throws Exception {
-        Permission permission = TestDataFactory.permission();
         PermissionResponse response = new PermissionResponse();
-        response.setId(permission.getId());
-        response.setCode(permission.getCode());
-        when(permissionService.createPermission(any(PermissionCreateRequest.class))).thenReturn(permission);
-        when(permissionMapper.toResponse(permission)).thenReturn(response);
+        response.setId(UUID.randomUUID());
+        response.setCode("USER_READ");
+        when(permissionService.createPermission(any(PermissionCreateRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -147,8 +127,7 @@ class PermissionControllerTest {
     @WithMockUser(authorities = "PERMISSION_DELETE")
     void deletePermissionSuccess() throws Exception {
         mockMvc.perform(delete("/api/permissions/{id}", UUID.randomUUID()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Permission deleted"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -167,7 +146,7 @@ class PermissionControllerTest {
     @Test
     @WithMockUser(authorities = "PERMISSION_READ")
     void listPermissionsServerError() throws Exception {
-        when(permissionService.getPermissions()).thenThrow(new RuntimeException("boom"));
+        when(permissionService.getPermissions(any())).thenThrow(new RuntimeException("boom"));
         mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Unexpected error"));

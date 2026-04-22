@@ -132,6 +132,7 @@ public class User {
                     .user(this)
                     .role(role)
                     .id(new UserRoleId(this.id, role.getId()))
+                    .assignedAt(OffsetDateTime.now())
                     .build();
             userRoles.add(userRole);
         }

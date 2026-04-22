@@ -2,7 +2,9 @@ package com.example.boost.service;
 
 import com.example.boost.context.RequestContext;
 import com.example.boost.context.RequestContextData;
+import com.example.boost.domain.dto.AuditLogResponse;
 import com.example.boost.domain.entity.AuditLog;
+import com.example.boost.domain.mapper.AuditLogMapper;
 import com.example.boost.repository.AuditLogRepository;
 import com.example.boost.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.Locale;
@@ -39,6 +42,7 @@ public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
+    private final AuditLogMapper auditLogMapper;
 
     public AuditLogBuilder securityEvent(String action) {
         return new AuditLogBuilder("SECURITY", action);
@@ -52,8 +56,10 @@ public class AuditLogService {
         return new AuditLogBuilder("DATA", action);
     }
 
-    public Page<AuditLog> findAll(Specification<AuditLog> specification, Pageable pageable) {
-        return auditLogRepository.findAll(specification, pageable);
+    @Transactional(readOnly = true)
+    public Page<AuditLogResponse> findAllResponses(Specification<AuditLog> specification, Pageable pageable) {
+        return auditLogRepository.findAll(specification, pageable)
+                .map(auditLogMapper::toResponse);
     }
 
     public class AuditLogBuilder {

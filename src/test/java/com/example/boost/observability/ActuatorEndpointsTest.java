@@ -13,11 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:boost-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driverClassName=org.h2.Driver",
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.liquibase.enabled=false",
-        "DB_SCHEMA=PUBLIC",
-        "spring.datasource.hikari.schema=PUBLIC",
-        "spring.jpa.properties.hibernate.default_schema=PUBLIC",
+        "DB_SCHEMA=public",
+        "spring.datasource.hikari.schema=public",
+        "spring.jpa.properties.hibernate.default_schema=fastworks_springboot",
+        "spring.sql.init.mode=always",
+        "spring.sql.init.schema-locations=classpath:schema.sql",
+        "spring.datasource.hikari.connection-init-sql=",
         "management.health.redis.enabled=false",
         "management.health.mail.enabled=false"
 })
