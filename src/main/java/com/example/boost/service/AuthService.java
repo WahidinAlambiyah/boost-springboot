@@ -18,6 +18,10 @@ import com.example.boost.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -221,5 +225,23 @@ public class AuthService {
         }
         return new HashSet<>(roles);
     }
+
+//    TODO: need confirm if unused for register public
+//    private void enforcePrivilegedRoleAssignment(Set<String> roleCodes) {
+//        if (roleCodes == null || !roleCodes.contains("ADMIN")) {
+//            return;
+//        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null
+//                || !authentication.isAuthenticated()
+//                || authentication instanceof AnonymousAuthenticationToken) {
+//            throw new UnauthorizedException("Unauthorized");
+//        }
+//        boolean isAdmin = authentication.getAuthorities().stream()
+//                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
+//        if (!isAdmin) {
+//            throw new AccessDeniedException("Forbidden");
+//        }
+//    }
 
 }
