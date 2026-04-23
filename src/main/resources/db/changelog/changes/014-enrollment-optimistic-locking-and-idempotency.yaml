@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-001-add-version-and-waitlist-columns
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              alter table fastworks_springboot.class_groups
+                add column if not exists version bigint not null default 0;
+
+              alter table fastworks_springboot.enrollments
+                add column if not exists version bigint not null default 0,
+                add column if not exists waitlist_position integer;
+
+              create index if not exists idx_enrollments_waitlist_order
+                on fastworks_springboot.enrollments(class_group_id, status, waitlist_position)
+                where deleted_at is null and status = 'WAITLIST';
+
+  - changeSet:
+      id: 014-002-create-idempotency-records
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create table if not exists fastworks_springboot.idempotency_records (
+                id uuid primary key default gen_random_uuid(),
+                idempotency_key varchar(120) not null,
+                scope varchar(120) not null,
+                response_payload text not null,
+                created_at timestamptz not null default now()
+              );
+
+              create unique index if not exists uk_idempotency_records_scope_key
+                on fastworks_springboot.idempotency_records(scope, idempotency_key);
