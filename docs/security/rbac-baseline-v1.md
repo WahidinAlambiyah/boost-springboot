@@ -31,6 +31,24 @@ Permission baseline dari changelog saat ini:
 - `AUDIT_READ`
 - `REPORT_EXPORT`
 
+
+### Tambahan permission (add-only, kompatibel baseline)
+
+Permission berikut ditambahkan tanpa mengubah permission lama:
+
+- `CLASS_READ`
+- `CLASS_WRITE`
+- `SCHEDULE_READ`
+- `SCHEDULE_WRITE`
+- `ENROLLMENT_READ`
+- `ENROLLMENT_WRITE`
+- `ATTENDANCE_READ`
+- `ATTENDANCE_MARK`
+- `BILLING_READ`
+- `BILLING_WRITE`
+- `NOTIFICATION_READ`
+- `NOTIFICATION_WRITE`
+
 ## 3) Mapping Role -> Permission (Baseline)
 
 ### `ADMIN`

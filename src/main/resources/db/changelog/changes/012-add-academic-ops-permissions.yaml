@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-add-academic-ops-permissions
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('CLASS_READ', 'Class Read', 'Read class catalog data', 'CATALOG', true, now(), now()),
+                ('CLASS_WRITE', 'Class Write', 'Manage class catalog data', 'CATALOG', true, now(), now()),
+                ('SCHEDULE_READ', 'Schedule Read', 'Read scheduling data', 'SCHEDULING', true, now(), now()),
+                ('SCHEDULE_WRITE', 'Schedule Write', 'Manage scheduling data', 'SCHEDULING', true, now(), now()),
+                ('ENROLLMENT_READ', 'Enrollment Read', 'Read enrollment data', 'ENROLLMENT', true, now(), now()),
+                ('ENROLLMENT_WRITE', 'Enrollment Write', 'Manage enrollment data', 'ENROLLMENT', true, now(), now()),
+                ('ATTENDANCE_READ', 'Attendance Read', 'Read attendance data', 'ATTENDANCE', true, now(), now()),
+                ('ATTENDANCE_MARK', 'Attendance Mark', 'Mark attendance data', 'ATTENDANCE', true, now(), now()),
+                ('BILLING_READ', 'Billing Read', 'Read billing data', 'BILLING', true, now(), now()),
+                ('BILLING_WRITE', 'Billing Write', 'Manage billing data', 'BILLING', true, now(), now()),
+                ('NOTIFICATION_READ', 'Notification Read', 'Read notification data', 'NOTIFICATION', true, now(), now()),
+                ('NOTIFICATION_WRITE', 'Notification Write', 'Manage notification delivery data', 'NOTIFICATION', true, now(), now())
+              on conflict (code) do nothing;
