@@ -24,6 +24,8 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
         join rp.role r
         join r.userRoles ur
         where ur.user.id = :userId
+          and r.isActive = true
+          and p.isActive = true
         """)
     List<String> findCodesByUserId(@Param("userId") UUID userId);
 }
