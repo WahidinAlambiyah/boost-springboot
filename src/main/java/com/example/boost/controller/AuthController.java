@@ -113,6 +113,86 @@ public class AuthController {
     }
 
     @PostMapping(path = "/register/mock", consumes = "application/json", produces = "application/json")
+    @Operation(
+            summary = "Register user (mock/debug)",
+            description = "Endpoint simulasi untuk validasi mapping error registration dengan header debug"
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "201",
+                    description = "Register berhasil",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 201,
+                                  "message": "User registered successfully",
+                                  "data": {
+                                    "username": "admin",
+                                    "email": "legio@example.com",
+                                    "roleCodes": ["ADMIN"]
+                                  }
+                                }
+                            """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Tidak berhak assign ADMIN",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 403,
+                                  "message": "Forbidden",
+                                  "data": null
+                                }
+                            """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "429",
+                    description = "Rate limit registration",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 429,
+                                  "message": "Too many registration attempts. Please try again later.",
+                                  "data": null
+                                }
+                            """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 500,
+                                  "message": "Unexpected error",
+                                  "data": null
+                                }
+                            """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "503",
+                    description = "Service unavailable",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 503,
+                                  "message": "Registration service temporarily unavailable",
+                                  "data": null
+                                }
+                            """)
+                    )
+            )
+    })
     public ResponseEntity<ApiResponse<RegisterResponse>> registerMock(
             @RequestHeader(value = "X-Debug-Case", required = false) String debugCase,
             @RequestHeader(value = "X-Actor-Role", required = false) String actorRole,
@@ -208,12 +288,74 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Logged in", response));
     }
 
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generate access token baru menggunakan refresh token yang valid"
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Refresh berhasil",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 200,
+                                  "message": "Token refreshed",
+                                  "data": {
+                                    "accessToken": "xxx",
+                                    "refreshToken": "xxx",
+                                    "tokenType": "Bearer"
+                                  }
+                                }
+                            """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Refresh token tidak valid",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 401,
+                                  "message": "Invalid refresh token",
+                                  "data": null
+                                }
+                            """)
+                    )
+            )
+    })
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
         AuthResponse response = authService.refresh(request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Token refreshed", response));
     }
 
+    @Operation(
+            summary = "Logout user",
+            description = "Logout access/refresh token. Endpoint ini mengembalikan 204 No Content saat sukses."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "204",
+                    description = "Logout berhasil"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                {
+                                  "status": 401,
+                                  "message": "Invalid token",
+                                  "data": null
+                                }
+                            """)
+                    )
+            )
+    })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
