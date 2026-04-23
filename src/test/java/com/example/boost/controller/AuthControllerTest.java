@@ -5,6 +5,7 @@ import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
+import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.exception.ConflictException;
 import com.example.boost.exception.UnauthorizedException;
 import com.example.boost.security.JwtService;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -57,7 +59,11 @@ class AuthControllerTest {
 
     @Test
     void registerSuccess() throws Exception {
-        AuthResponse response = TestDataFactory.authResponse();
+        RegisterResponse response = RegisterResponse.builder()
+                .username("demo")
+                .email("demo@example.com")
+                .roleCodes(java.util.Set.of("USER"))
+                .build();
         when(authService.register(any(RegisterRequest.class))).thenReturn(response);
 
         RegisterRequest request = new RegisterRequest();
@@ -70,7 +76,8 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.data.accessToken").value("access-token"));
+                .andExpect(jsonPath("$.message").value("User registered successfully"))
+                .andExpect(jsonPath("$.data.username").value("demo"));
     }
 
     @Test
@@ -78,8 +85,9 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation failed"));
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.data.errors.username").exists());
     }
 
     @Test
@@ -97,6 +105,133 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Username already exists"));
+    }
+
+    @Test
+    void registerMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Malformed JSON request"));
+    }
+
+    @Test
+    void registerUnsupportedMediaType() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_XML)
+                        .content("<register/>"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.message").value("Unsupported media type"));
+    }
+
+    @Test
+    void registerForbiddenAdminAssignment() throws Exception {
+        when(authService.register(any(RegisterRequest.class)))
+                .thenThrow(new AccessDeniedException("Forbidden"));
+
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("demo");
+        request.setEmail("demo@example.com");
+        request.setPassword("Password123!");
+        request.setRoleCodes(java.util.Set.of("ADMIN"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Forbidden"));
+    }
+
+    @Test
+    void registerUnauthorizedAdminAssignment() throws Exception {
+        when(authService.register(any(RegisterRequest.class)))
+                .thenThrow(new UnauthorizedException("Unauthorized"));
+
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("demo");
+        request.setEmail("demo@example.com");
+        request.setPassword("Password123!");
+        request.setRoleCodes(java.util.Set.of("ADMIN"));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Unauthorized"));
+    }
+
+    @Test
+    void registerMockForbiddenAdminAssignment() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user403");
+        request.setEmail("user403@example.com");
+        request.setPassword("123456789");
+        request.setRoleCodes(java.util.Set.of("ADMIN"));
+
+        mockMvc.perform(post("/api/auth/register/mock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Actor-Role", "USER")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Forbidden"));
+    }
+
+    @Test
+    void registerMockTooManyRequests() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user429");
+        request.setEmail("user429@example.com");
+        request.setPassword("123456789");
+        request.setRoleCodes(java.util.Set.of("USER"));
+
+        mockMvc.perform(post("/api/auth/register/mock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Debug-Case", "rate-limit")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.message").value("Too many registration attempts"));
+    }
+
+    @Test
+    void registerMockInternalServerError() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user500");
+        request.setEmail("user500@example.com");
+        request.setPassword("123456789");
+        request.setRoleCodes(java.util.Set.of("USER"));
+
+        mockMvc.perform(post("/api/auth/register/mock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Debug-Case", "boom")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Unexpected error"));
+    }
+
+    @Test
+    void registerMockServiceUnavailable() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user503");
+        request.setEmail("user503@example.com");
+        request.setPassword("123456789");
+        request.setRoleCodes(java.util.Set.of("USER"));
+
+        mockMvc.perform(post("/api/auth/register/mock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Debug-Case", "downstream-down")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.message").value("Registration service temporarily unavailable"));
+    }
+
+    @Test
+    void registerMockUnsupportedMediaType() throws Exception {
+        mockMvc.perform(post("/api/auth/register/mock")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("plain-text"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.message").value("Unsupported media type"));
     }
 
     @Test
@@ -119,7 +254,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").value("Validation failed"));
     }
 
@@ -170,8 +305,7 @@ class AuthControllerTest {
     void logoutSuccess() throws Exception {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "Bearer token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Logged out"));
+                .andExpect(status().isNoContent());
     }
 
     @Test

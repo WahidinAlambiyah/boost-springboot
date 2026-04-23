@@ -3,6 +3,8 @@ package com.example.boost.exception;
 import com.example.boost.domain.dto.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -68,7 +70,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleAccessDenied(RuntimeException ex) {
         log.warn("Access denied", ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), "Access denied"));
+                .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), "Forbidden"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -78,12 +80,23 @@ public class GlobalExceptionHandler {
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
-        ApiResponse<Object> response = ApiResponse.<Object>builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("Validation failed")
-                .data(errors)
-                .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        Map<String, Object> payload = Map.of("errors", errors);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Validation failed", payload));
+    }
+
+    @ExceptionHandler(UnprocessableEntityException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnprocessableEntity(UnprocessableEntityException ex) {
+        log.warn("Unprocessable entity", ex);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        log.warn("Malformed request body", ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "Malformed JSON request"));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -98,6 +111,20 @@ public class GlobalExceptionHandler {
         log.warn("Media type not supported", ex);
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(ApiResponse.error(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(), "Unsupported media type"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation", ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(HttpStatus.CONFLICT.value(), "Resource conflict"));
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleServiceUnavailable(ServiceUnavailableException ex) {
+        log.warn("Service unavailable", ex);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error(HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
