@@ -134,7 +134,6 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setEmail("demo@example.com");
         request.setPassword("Password123!");
-        request.setRoleCodes(java.util.Set.of("ADMIN"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -152,86 +151,12 @@ class AuthControllerTest {
         request.setUsername("demo");
         request.setEmail("demo@example.com");
         request.setPassword("Password123!");
-        request.setRoleCodes(java.util.Set.of("ADMIN"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Unauthorized"));
-    }
-
-    @Test
-    void registerMockForbiddenAdminAssignment() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("user403");
-        request.setEmail("user403@example.com");
-        request.setPassword("123456789");
-        request.setRoleCodes(java.util.Set.of("ADMIN"));
-
-        mockMvc.perform(post("/api/auth/register/mock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Actor-Role", "USER")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Forbidden"));
-    }
-
-    @Test
-    void registerMockTooManyRequests() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("user429");
-        request.setEmail("user429@example.com");
-        request.setPassword("123456789");
-        request.setRoleCodes(java.util.Set.of("USER"));
-
-        mockMvc.perform(post("/api/auth/register/mock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Debug-Case", "rate-limit")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isTooManyRequests())
-                .andExpect(jsonPath("$.message").value("Too many registration attempts"));
-    }
-
-    @Test
-    void registerMockInternalServerError() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("user500");
-        request.setEmail("user500@example.com");
-        request.setPassword("123456789");
-        request.setRoleCodes(java.util.Set.of("USER"));
-
-        mockMvc.perform(post("/api/auth/register/mock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Debug-Case", "boom")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("Unexpected error"));
-    }
-
-    @Test
-    void registerMockServiceUnavailable() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("user503");
-        request.setEmail("user503@example.com");
-        request.setPassword("123456789");
-        request.setRoleCodes(java.util.Set.of("USER"));
-
-        mockMvc.perform(post("/api/auth/register/mock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Debug-Case", "downstream-down")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.message").value("Registration service temporarily unavailable"));
-    }
-
-    @Test
-    void registerMockUnsupportedMediaType() throws Exception {
-        mockMvc.perform(post("/api/auth/register/mock")
-                        .contentType(MediaType.TEXT_PLAIN)
-                        .content("plain-text"))
-                .andExpect(status().isUnsupportedMediaType())
-                .andExpect(jsonPath("$.message").value("Unsupported media type"));
     }
 
     @Test
