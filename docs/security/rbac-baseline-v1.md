@@ -95,6 +95,16 @@ Agar perubahan RBAC aman dan tidak merusak kompatibilitas:
 
 ## 6) Rilis: Tag, Hardening Summary, Checksum Migrasi, Kompatibilitas API
 
+### Gate wajib sebelum release/tag RBAC
+
+Sebelum membuat tag RBAC berikutnya, suite otorisasi berikut **wajib hijau**:
+
+```bash
+mvn -Dtest=AuthorizationMatrixTest test
+```
+
+Suite ini memverifikasi matrix akses per role untuk endpoint protected/public termasuk skenario `401/403` secara eksplisit.
+
 ### Tag rilis setelah merge
 
 Setelah PR merge, buat annotated tag pada commit final RBAC:
