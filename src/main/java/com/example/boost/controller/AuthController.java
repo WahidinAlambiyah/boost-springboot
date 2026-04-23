@@ -7,6 +7,8 @@ import com.example.boost.domain.dto.LogoutRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
 import com.example.boost.domain.dto.RegisterResponse;
+import com.example.boost.exception.ServiceUnavailableException;
+import com.example.boost.exception.TooManyRequestsException;
 import com.example.boost.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -103,6 +107,36 @@ public class AuthController {
                     )
             )
             @Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
+    }
+
+    @PostMapping(path = "/register/mock", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<ApiResponse<RegisterResponse>> registerMock(
+            @RequestHeader(value = "X-Debug-Case", required = false) String debugCase,
+            @RequestHeader(value = "X-Actor-Role", required = false) String actorRole,
+            @Valid @RequestBody RegisterRequest request) {
+        if ("rate-limit".equalsIgnoreCase(debugCase)) {
+            throw new TooManyRequestsException("Too many registration attempts");
+        }
+        if ("downstream-down".equalsIgnoreCase(debugCase)) {
+            throw new ServiceUnavailableException("Registration service temporarily unavailable");
+        }
+        if ("boom".equalsIgnoreCase(debugCase)) {
+            throw new RuntimeException("Unexpected registration error");
+        }
+        if (request.getRoleCodes() != null
+                && request.getRoleCodes().contains("ADMIN")
+                && !StringUtils.hasText(actorRole)) {
+            throw new AccessDeniedException("Forbidden");
+        }
+        if (request.getRoleCodes() != null
+                && request.getRoleCodes().contains("ADMIN")
+                && !"ADMIN".equalsIgnoreCase(actorRole)) {
+            throw new AccessDeniedException("Forbidden");
+        }
+
         RegisterResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
