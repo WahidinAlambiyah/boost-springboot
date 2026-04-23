@@ -26,6 +26,7 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
         from Role r
         join r.userRoles ur
         where ur.user.id = :userId
+          and r.isActive = true
         """)
     List<String> findCodesByUserId(@Param("userId") UUID userId);
 
