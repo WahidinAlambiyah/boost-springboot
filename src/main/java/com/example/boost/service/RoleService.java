@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +58,7 @@ public class RoleService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public RoleResponse createRole(RoleCreateRequest request) {
         if (roleRepository.existsByCode(request.getCode())) {
             throw new ConflictException("Role code already exists");
@@ -71,6 +73,7 @@ public class RoleService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public RoleResponse updateRole(UUID id, RoleUpdateRequest request) {
         Role role = roleRepository.findWithPermissionsById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
@@ -88,6 +91,7 @@ public class RoleService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_DELETE')")
     public void deleteRole(UUID id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
@@ -95,6 +99,7 @@ public class RoleService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_WRITE')")
     public RoleResponse assignPermissions(UUID roleId, Set<String> permissionCodes) {
         Role role = roleRepository.findWithPermissionsById(roleId)
                 .orElseThrow(() -> new NotFoundException("Role not found"));

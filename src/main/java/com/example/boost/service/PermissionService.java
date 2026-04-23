@@ -12,6 +12,7 @@ import com.example.boost.repository.PermissionRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,7 @@ public class PermissionService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('PERMISSION_WRITE')")
     public PermissionResponse createPermission(PermissionCreateRequest request) {
         if (permissionRepository.existsByCode(request.getCode())) {
             throw new ConflictException("Permission code already exists");
@@ -64,6 +66,7 @@ public class PermissionService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('PERMISSION_WRITE')")
     public PermissionResponse updatePermission(UUID id, PermissionUpdateRequest request) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Permission not found"));
@@ -84,6 +87,7 @@ public class PermissionService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('PERMISSION_DELETE')")
     public void deletePermission(UUID id) {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Permission not found"));

@@ -16,6 +16,7 @@ import com.example.boost.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public UserIdentifierResponse createUser(UserCreateRequest request) {
         if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
             throw new ConflictException("Username already exists");
@@ -68,6 +70,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public UserIdentifierResponse updateUser(UUID id, UserUpdateRequest request) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -97,6 +100,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_WRITE') and hasAuthority('ROLE_ADMIN')")
     public UserResponse assignRoles(UUID id, Set<String> roleCodes) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -126,6 +130,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_DELETE') and hasAuthority('ROLE_ADMIN')")
     public void softDeleteUser(UUID id) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -151,6 +156,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_DISABLE')")
     public void disableUser(UUID id, String reason) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -166,6 +172,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_ENABLE')")
     public void enableUser(UUID id) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -180,6 +187,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('USER_UNLOCK')")
     public void unlockUser(UUID id) {
         User user = userRepository.findWithRolesById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));

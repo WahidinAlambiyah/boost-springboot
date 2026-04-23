@@ -189,10 +189,10 @@ Silakan ubah via:
 ### Users (permission-based)
 - `GET /api/users` → `USER_READ`
 - `GET /api/users/{id}` → `USER_READ`
-- `POST /api/users` → `USER_WRITE`
-- `PUT /api/users/{id}` → `USER_WRITE`
+- `POST /api/users` → `USER_WRITE` + `ROLE_ADMIN`
+- `PUT /api/users/{id}` → `USER_WRITE` + `ROLE_ADMIN`
 - `DELETE /api/users/{id}` → `USER_DELETE`
-- `PUT /api/users/{id}/roles` → `USER_WRITE`
+- `PUT /api/users/{id}/roles` → `USER_WRITE` + `ROLE_ADMIN`
 
 ### Roles
 - `GET /api/roles` → `ROLE_READ`
@@ -208,6 +208,14 @@ Silakan ubah via:
 - `POST /api/permissions` → `PERMISSION_WRITE`
 - `PUT /api/permissions/{id}` → `PERMISSION_WRITE`
 - `DELETE /api/permissions/{id}` → `PERMISSION_DELETE`
+
+## RBAC Defense-in-Depth
+
+Operasi sensitif RBAC sekarang diamankan di **dua lapis**:
+- **Controller layer** dengan `@PreAuthorize` untuk proteksi endpoint HTTP.
+- **Service layer** dengan `@PreAuthorize` yang konsisten dengan authority controller, sehingga rule RBAC tetap enforced walaupun method service dipanggil dari jalur selain controller.
+
+Catatan: proteksi service layer method-security hanya aktif jika `METHOD_SECURITY_ENABLED=true`.
 
 ## Contoh Request/Response
 

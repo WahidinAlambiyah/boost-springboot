@@ -112,115 +112,116 @@ public class AuthController {
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
     }
 
-    @PostMapping(path = "/register/mock", consumes = "application/json", produces = "application/json")
-    @Operation(
-            summary = "Register user (mock/debug)",
-            description = "Endpoint simulasi untuk validasi mapping error registration dengan header debug"
-    )
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "201",
-                    description = "Register berhasil",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "status": 201,
-                                  "message": "User registered successfully",
-                                  "data": {
-                                    "username": "admin",
-                                    "email": "legio@example.com",
-                                    "roleCodes": ["ADMIN"]
-                                  }
-                                }
-                            """)
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Tidak berhak assign ADMIN",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "status": 403,
-                                  "message": "Forbidden",
-                                  "data": null
-                                }
-                            """)
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "429",
-                    description = "Rate limit registration",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "status": 429,
-                                  "message": "Too many registration attempts. Please try again later.",
-                                  "data": null
-                                }
-                            """)
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "status": 500,
-                                  "message": "Unexpected error",
-                                  "data": null
-                                }
-                            """)
-                    )
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "503",
-                    description = "Service unavailable",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(value = """
-                                {
-                                  "status": 503,
-                                  "message": "Registration service temporarily unavailable",
-                                  "data": null
-                                }
-                            """)
-                    )
-            )
-    })
-    public ResponseEntity<ApiResponse<RegisterResponse>> registerMock(
-            @RequestHeader(value = "X-Debug-Case", required = false) String debugCase,
-            @RequestHeader(value = "X-Actor-Role", required = false) String actorRole,
-            @Valid @RequestBody RegisterRequest request) {
-        if ("rate-limit".equalsIgnoreCase(debugCase)) {
-            throw new TooManyRequestsException("Too many registration attempts");
-        }
-        if ("downstream-down".equalsIgnoreCase(debugCase)) {
-            throw new ServiceUnavailableException("Registration service temporarily unavailable");
-        }
-        if ("boom".equalsIgnoreCase(debugCase)) {
-            throw new RuntimeException("Unexpected registration error");
-        }
-        if (request.getRoleCodes() != null
-                && request.getRoleCodes().contains("ADMIN")
-                && !StringUtils.hasText(actorRole)) {
-            throw new AccessDeniedException("Forbidden");
-        }
-        if (request.getRoleCodes() != null
-                && request.getRoleCodes().contains("ADMIN")
-                && !"ADMIN".equalsIgnoreCase(actorRole)) {
-            throw new AccessDeniedException("Forbidden");
-        }
-
-        RegisterResponse response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
-    }
+    //    TODO: need confirm if unused for register public
+//    @PostMapping(path = "/register/mock", consumes = "application/json", produces = "application/json")
+//    @Operation(
+//            summary = "Register user (mock/debug)",
+//            description = "Endpoint simulasi untuk validasi mapping error registration dengan header debug"
+//    )
+//    @ApiResponses(value = {
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "201",
+//                    description = "Register berhasil",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(value = """
+//                                {
+//                                  "status": 201,
+//                                  "message": "User registered successfully",
+//                                  "data": {
+//                                    "username": "admin",
+//                                    "email": "legio@example.com",
+//                                    "roleCodes": ["ADMIN"]
+//                                  }
+//                                }
+//                            """)
+//                    )
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "403",
+//                    description = "Tidak berhak assign ADMIN",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(value = """
+//                                {
+//                                  "status": 403,
+//                                  "message": "Forbidden",
+//                                  "data": null
+//                                }
+//                            """)
+//                    )
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "429",
+//                    description = "Rate limit registration",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(value = """
+//                                {
+//                                  "status": 429,
+//                                  "message": "Too many registration attempts. Please try again later.",
+//                                  "data": null
+//                                }
+//                            """)
+//                    )
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "500",
+//                    description = "Internal server error",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(value = """
+//                                {
+//                                  "status": 500,
+//                                  "message": "Unexpected error",
+//                                  "data": null
+//                                }
+//                            """)
+//                    )
+//            ),
+//            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                    responseCode = "503",
+//                    description = "Service unavailable",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject(value = """
+//                                {
+//                                  "status": 503,
+//                                  "message": "Registration service temporarily unavailable",
+//                                  "data": null
+//                                }
+//                            """)
+//                    )
+//            )
+//    })
+//    public ResponseEntity<ApiResponse<RegisterResponse>> registerMock(
+//            @RequestHeader(value = "X-Debug-Case", required = false) String debugCase,
+//            @RequestHeader(value = "X-Actor-Role", required = false) String actorRole,
+//            @Valid @RequestBody RegisterRequest request) {
+//        if ("rate-limit".equalsIgnoreCase(debugCase)) {
+//            throw new TooManyRequestsException("Too many registration attempts");
+//        }
+//        if ("downstream-down".equalsIgnoreCase(debugCase)) {
+//            throw new ServiceUnavailableException("Registration service temporarily unavailable");
+//        }
+//        if ("boom".equalsIgnoreCase(debugCase)) {
+//            throw new RuntimeException("Unexpected registration error");
+//        }
+//        if (request.getRoleCodes() != null
+//                && request.getRoleCodes().contains("ADMIN")
+//                && !StringUtils.hasText(actorRole)) {
+//            throw new AccessDeniedException("Forbidden");
+//        }
+//        if (request.getRoleCodes() != null
+//                && request.getRoleCodes().contains("ADMIN")
+//                && !"ADMIN".equalsIgnoreCase(actorRole)) {
+//            throw new AccessDeniedException("Forbidden");
+//        }
+//
+//        RegisterResponse response = authService.register(request);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(ApiResponse.success(HttpStatus.CREATED.value(), "User registered successfully", response));
+//    }
 
     @Operation(
             summary = "Login user",
