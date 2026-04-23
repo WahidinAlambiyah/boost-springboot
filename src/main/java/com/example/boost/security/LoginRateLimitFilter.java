@@ -23,6 +23,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     private static final int MAX_REQUESTS = 10;
     private static final Duration WINDOW = Duration.ofSeconds(60);
     private static final String LOGIN_PATH = "/api/auth/login";
+    private static final String REGISTER_PATH = "/api/auth/register";
 
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
@@ -35,7 +36,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !LOGIN_PATH.equals(request.getRequestURI());
+        String path = request.getRequestURI();
+        return !LOGIN_PATH.equals(path) && !REGISTER_PATH.equals(path);
     }
 
     @Override
@@ -43,24 +45,29 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String ip = resolveClientIp(request);
-        if (isRateLimited(ip)) {
-            auditLogService.securityEvent("LOGIN_RATE_LIMITED")
+        String path = request.getRequestURI();
+        if (isRateLimited(path, ip)) {
+            String event = LOGIN_PATH.equals(path) ? "LOGIN_RATE_LIMITED" : "REGISTER_RATE_LIMITED";
+            String message = LOGIN_PATH.equals(path)
+                    ? "Too many login attempts. Please try again later."
+                    : "Too many registration attempts. Please try again later.";
+            auditLogService.securityEvent(event)
                     .statusFailure("Rate limit exceeded")
                     .metadata(Map.of("ip", ip))
                     .save();
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json");
-            ApiResponse<Object> body = ApiResponse.error(HttpStatus.TOO_MANY_REQUESTS.value(),
-                    "Too many login attempts. Please try again later.");
+            ApiResponse<Object> body = ApiResponse.error(HttpStatus.TOO_MANY_REQUESTS.value(), message);
             objectMapper.writeValue(response.getOutputStream(), body);
             return;
         }
         filterChain.doFilter(request, response);
     }
 
-    private boolean isRateLimited(String ip) {
+    private boolean isRateLimited(String path, String ip) {
         long now = System.currentTimeMillis();
-        Window window = windows.computeIfAbsent(ip, key -> new Window(now));
+        String key = path + "|" + ip;
+        Window window = windows.computeIfAbsent(key, value -> new Window(now));
         synchronized (window) {
             if (now - window.startMillis >= WINDOW.toMillis()) {
                 window.startMillis = now;
