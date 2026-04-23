@@ -1,0 +1,252 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-001-create-academic-core-tables
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create table if not exists fastworks_springboot.programs (
+                id uuid primary key default gen_random_uuid(),
+                code varchar(50) not null,
+                name varchar(255) not null,
+                description text,
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.courses (
+                id uuid primary key default gen_random_uuid(),
+                program_id uuid not null references fastworks_springboot.programs(id),
+                code varchar(50) not null,
+                name varchar(255) not null,
+                level varchar(50),
+                description text,
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.class_groups (
+                id uuid primary key default gen_random_uuid(),
+                course_id uuid not null references fastworks_springboot.courses(id),
+                code varchar(50) not null,
+                name varchar(255) not null,
+                instructor_id uuid references fastworks_springboot.users(id),
+                capacity integer,
+                start_date date,
+                end_date date,
+                status varchar(30) not null default 'PLANNED',
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.class_sessions (
+                id uuid primary key default gen_random_uuid(),
+                class_group_id uuid not null references fastworks_springboot.class_groups(id),
+                instructor_id uuid references fastworks_springboot.users(id),
+                session_date date not null,
+                start_time time not null,
+                end_time time not null,
+                location varchar(255),
+                topic varchar(255),
+                status varchar(30) not null default 'SCHEDULED',
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+  - changeSet:
+      id: 013-002-create-student-billing-notification-tables
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create table if not exists fastworks_springboot.students (
+                id uuid primary key default gen_random_uuid(),
+                student_no varchar(50) not null,
+                full_name varchar(255) not null,
+                email varchar(255),
+                phone varchar(30),
+                date_of_birth date,
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.guardians (
+                id uuid primary key default gen_random_uuid(),
+                full_name varchar(255) not null,
+                email varchar(255),
+                phone varchar(30),
+                relationship varchar(30),
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.student_guardians (
+                id uuid primary key default gen_random_uuid(),
+                student_id uuid not null references fastworks_springboot.students(id),
+                guardian_id uuid not null references fastworks_springboot.guardians(id),
+                relationship varchar(30),
+                is_primary boolean not null default false,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.enrollments (
+                id uuid primary key default gen_random_uuid(),
+                student_id uuid not null references fastworks_springboot.students(id),
+                class_group_id uuid not null references fastworks_springboot.class_groups(id),
+                enrollment_date date not null default current_date,
+                status varchar(30) not null default 'PENDING',
+                start_date date,
+                end_date date,
+                notes text,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.attendance_records (
+                id uuid primary key default gen_random_uuid(),
+                class_session_id uuid not null references fastworks_springboot.class_sessions(id),
+                student_id uuid not null references fastworks_springboot.students(id),
+                enrollment_id uuid references fastworks_springboot.enrollments(id),
+                attendance_status varchar(20) not null default 'PRESENT',
+                check_in_at timestamptz,
+                remarks text,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.invoices (
+                id uuid primary key default gen_random_uuid(),
+                student_id uuid not null references fastworks_springboot.students(id),
+                enrollment_id uuid references fastworks_springboot.enrollments(id),
+                invoice_no varchar(50) not null,
+                issue_date date not null,
+                due_date date not null,
+                subtotal numeric(14,2) not null default 0,
+                discount_amount numeric(14,2) not null default 0,
+                total_amount numeric(14,2) not null default 0,
+                paid_amount numeric(14,2) not null default 0,
+                status varchar(30) not null default 'DRAFT',
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.payments (
+                id uuid primary key default gen_random_uuid(),
+                invoice_id uuid not null references fastworks_springboot.invoices(id),
+                payment_no varchar(50) not null,
+                payment_date date not null,
+                amount numeric(14,2) not null,
+                method varchar(30) not null,
+                status varchar(30) not null default 'PENDING',
+                reference_no varchar(100),
+                notes text,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create table if not exists fastworks_springboot.notifications (
+                id uuid primary key default gen_random_uuid(),
+                student_id uuid references fastworks_springboot.students(id),
+                guardian_id uuid references fastworks_springboot.guardians(id),
+                invoice_id uuid references fastworks_springboot.invoices(id),
+                channel varchar(30) not null,
+                type varchar(50) not null,
+                recipient varchar(255) not null,
+                subject varchar(255),
+                message text,
+                status varchar(30) not null default 'QUEUED',
+                sent_at timestamptz,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+  - changeSet:
+      id: 013-003-add-business-constraints-and-operational-indexes
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create unique index if not exists uk_programs_code on fastworks_springboot.programs(code);
+              create unique index if not exists uk_courses_program_code on fastworks_springboot.courses(program_id, code);
+              create unique index if not exists uk_class_groups_code on fastworks_springboot.class_groups(code);
+              create unique index if not exists uk_students_student_no on fastworks_springboot.students(student_no);
+              create unique index if not exists uk_student_guardians_student_guardian on fastworks_springboot.student_guardians(student_id, guardian_id);
+              create unique index if not exists uk_attendance_records_session_student on fastworks_springboot.attendance_records(class_session_id, student_id);
+              create unique index if not exists uk_invoices_invoice_no on fastworks_springboot.invoices(invoice_no);
+              create unique index if not exists uk_payments_payment_no on fastworks_springboot.payments(payment_no);
+
+              create unique index if not exists uk_enrollments_active_student_class_group
+                on fastworks_springboot.enrollments(student_id, class_group_id)
+                where deleted_at is null and status in ('PENDING','ACTIVE');
+
+              create index if not exists idx_class_sessions_instructor_daily
+                on fastworks_springboot.class_sessions(instructor_id, session_date, start_time)
+                where deleted_at is null;
+              create index if not exists idx_enrollments_class_group_active
+                on fastworks_springboot.enrollments(class_group_id, status, student_id)
+                where deleted_at is null;
+              create index if not exists idx_invoices_due_status
+                on fastworks_springboot.invoices(due_date, status)
+                where deleted_at is null and status in ('OPEN','PARTIALLY_PAID','OVERDUE');
+              create index if not exists idx_attendance_records_session
+                on fastworks_springboot.attendance_records(class_session_id, attendance_status)
+                where deleted_at is null;
+              create index if not exists idx_notifications_status_created
+                on fastworks_springboot.notifications(status, created_at)
+                where deleted_at is null;
+
+  - changeSet:
+      id: 013-004-create-status-history-tables
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create table if not exists fastworks_springboot.enrollment_status_history (
+                id uuid primary key default gen_random_uuid(),
+                enrollment_id uuid not null references fastworks_springboot.enrollments(id),
+                old_status varchar(30),
+                new_status varchar(30) not null,
+                changed_at timestamptz not null default now(),
+                changed_by uuid references fastworks_springboot.users(id),
+                notes text
+              );
+
+              create table if not exists fastworks_springboot.payment_status_history (
+                id uuid primary key default gen_random_uuid(),
+                payment_id uuid not null references fastworks_springboot.payments(id),
+                old_status varchar(30),
+                new_status varchar(30) not null,
+                changed_at timestamptz not null default now(),
+                changed_by uuid references fastworks_springboot.users(id),
+                notes text
+              );
+
+              create index if not exists idx_enrollment_status_history_enrollment_changed
+                on fastworks_springboot.enrollment_status_history(enrollment_id, changed_at desc);
+              create index if not exists idx_payment_status_history_payment_changed
+                on fastworks_springboot.payment_status_history(payment_id, changed_at desc);
