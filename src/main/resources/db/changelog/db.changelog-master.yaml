@@ -23,3 +23,6 @@ databaseChangeLog:
       file: db/changelog/changes/012-add-academic-ops-permissions.yaml
   - include:
       file: db/changelog/changes/013-create-academic-core-and-billing.yaml
+
+  - include:
+      file: db/changelog/changes/014-enrollment-optimistic-locking-and-idempotency.yaml
