@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SchedulingService {
     private final SchedulingRepository schedulingRepository;
+    private final OutboxEventService outboxEventService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('SCHEDULE_READ')")
@@ -26,5 +29,21 @@ public class SchedulingService {
     @PreAuthorize("hasAuthority('SCHEDULE_WRITE')")
     public long getWritableSummaryCount() {
         return schedulingRepository.findSummaries().size();
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('SCHEDULE_WRITE')")
+    public void reschedule(UUID classGroupId, String previousStartAt, String newStartAt, String reason) {
+        outboxEventService.append(
+                "CLASS_GROUP",
+                classGroupId,
+                "class.rescheduled",
+                Map.of(
+                        "classGroupId", classGroupId,
+                        "previousStartAt", previousStartAt,
+                        "newStartAt", newStartAt,
+                        "reason", reason == null ? "" : reason
+                )
+        );
     }
 }

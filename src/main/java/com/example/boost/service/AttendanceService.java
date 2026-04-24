@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
+    private final OutboxEventService outboxEventService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ATTENDANCE_READ')")
@@ -26,5 +29,21 @@ public class AttendanceService {
     @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
     public long getWritableSummaryCount() {
         return attendanceRepository.findSummaries().size();
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    public void submit(UUID classGroupId, String sessionDate, int presentCount, int absentCount) {
+        outboxEventService.append(
+                "ATTENDANCE",
+                classGroupId,
+                "attendance.submitted",
+                Map.of(
+                        "classGroupId", classGroupId,
+                        "sessionDate", sessionDate,
+                        "presentCount", presentCount,
+                        "absentCount", absentCount
+                )
+        );
     }
 }
