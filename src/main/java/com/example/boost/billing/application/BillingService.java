@@ -5,7 +5,7 @@ import com.example.boost.domain.dto.PaymentRequest;
 import com.example.boost.domain.dto.PaymentResponse;
 import com.example.boost.domain.entity.Payment;
 import com.example.boost.domain.entity.PaymentStatus;
-import com.example.boost.exception.BadRequestException;
+import com.example.boost.common.exception.BadRequestException;
 import com.example.boost.notification.application.OutboxEventService;
 import com.example.boost.billing.infrastructure.BillingRepository;
 import com.example.boost.billing.infrastructure.PaymentJpaRepository;

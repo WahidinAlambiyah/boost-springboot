@@ -9,8 +9,8 @@ import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.RolePermission;
 import com.example.boost.domain.entity.RolePermissionId;
 import com.example.boost.domain.mapper.RoleMapper;
-import com.example.boost.exception.ConflictException;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.ConflictException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.iam.infrastructure.PermissionRepository;
 import com.example.boost.iam.infrastructure.RoleRepository;
 

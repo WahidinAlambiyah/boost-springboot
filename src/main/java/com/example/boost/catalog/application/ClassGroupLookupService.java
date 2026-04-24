@@ -3,7 +3,7 @@ package com.example.boost.catalog.application;
 import com.example.boost.catalog.application.port.CatalogQueryService;
 import com.example.boost.catalog.infrastructure.ClassGroupRepository;
 import com.example.boost.domain.entity.ClassGroup;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

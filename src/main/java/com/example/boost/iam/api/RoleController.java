@@ -1,6 +1,6 @@
 package com.example.boost.iam.api;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;

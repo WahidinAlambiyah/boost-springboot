@@ -2,7 +2,7 @@ package com.example.boost.catalog.api;
 
 import com.example.boost.domain.dto.CatalogSummaryResponse;
 import com.example.boost.catalog.application.CatalogService;
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 

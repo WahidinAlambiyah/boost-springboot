@@ -1,6 +1,6 @@
 package com.example.boost.iam.api;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.AuditLogResponse;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.iam.application.AuditLogService;

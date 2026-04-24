@@ -2,7 +2,7 @@ package com.example.boost.security;
 
 import com.example.boost.context.RequestContext;
 import com.example.boost.context.RequestContextData;
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.iam.application.AuditLogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

@@ -80,7 +80,7 @@ class ModularArchitectureTest {
                 }
 
                 boolean shared = targetPackage.startsWith("com.example.boost.domain")
-                        || targetPackage.startsWith("com.example.boost.exception")
+                        || targetPackage.startsWith("com.example.boost.common")
                         || targetPackage.startsWith("com.example.boost.context")
                         || targetPackage.startsWith("com.example.boost.security");
                 if (!shared) {

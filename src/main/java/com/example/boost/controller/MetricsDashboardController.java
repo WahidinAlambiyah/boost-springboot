@@ -1,6 +1,6 @@
 package com.example.boost.controller;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.service.DomainMetricsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

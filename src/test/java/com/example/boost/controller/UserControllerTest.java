@@ -10,7 +10,7 @@ import com.example.boost.domain.dto.UserPasswordUpdateRequest;
 import com.example.boost.domain.dto.UserResponse;
 import com.example.boost.domain.dto.UserRolesUpdateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.iam.application.AuditLogService;
 import com.example.boost.iam.application.UserService;

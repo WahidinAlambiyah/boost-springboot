@@ -1,14 +1,14 @@
 package com.example.boost.iam.api;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.LogoutRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.dto.RegisterRequest;
 import com.example.boost.domain.dto.RegisterResponse;
-import com.example.boost.exception.ServiceUnavailableException;
-import com.example.boost.exception.TooManyRequestsException;
+import com.example.boost.common.exception.ServiceUnavailableException;
+import com.example.boost.common.exception.TooManyRequestsException;
 import com.example.boost.iam.application.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;

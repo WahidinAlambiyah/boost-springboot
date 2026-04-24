@@ -3,7 +3,7 @@ package com.example.boost.scheduling.api;
 import com.example.boost.domain.dto.SchedulingSummaryResponse;
 import com.example.boost.domain.dto.ClassRescheduleRequest;
 import com.example.boost.scheduling.application.SchedulingService;
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
