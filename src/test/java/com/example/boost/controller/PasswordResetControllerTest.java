@@ -1,14 +1,16 @@
 package com.example.boost.controller;
 
+import com.example.boost.iam.api.PasswordResetController;
+
 import com.example.boost.domain.dto.PasswordResetConfirmRequest;
 import com.example.boost.domain.dto.PasswordResetRequestDto;
 import com.example.boost.domain.dto.PasswordResetResendRequest;
 import com.example.boost.exception.BadRequestException;
 import com.example.boost.exception.TooManyRequestsException;
 import com.example.boost.security.JwtService;
-import com.example.boost.service.AuditLogService;
-import com.example.boost.service.PasswordResetService;
-import com.example.boost.service.TokenService;
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.PasswordResetService;
+import com.example.boost.iam.application.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,9 @@
 package com.example.boost.repository;
 
+import com.example.boost.iam.infrastructure.PermissionRepository;
+import com.example.boost.iam.infrastructure.RoleRepository;
+import com.example.boost.iam.infrastructure.UserRepository;
+
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.RolePermission;
