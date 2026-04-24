@@ -3,7 +3,7 @@ package com.example.boost.iam.api;
 import com.example.boost.domain.dto.PasswordResetConfirmRequest;
 import com.example.boost.domain.dto.PasswordResetRequestDto;
 import com.example.boost.domain.dto.PasswordResetResendRequest;
-import com.example.boost.exception.BadRequestException;
+import com.example.boost.common.exception.BadRequestException;
 import com.example.boost.iam.application.PasswordResetService;
 
 import jakarta.validation.Valid;

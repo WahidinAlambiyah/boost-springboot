@@ -1,4 +1,4 @@
-package com.example.boost.domain.dto;
+package com.example.boost.common.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

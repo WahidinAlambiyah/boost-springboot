@@ -6,7 +6,7 @@ import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.iam.application.AuditLogService;
 import com.example.boost.iam.application.PermissionService;

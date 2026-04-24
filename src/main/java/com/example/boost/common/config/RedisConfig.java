@@ -1,4 +1,4 @@
-package com.example.boost.config;
+package com.example.boost.common.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

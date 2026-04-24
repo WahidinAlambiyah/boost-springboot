@@ -1,4 +1,4 @@
-package com.example.boost.config;
+package com.example.boost.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;

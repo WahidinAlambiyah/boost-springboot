@@ -10,7 +10,7 @@ import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.domain.mapper.UserMapper;
 import com.example.boost.iam.infrastructure.RoleRepository;
 import com.example.boost.iam.infrastructure.UserRepository;

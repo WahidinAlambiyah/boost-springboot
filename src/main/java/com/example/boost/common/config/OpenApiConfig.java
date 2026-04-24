@@ -1,4 +1,4 @@
-package com.example.boost.config;
+package com.example.boost.common.config;
 
 import java.util.Comparator;
 import java.util.List;

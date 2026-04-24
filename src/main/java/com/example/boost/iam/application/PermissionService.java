@@ -6,8 +6,8 @@ import com.example.boost.domain.dto.PermissionUpdateRequest;
 import com.example.boost.domain.dto.IdNameResponse;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.mapper.PermissionMapper;
-import com.example.boost.exception.ConflictException;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.ConflictException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.iam.infrastructure.PermissionRepository;
 
 import lombok.RequiredArgsConstructor;

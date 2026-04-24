@@ -10,7 +10,7 @@ import com.example.boost.domain.dto.LoginRequest;
 import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.User;
-import com.example.boost.exception.UnauthorizedException;
+import com.example.boost.common.exception.UnauthorizedException;
 import com.example.boost.iam.infrastructure.PermissionRepository;
 import com.example.boost.iam.infrastructure.RoleRepository;
 import com.example.boost.iam.infrastructure.UserRepository;

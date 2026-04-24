@@ -2,7 +2,7 @@ package com.example.boost.notification.api;
 
 import com.example.boost.domain.dto.NotificationSummaryResponse;
 import com.example.boost.notification.application.NotificationService;
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 

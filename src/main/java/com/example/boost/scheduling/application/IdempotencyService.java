@@ -1,7 +1,7 @@
 package com.example.boost.scheduling.application;
 
 import com.example.boost.domain.entity.IdempotencyRecord;
-import com.example.boost.exception.BadRequestException;
+import com.example.boost.common.exception.BadRequestException;
 import com.example.boost.scheduling.infrastructure.IdempotencyRecordRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

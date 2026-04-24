@@ -1,10 +1,11 @@
 package com.example.boost.billing.api;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.BillingSummaryResponse;
 import com.example.boost.domain.dto.PaymentRequest;
 import com.example.boost.domain.dto.PaymentResponse;
 import com.example.boost.billing.application.BillingService;
+import com.example.boost.common.util.HeaderUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class BillingController {
             @Valid @RequestBody PaymentRequest request,
             @RequestHeader("Idempotency-Key") String idempotencyKey
     ) {
-        PaymentResponse response = billingService.pay(request, idempotencyKey);
+        PaymentResponse response = billingService.pay(request, HeaderUtils.normalize(idempotencyKey));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Payment processed", response));
     }

@@ -1,10 +1,11 @@
 package com.example.boost.scheduling.api;
 
-import com.example.boost.domain.dto.ApiResponse;
+import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.EnrollmentActionResponse;
 import com.example.boost.domain.dto.EnrollmentRegisterRequest;
 import com.example.boost.domain.dto.EnrollmentSummaryResponse;
 import com.example.boost.scheduling.application.EnrollmentService;
+import com.example.boost.common.util.HeaderUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ public class EnrollmentController {
             @Valid @RequestBody EnrollmentRegisterRequest request,
             @RequestHeader("Idempotency-Key") String idempotencyKey
     ) {
-        EnrollmentActionResponse response = enrollmentService.register(request.studentId(), request.classGroupId(), idempotencyKey);
+        EnrollmentActionResponse response = enrollmentService.register(request.studentId(), request.classGroupId(), HeaderUtils.normalize(idempotencyKey));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Enrollment processed", response));
     }

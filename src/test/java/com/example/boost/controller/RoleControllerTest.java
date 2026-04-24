@@ -7,7 +7,7 @@ import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
-import com.example.boost.exception.NotFoundException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.security.JwtService;
 import com.example.boost.iam.application.AuditLogService;
 import com.example.boost.iam.application.RoleService;
