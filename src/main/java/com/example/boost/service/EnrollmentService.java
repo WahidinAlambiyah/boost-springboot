@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +33,8 @@ public class EnrollmentService {
     private final EnrollmentJpaRepository enrollmentJpaRepository;
     private final ClassGroupRepository classGroupRepository;
     private final IdempotencyService idempotencyService;
+    private final OutboxEventService outboxEventService;
+    private final DomainMetricsService domainMetricsService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ENROLLMENT_READ')")
@@ -61,6 +65,18 @@ public class EnrollmentService {
         }
 
         EnrollmentActionResponse response = registerWithRetry(studentId, classGroupId);
+        boolean isActive = EnrollmentStatus.ACTIVE.name().equals(response.status());
+        domainMetricsService.recordEnrollment(isActive);
+        if (!isActive && response.waitlistPosition() != null) {
+            domainMetricsService.recordOverbook(response.waitlistPosition());
+        }
+
+        Map<String, Object> eventPayload = new HashMap<>();
+        eventPayload.put("studentId", studentId);
+        eventPayload.put("classGroupId", classGroupId);
+        eventPayload.put("status", response.status());
+        eventPayload.put("waitlistPosition", response.waitlistPosition());
+        outboxEventService.append("ENROLLMENT", response.enrollmentId(), "enrollment.created", eventPayload);
         idempotencyService.saveResponse(ENROLL_SCOPE + ":" + classGroupId + ":" + studentId, idempotencyKey, response);
         return response;
     }
@@ -87,9 +103,15 @@ public class EnrollmentService {
             promoted.setStatus(EnrollmentStatus.ACTIVE);
             promoted.setWaitlistPosition(null);
             enrollmentJpaRepository.save(promoted);
+            domainMetricsService.updateWaitlistLength(
+                    enrollmentJpaRepository.countByClassGroupIdAndStatus(enrollment.getClassGroupId(), EnrollmentStatus.WAITLIST)
+            );
             return new EnrollmentActionResponse(promoted.getId(), promoted.getStatus().name(), null);
         }
 
+        domainMetricsService.updateWaitlistLength(
+                enrollmentJpaRepository.countByClassGroupIdAndStatus(enrollment.getClassGroupId(), EnrollmentStatus.WAITLIST)
+        );
         return new EnrollmentActionResponse(enrollment.getId(), enrollment.getStatus().name(), null);
     }
 

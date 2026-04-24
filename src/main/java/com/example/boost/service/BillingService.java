@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -25,6 +26,8 @@ public class BillingService {
     private final BillingRepository billingRepository;
     private final PaymentJpaRepository paymentJpaRepository;
     private final IdempotencyService idempotencyService;
+    private final OutboxEventService outboxEventService;
+    private final DomainMetricsService domainMetricsService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('BILLING_READ')")
@@ -57,6 +60,23 @@ public class BillingService {
         payment.setPaymentDate(LocalDate.now());
         payment.setStatus(PaymentStatus.SUCCESS);
         Payment saved = paymentJpaRepository.save(payment);
+
+        if (saved.getStatus() == PaymentStatus.SUCCESS) {
+            domainMetricsService.recordPaymentSuccess();
+        } else {
+            domainMetricsService.recordPaymentFailure();
+        }
+
+        outboxEventService.append(
+                "PAYMENT",
+                saved.getId(),
+                "payment.settled",
+                Map.of(
+                        "invoiceId", saved.getInvoiceId(),
+                        "amount", saved.getAmount(),
+                        "status", saved.getStatus().name()
+                )
+        );
 
         PaymentResponse response = new PaymentResponse(saved.getId(), saved.getInvoiceId(), saved.getAmount(), saved.getStatus().name());
         idempotencyService.saveResponse(scope, idempotencyKey, response);
