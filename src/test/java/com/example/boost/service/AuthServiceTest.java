@@ -1,5 +1,9 @@
 package com.example.boost.service;
 
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.AuthService;
+import com.example.boost.iam.application.TokenService;
+
 import com.example.boost.config.JwtProperties;
 import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.LoginRequest;
@@ -7,9 +11,9 @@ import com.example.boost.domain.dto.RefreshRequest;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.UnauthorizedException;
-import com.example.boost.repository.PermissionRepository;
-import com.example.boost.repository.RoleRepository;
-import com.example.boost.repository.UserRepository;
+import com.example.boost.iam.infrastructure.PermissionRepository;
+import com.example.boost.iam.infrastructure.RoleRepository;
+import com.example.boost.iam.infrastructure.UserRepository;
 import com.example.boost.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

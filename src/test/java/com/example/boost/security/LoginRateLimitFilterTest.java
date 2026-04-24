@@ -1,6 +1,6 @@
 package com.example.boost.security;
 
-import com.example.boost.service.AuditLogService;
+import com.example.boost.iam.application.AuditLogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,6 @@
 package com.example.boost.security;
 
-import com.example.boost.service.TokenService;
+import com.example.boost.iam.application.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import jakarta.servlet.FilterChain;

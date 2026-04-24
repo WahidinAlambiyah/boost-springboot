@@ -1,5 +1,7 @@
 package com.example.boost.controller;
 
+import com.example.boost.iam.api.RoleController;
+
 import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RolePermissionsUpdateRequest;
@@ -7,9 +9,9 @@ import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.RoleUpdateRequest;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
-import com.example.boost.service.AuditLogService;
-import com.example.boost.service.RoleService;
-import com.example.boost.service.TokenService;
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.RoleService;
+import com.example.boost.iam.application.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,13 +1,16 @@
 package com.example.boost.service;
 
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.RoleService;
+
 import com.example.boost.domain.dto.RoleCreateRequest;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.mapper.RoleMapper;
-import com.example.boost.repository.PermissionRepository;
-import com.example.boost.repository.RoleRepository;
+import com.example.boost.iam.infrastructure.PermissionRepository;
+import com.example.boost.iam.infrastructure.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

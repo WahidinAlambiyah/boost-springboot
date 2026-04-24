@@ -1,14 +1,16 @@
 package com.example.boost.controller;
 
+import com.example.boost.iam.api.PermissionController;
+
 import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.PermissionUpdateRequest;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
-import com.example.boost.service.AuditLogService;
-import com.example.boost.service.PermissionService;
-import com.example.boost.service.TokenService;
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.PermissionService;
+import com.example.boost.iam.application.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,7 +109,7 @@ class PermissionControllerTest {
         mockMvc.perform(post("/api/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

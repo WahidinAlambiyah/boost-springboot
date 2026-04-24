@@ -1,5 +1,8 @@
 package com.example.boost.service;
 
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.UserService;
+
 import com.example.boost.domain.dto.UserCreateRequest;
 import com.example.boost.domain.dto.UserIdentifierResponse;
 import com.example.boost.domain.dto.UserResponse;
@@ -9,8 +12,8 @@ import com.example.boost.domain.entity.Role;
 import com.example.boost.domain.entity.User;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.domain.mapper.UserMapper;
-import com.example.boost.repository.RoleRepository;
-import com.example.boost.repository.UserRepository;
+import com.example.boost.iam.infrastructure.RoleRepository;
+import com.example.boost.iam.infrastructure.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

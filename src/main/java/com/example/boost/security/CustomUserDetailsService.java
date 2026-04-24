@@ -1,9 +1,9 @@
 package com.example.boost.security;
 
 import com.example.boost.domain.entity.User;
-import com.example.boost.repository.PermissionRepository;
-import com.example.boost.repository.RoleRepository;
-import com.example.boost.repository.UserRepository;
+import com.example.boost.iam.infrastructure.PermissionRepository;
+import com.example.boost.iam.infrastructure.RoleRepository;
+import com.example.boost.iam.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

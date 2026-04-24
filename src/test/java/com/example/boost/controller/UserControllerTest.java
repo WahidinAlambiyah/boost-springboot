@@ -1,5 +1,7 @@
 package com.example.boost.controller;
 
+import com.example.boost.iam.api.UserController;
+
 import com.example.boost.TestDataFactory;
 import com.example.boost.domain.dto.UserCreateRequest;
 import com.example.boost.domain.dto.UserDisableRequest;
@@ -10,9 +12,9 @@ import com.example.boost.domain.dto.UserRolesUpdateRequest;
 import com.example.boost.domain.dto.UserUpdateRequest;
 import com.example.boost.exception.NotFoundException;
 import com.example.boost.security.JwtService;
-import com.example.boost.service.AuditLogService;
-import com.example.boost.service.UserService;
-import com.example.boost.service.TokenService;
+import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.UserService;
+import com.example.boost.iam.application.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,12 @@
 package com.example.boost.service;
 
+import com.example.boost.iam.application.PermissionService;
+
 import com.example.boost.domain.dto.PermissionCreateRequest;
 import com.example.boost.domain.entity.Permission;
 import com.example.boost.domain.mapper.PermissionMapper;
 import com.example.boost.exception.NotFoundException;
-import com.example.boost.repository.PermissionRepository;
+import com.example.boost.iam.infrastructure.PermissionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
