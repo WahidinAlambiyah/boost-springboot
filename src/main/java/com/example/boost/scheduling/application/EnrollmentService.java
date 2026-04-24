@@ -7,7 +7,7 @@ import com.example.boost.domain.entity.Enrollment;
 import com.example.boost.domain.entity.EnrollmentStatus;
 import com.example.boost.exception.BadRequestException;
 import com.example.boost.exception.NotFoundException;
-import com.example.boost.catalog.application.ClassGroupLookupService;
+import com.example.boost.catalog.application.port.CatalogQueryService;
 import com.example.boost.notification.application.OutboxEventService;
 import com.example.boost.service.DomainMetricsService;
 import com.example.boost.scheduling.infrastructure.EnrollmentJpaRepository;
@@ -18,7 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +32,7 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentJpaRepository enrollmentJpaRepository;
-    private final ClassGroupLookupService classGroupLookupService;
+    private final CatalogQueryService catalogQueryService;
     private final IdempotencyService idempotencyService;
     private final OutboxEventService outboxEventService;
     private final DomainMetricsService domainMetricsService;
@@ -137,7 +136,7 @@ public class EnrollmentService {
             return new EnrollmentActionResponse(enrollment.getId(), enrollment.getStatus().name(), enrollment.getWaitlistPosition());
         }
 
-        ClassGroup classGroup = classGroupLookupService.getById(classGroupId);
+        ClassGroup classGroup = catalogQueryService.getById(classGroupId);
 
         if (classGroup.getCapacity() == null || classGroup.getCapacity() <= 0) {
             throw new BadRequestException("Class group capacity is invalid");
@@ -165,7 +164,7 @@ public class EnrollmentService {
         }
 
         Enrollment saved = enrollmentJpaRepository.save(enrollment);
-        classGroupLookupService.touchUpdatedAt(classGroup);
+        catalogQueryService.touchUpdatedAt(classGroup);
 
         return new EnrollmentActionResponse(saved.getId(), saved.getStatus().name(), saved.getWaitlistPosition());
     }
