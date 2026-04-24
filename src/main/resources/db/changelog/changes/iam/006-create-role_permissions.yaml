@@ -1,19 +1,20 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/006-create-role_permissions.yaml
   - changeSet:
-      id: 005-create-user-roles-table
+      id: 006-create-role-permissions-table
       author: boost
       changes:
         - createTable:
             schemaName: fastworks_springboot
-            tableName: user_roles
+            tableName: role_permissions
             columns:
               - column:
-                  name: user_id
+                  name: role_id
                   type: uuid
                   constraints:
                     nullable: false
               - column:
-                  name: role_id
+                  name: permission_id
                   type: uuid
                   constraints:
                     nullable: false
@@ -23,52 +24,40 @@ databaseChangeLog:
                   defaultValueComputed: now()
                   constraints:
                     nullable: false
-              - column:
-                  name: assigned_by
-                  type: uuid
         - addPrimaryKey:
             schemaName: fastworks_springboot
-            tableName: user_roles
-            columnNames: user_id, role_id
-            constraintName: pk_user_roles
+            tableName: role_permissions
+            columnNames: role_id, permission_id
+            constraintName: pk_role_permissions
         - addForeignKeyConstraint:
             baseTableSchemaName: fastworks_springboot
-            baseTableName: user_roles
-            baseColumnNames: user_id
-            referencedTableSchemaName: fastworks_springboot
-            referencedTableName: users
-            referencedColumnNames: id
-            constraintName: fk_user_roles_user
-            onDelete: CASCADE
-        - addForeignKeyConstraint:
-            baseTableSchemaName: fastworks_springboot
-            baseTableName: user_roles
+            baseTableName: role_permissions
             baseColumnNames: role_id
             referencedTableSchemaName: fastworks_springboot
             referencedTableName: roles
             referencedColumnNames: id
-            constraintName: fk_user_roles_role
-            onDelete: RESTRICT
+            constraintName: fk_role_permissions_role
+            onDelete: CASCADE
         - addForeignKeyConstraint:
             baseTableSchemaName: fastworks_springboot
-            baseTableName: user_roles
-            baseColumnNames: assigned_by
+            baseTableName: role_permissions
+            baseColumnNames: permission_id
             referencedTableSchemaName: fastworks_springboot
-            referencedTableName: users
+            referencedTableName: permissions
             referencedColumnNames: id
-            constraintName: fk_user_roles_assigned_by
-            onDelete: SET NULL
+            constraintName: fk_role_permissions_permission
+            onDelete: RESTRICT
         - createIndex:
             schemaName: fastworks_springboot
-            tableName: user_roles
-            indexName: idx_user_roles_user_id
-            columns:
-              - column:
-                  name: user_id
-        - createIndex:
-            schemaName: fastworks_springboot
-            tableName: user_roles
-            indexName: idx_user_roles_role_id
+            tableName: role_permissions
+            indexName: idx_role_permissions_role_id
             columns:
               - column:
                   name: role_id
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: role_permissions
+            indexName: idx_role_permissions_permission_id
+            columns:
+              - column:
+                  name: permission_id

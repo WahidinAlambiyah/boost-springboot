@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/007-seed-default-rbac.yaml
   - changeSet:
       id: 007-seed-default-rbac
       author: boost

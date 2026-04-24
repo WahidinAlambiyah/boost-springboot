@@ -1,11 +1,12 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/003-create-roles.yaml
   - changeSet:
-      id: 004-create-permissions-table
+      id: 003-create-roles-table
       author: boost
       changes:
         - createTable:
             schemaName: fastworks_springboot
-            tableName: permissions
+            tableName: roles
             columns:
               - column:
                   name: id
@@ -16,7 +17,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: code
-                  type: varchar(150)
+                  type: varchar(100)
                   constraints:
                     nullable: false
                     unique: true
@@ -28,9 +29,6 @@ databaseChangeLog:
               - column:
                   name: description
                   type: varchar(500)
-              - column:
-                  name: module
-                  type: varchar(100)
               - column:
                   name: is_active
                   type: boolean
@@ -51,15 +49,8 @@ databaseChangeLog:
                     nullable: false
         - createIndex:
             schemaName: fastworks_springboot
-            tableName: permissions
-            indexName: idx_permissions_code
+            tableName: roles
+            indexName: idx_roles_code
             columns:
               - column:
                   name: code
-        - createIndex:
-            schemaName: fastworks_springboot
-            tableName: permissions
-            indexName: idx_permissions_module
-            columns:
-              - column:
-                  name: module
