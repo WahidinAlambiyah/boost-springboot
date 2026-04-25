@@ -8,18 +8,27 @@ import com.example.boost.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,23 +78,72 @@ class AttendanceControllerTest {
                 .andExpect(jsonPath("$.data").value("queued"));
     }
 
-    @Test
-    void getSummariesUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/attendance"))
-                .andExpect(status().isUnauthorized());
+    @ParameterizedTest(name = "{index} => {0}")
+    @MethodSource("endpointSecurityCases")
+    void domainEndpointsMustCoverUnauthorizedForbiddenAndSuccess(EndpointAccessCase testCase) throws Exception {
+        when(attendanceService.getSummaries()).thenReturn(List.of());
+        when(attendanceService.getWritableSummaryCount()).thenReturn(0L);
+        doNothing().when(attendanceService).submit(
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyInt(),
+                org.mockito.ArgumentMatchers.anyInt()
+        );
+
+        MockHttpServletRequestBuilder request = testCase.request();
+        setSecurityContext(testCase.authority());
+
+        mockMvc.perform(request)
+                .andExpect(status().is(testCase.expectedStatus()));
+        SecurityContextHolder.clearContext();
     }
 
-    @Test
-    @WithMockUser(authorities = "ATTENDANCE_READ")
-    void submitForbiddenWithoutMarkAuthority() throws Exception {
-        mockMvc.perform(post("/api/attendance/submit")
-                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(java.util.Map.of(
-                                "classGroupId", java.util.UUID.randomUUID(),
-                                "sessionDate", LocalDate.now(),
-                                "presentCount", 10,
-                                "absentCount", 2
-                        ))))
-                .andExpect(status().isForbidden());
+    private static Stream<EndpointAccessCase> endpointSecurityCases() {
+        String submitBody = "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}";
+        return Stream.of(
+                new EndpointAccessCase("GET /api/attendance without token -> 401", get("/api/attendance"), null, 401),
+                new EndpointAccessCase("GET /api/attendance wrong role -> 403", get("/api/attendance"), "ATTENDANCE_MARK", 403),
+                new EndpointAccessCase("GET /api/attendance correct role -> 200", get("/api/attendance"), "ATTENDANCE_READ", 200),
+
+                new EndpointAccessCase("GET /api/attendance/summary-count without token -> 401", get("/api/attendance/summary-count"), null, 401),
+                new EndpointAccessCase("GET /api/attendance/summary-count wrong role -> 403", get("/api/attendance/summary-count"), "ATTENDANCE_READ", 403),
+                new EndpointAccessCase("GET /api/attendance/summary-count correct role -> 200", get("/api/attendance/summary-count"), "ATTENDANCE_MARK", 200),
+
+                new EndpointAccessCase("POST /api/attendance/submit without token -> 401", post("/api/attendance/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(submitBody), null, 401),
+                new EndpointAccessCase("POST /api/attendance/submit wrong role -> 403", post("/api/attendance/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(submitBody), "ATTENDANCE_READ", 403),
+                new EndpointAccessCase("POST /api/attendance/submit correct role -> 202", post("/api/attendance/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(submitBody), "ATTENDANCE_MARK", 202)
+        );
+    }
+
+    private record EndpointAccessCase(
+            String description,
+            MockHttpServletRequestBuilder request,
+            String authority,
+            int expectedStatus
+    ) {
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
+
+    private static void setSecurityContext(String authority) {
+        SecurityContextHolder.clearContext();
+        if (authority == null) {
+            return;
+        }
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "test-user",
+                        "not-used",
+                        List.of(() -> authority)
+                )
+        );
     }
 }
