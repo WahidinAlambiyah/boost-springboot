@@ -2,11 +2,18 @@ package com.example.boost.common.config;
 
 import java.util.List;
 
+import io.swagger.v3.oas.models.Components;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.examples.Example;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
@@ -38,7 +45,7 @@ public class OpenApiConfig {
                                 .name("API Support")
                                 .email("halo@alambiyah.com")))
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
-                .components(new io.swagger.v3.oas.models.Components()
+                .components(new Components()
                         .addSecuritySchemes(schemeName, new SecurityScheme()
                                 .name(schemeName)
                                 .type(SecurityScheme.Type.HTTP)
@@ -101,6 +108,49 @@ public class OpenApiConfig {
             //         .sorted(Comparator.comparing(tag -> tag.getName().toLowerCase()))
             //         .collect(Collectors.toList()));
         };
+    }
+
+    @Bean
+    @Order(3)
+    public OpenApiCustomizer applyDefaultAuthErrorResponses() {
+        return openApi -> openApi.getPaths().values().forEach(pathItem ->
+                pathItem.readOperations().forEach(this::ensureAuthErrorResponses)
+        );
+    }
+
+    private void ensureAuthErrorResponses(Operation operation) {
+        if (operation.getSecurity() != null && operation.getSecurity().isEmpty()) {
+            return;
+        }
+
+        if (operation.getResponses() == null) {
+            operation.setResponses(new io.swagger.v3.oas.models.responses.ApiResponses());
+        }
+
+        operation.getResponses().computeIfAbsent("401", key ->
+                new ApiResponse()
+                        .description("Unauthorized")
+                        .content(authErrorContent(401, "Unauthorized")));
+
+        operation.getResponses().computeIfAbsent("403", key ->
+                new ApiResponse()
+                        .description("Forbidden")
+                        .content(authErrorContent(403, "Forbidden")));
+    }
+
+    private Content authErrorContent(int status, String message) {
+        return new Content().addMediaType(
+                "application/json",
+                new MediaType()
+                        .schema(new Schema<>().$ref("#/components/schemas/ApiResponse"))
+                        .addExamples("default", new Example().value(String.format("""
+                                {
+                                  "status": %d,
+                                  "message": "%s",
+                                  "data": null
+                                }
+                                """, status, message)))
+        );
     }
 
     // @Bean
