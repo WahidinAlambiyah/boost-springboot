@@ -22,5 +22,16 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Run test suite (including architecture tests)
+      - name: Run test suite (including architecture and OpenAPI docs checks)
         run: mvn -B test
+
+      - name: Verify OpenAPI spec artifact is generated
+        run: test -s target/openapi/openapi.json
+
+      - name: Upload OpenAPI spec artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: target/openapi/openapi.json
+          if-no-files-found: warn
