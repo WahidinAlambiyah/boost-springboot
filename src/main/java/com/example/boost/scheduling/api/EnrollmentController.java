@@ -7,6 +7,8 @@ import com.example.boost.domain.dto.EnrollmentSummaryResponse;
 import com.example.boost.scheduling.application.EnrollmentService;
 import com.example.boost.common.util.HeaderUtils;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,15 @@ public class EnrollmentController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ENROLLMENT_READ')")
+    @Operation(
+            summary = "List enrollment summaries",
+            description = "Mengambil ringkasan enrollment. Authority utama: ENROLLMENT_READ."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Enrollment berhasil diambil"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - membutuhkan authority ENROLLMENT_READ")
+    })
     public ResponseEntity<ApiResponse<List<EnrollmentSummaryResponse>>> getSummaries() {
         List<EnrollmentSummaryResponse> responses = enrollmentService.getSummaries();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Enrollments retrieved", responses));
@@ -33,6 +44,15 @@ public class EnrollmentController {
 
     @GetMapping("/summary-count")
     @PreAuthorize("hasAuthority('ENROLLMENT_WRITE')")
+    @Operation(
+            summary = "Get writable enrollment summary count",
+            description = "Mengambil jumlah ringkasan enrollment yang bisa ditulis. Authority utama: ENROLLMENT_WRITE."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Jumlah enrollment berhasil diambil"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - membutuhkan authority ENROLLMENT_WRITE")
+    })
     public ResponseEntity<ApiResponse<Long>> getWritableSummaryCount() {
         long count = enrollmentService.getWritableSummaryCount();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Enrollment writable summary count retrieved", count));
@@ -40,6 +60,16 @@ public class EnrollmentController {
 
     @PostMapping("/register")
     @PreAuthorize("hasAuthority('ENROLLMENT_WRITE')")
+    @Operation(
+            summary = "Register enrollment",
+            description = "Mendaftarkan siswa ke kelas dengan idempotency key. Authority utama: ENROLLMENT_WRITE."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Enrollment berhasil diproses"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - membutuhkan authority ENROLLMENT_WRITE"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validasi payload gagal")
+    })
     public ResponseEntity<ApiResponse<EnrollmentActionResponse>> register(
             @Valid @RequestBody EnrollmentRegisterRequest request,
             @RequestHeader("Idempotency-Key") String idempotencyKey
@@ -51,6 +81,15 @@ public class EnrollmentController {
 
     @PostMapping("/{enrollmentId}/cancel")
     @PreAuthorize("hasAuthority('ENROLLMENT_WRITE')")
+    @Operation(
+            summary = "Cancel enrollment",
+            description = "Membatalkan enrollment dan mempromosikan waitlist bila ada. Authority utama: ENROLLMENT_WRITE."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Enrollment berhasil dibatalkan"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - membutuhkan authority ENROLLMENT_WRITE")
+    })
     public ResponseEntity<ApiResponse<EnrollmentActionResponse>> cancel(@PathVariable UUID enrollmentId) {
         EnrollmentActionResponse response = enrollmentService.cancelAndPromote(enrollmentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Enrollment cancelled and waitlist promoted", response));
