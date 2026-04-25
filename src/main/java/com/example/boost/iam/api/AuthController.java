@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,7 @@ public class AuthController {
             summary = "Register user",
             description = "Register user baru"
     )
+    @SecurityRequirements
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "201",
@@ -227,6 +229,7 @@ public class AuthController {
             summary = "Login user",
             description = "Authenticate user dan mengembalikan access token"
     )
+    @SecurityRequirements
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -293,6 +296,7 @@ public class AuthController {
             summary = "Refresh access token",
             description = "Generate access token baru menggunakan refresh token yang valid"
     )
+    @SecurityRequirements
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -337,6 +341,7 @@ public class AuthController {
             summary = "Logout user",
             description = "Logout access/refresh token. Endpoint ini mengembalikan 204 No Content saat sukses."
     )
+    @SecurityRequirements
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "204",
