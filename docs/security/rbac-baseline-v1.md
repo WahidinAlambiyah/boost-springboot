@@ -115,13 +115,21 @@ Agar perubahan RBAC aman dan tidak merusak kompatibilitas:
 
 ### Gate wajib sebelum release/tag RBAC
 
-Sebelum membuat tag RBAC berikutnya, suite otorisasi berikut **wajib hijau**:
+Sebelum membuat tag RBAC berikutnya, command gate security berikut **wajib hijau** (mengikuti suite terbaru):
 
 ```bash
+# hard gate RBAC (wajib lulus)
 mvn -Dtest=AuthorizationMatrixTest test
+
+# gate regression tambahan untuk cakupan security + kontrak API
+mvn -Dtest=AuthorizationLookupRepositoryTest,OpenApiDocumentationComplianceTest test
 ```
 
-Suite ini memverifikasi matrix akses per role untuk endpoint protected/public termasuk skenario `401/403` secara eksplisit.
+`AuthorizationMatrixTest` adalah proteksi utama untuk mencegah regression RBAC ketika frontend mulai konsumsi endpoint domain baru. Karena itu, kegagalan test ini harus memperlakukan build sebagai gagal.
+
+### Gate CI untuk blok merge
+
+Pipeline CI menjalankan `AuthorizationMatrixTest` sebagai **job gate terpisah** sebelum full test suite. Jika job ini gagal, job berikutnya tidak dijalankan dan status PR menjadi gagal, sehingga merge harus diblokir sampai matrix otorisasi kembali hijau.
 
 ### Tag rilis setelah merge
 
