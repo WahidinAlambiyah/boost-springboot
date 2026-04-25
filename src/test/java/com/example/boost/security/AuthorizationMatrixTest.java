@@ -68,6 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @AutoConfigureMockMvc
 @Tag("rbac-release-gate")
+@Tag("refactor-gate")
 class AuthorizationMatrixTest {
 
     private static final UUID SAMPLE_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");

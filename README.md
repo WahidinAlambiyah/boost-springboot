@@ -117,6 +117,20 @@ Gunakan salah satu opsi berikut:
 mvn test
 ```
 
+## Refactor Safety Gate (Wajib Sebelum/Sesudah Batch Refactor)
+
+Gunakan suite bertag `refactor-gate` untuk mengunci behavior kritikal sebelum refactor besar, lalu jalankan lagi setelah tiap batch perubahan modul:
+
+```bash
+mvn -Dgroups=refactor-gate test
+```
+
+Cakupan gate saat ini:
+- authorization matrix (401/403/2xx)
+- alur auth dasar
+- alur domain inti kursus (enrollment/attendance/billing minimal)
+
+
 ## Konfigurasi `.env`
 
 Contoh konfigurasi ada di `.env.example`.
