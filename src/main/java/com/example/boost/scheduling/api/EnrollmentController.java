@@ -7,6 +7,7 @@ import com.example.boost.domain.dto.EnrollmentSummaryResponse;
 import com.example.boost.scheduling.application.EnrollmentService;
 import com.example.boost.common.util.HeaderUtils;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@Tag(name = "9. Enrollment")
 @RequestMapping("/api/enrollment")
 @RequiredArgsConstructor
 public class EnrollmentController {

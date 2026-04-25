@@ -4,6 +4,7 @@ import com.example.boost.domain.dto.NotificationSummaryResponse;
 import com.example.boost.notification.application.NotificationService;
 import com.example.boost.common.api.ApiResponse;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@Tag(name = "12. Notification")
 @RequestMapping("/api/notification")
 @RequiredArgsConstructor
 public class NotificationController {

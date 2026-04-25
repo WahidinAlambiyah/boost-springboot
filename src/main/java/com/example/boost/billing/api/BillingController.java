@@ -7,6 +7,7 @@ import com.example.boost.domain.dto.PaymentResponse;
 import com.example.boost.billing.application.BillingService;
 import com.example.boost.common.util.HeaderUtils;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@Tag(name = "11. Billing")
 @RequestMapping("/api/billing")
 @RequiredArgsConstructor
 public class BillingController {

@@ -5,6 +5,7 @@ import com.example.boost.domain.dto.ClassRescheduleRequest;
 import com.example.boost.scheduling.application.SchedulingService;
 import com.example.boost.common.api.ApiResponse;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@Tag(name = "8. Scheduling")
 @RequestMapping("/api/scheduling")
 @RequiredArgsConstructor
 public class SchedulingController {
