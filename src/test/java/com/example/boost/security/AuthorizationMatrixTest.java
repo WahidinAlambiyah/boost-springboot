@@ -151,24 +151,53 @@ class AuthorizationMatrixTest {
                         "NOTIFICATION_READ", "NOTIFICATION_WRITE"
                 )
         );
-        TestActor userManager = buildActor(
-                "user_manager",
-                Set.of("USER_READ", "ROLE_READ")
+        TestActor opsUser = buildActor(
+                "ops_user",
+                Set.of(
+                        "ROLE_OPS",
+                        "CLASS_READ", "CLASS_WRITE",
+                        "SCHEDULE_READ", "SCHEDULE_WRITE",
+                        "ENROLLMENT_READ", "ENROLLMENT_WRITE",
+                        "ATTENDANCE_READ", "ATTENDANCE_MARK",
+                        "NOTIFICATION_READ", "NOTIFICATION_WRITE"
+                )
         );
-        TestActor userSupport = buildActor(
-                "user_support",
-                Set.of("AUDIT_READ", "USER_DISABLE", "USER_ENABLE", "USER_UNLOCK")
+        TestActor instructorUser = buildActor(
+                "instructor_user",
+                Set.of(
+                        "ROLE_INSTRUCTOR",
+                        "CLASS_READ",
+                        "SCHEDULE_READ",
+                        "ATTENDANCE_READ", "ATTENDANCE_MARK",
+                        "NOTIFICATION_READ"
+                )
         );
-        TestActor userRegular = buildActor(
-                "user_regular",
-                Set.of()
+        TestActor financeUser = buildActor(
+                "finance_user",
+                Set.of(
+                        "ROLE_FINANCE",
+                        "BILLING_READ", "BILLING_WRITE",
+                        "ENROLLMENT_READ"
+                )
+        );
+        TestActor guardianUser = buildActor(
+                "guardian_user",
+                Set.of(
+                        "ROLE_GUARDIAN",
+                        "CLASS_READ",
+                        "ENROLLMENT_READ",
+                        "ATTENDANCE_READ",
+                        "BILLING_READ",
+                        "NOTIFICATION_READ"
+                )
         );
 
         actors = Map.of(
                 "user_admin", userAdmin,
-                "user_manager", userManager,
-                "user_support", userSupport,
-                "user_regular", userRegular
+                "ops_user", opsUser,
+                "instructor_user", instructorUser,
+                "finance_user", financeUser,
+                "guardian_user", guardianUser
         );
 
         when(userDetailsService.loadUserByUsername(anyString())).thenAnswer(invocation -> {
@@ -345,53 +374,53 @@ class AuthorizationMatrixTest {
 
     private static Stream<EndpointCase> protectedEndpoints() {
         return Stream.of(
-                new EndpointCase("GET /api/users", "GET", "/api/users", null, 200, "user_manager", "user_regular"),
-                new EndpointCase("GET /api/users/{id}", "GET", "/api/users/" + SAMPLE_ID, null, 200, "user_manager", "user_regular"),
-                new EndpointCase("GET /api/users/me", "GET", "/api/users/me", null, 200, "user_manager", "user_regular"),
-                new EndpointCase("POST /api/users", "POST", "/api/users", "{\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"password\":\"Password123!\",\"roleCodes\":[\"USER\"]}", 201, "user_admin", "user_manager"),
-                new EndpointCase("PUT /api/users/{id}", "PUT", "/api/users/" + SAMPLE_ID, "{\"username\":\"updated\",\"email\":\"updated@example.com\"}", 200, "user_admin", "user_manager"),
-                new EndpointCase("PUT /api/users/{id}/roles", "PUT", "/api/users/" + SAMPLE_ID + "/roles", "{\"roleCodes\":[\"USER\"]}", 200, "user_admin", "user_manager"),
-                new EndpointCase("DELETE /api/users/{id}", "DELETE", "/api/users/" + SAMPLE_ID, null, 204, "user_admin", "user_manager"),
-                new EndpointCase("PUT /api/users/{id}/password", "PUT", "/api/users/" + SAMPLE_ID + "/password", "{\"newPassword\":\"NewPassword123!\"}", 204, "user_admin", "user_manager"),
-                new EndpointCase("POST /api/users/{id}/disable", "POST", "/api/users/" + SAMPLE_ID + "/disable", "{\"reason\":\"security policy\"}", 204, "user_support", "user_regular"),
-                new EndpointCase("POST /api/users/{id}/enable", "POST", "/api/users/" + SAMPLE_ID + "/enable", null, 204, "user_support", "user_regular"),
-                new EndpointCase("POST /api/users/{id}/unlock", "POST", "/api/users/" + SAMPLE_ID + "/unlock", null, 204, "user_support", "user_regular"),
+                new EndpointCase("GET /api/users", "GET", "/api/users", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/users/{id}", "GET", "/api/users/" + SAMPLE_ID, null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/users/me", "GET", "/api/users/me", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("POST /api/users", "POST", "/api/users", "{\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"password\":\"Password123!\",\"roleCodes\":[\"USER\"]}", 201, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/users/{id}", "PUT", "/api/users/" + SAMPLE_ID, "{\"username\":\"updated\",\"email\":\"updated@example.com\"}", 200, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/users/{id}/roles", "PUT", "/api/users/" + SAMPLE_ID + "/roles", "{\"roleCodes\":[\"USER\"]}", 200, "user_admin", "ops_user"),
+                new EndpointCase("DELETE /api/users/{id}", "DELETE", "/api/users/" + SAMPLE_ID, null, 204, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/users/{id}/password", "PUT", "/api/users/" + SAMPLE_ID + "/password", "{\"newPassword\":\"NewPassword123!\"}", 204, "user_admin", "ops_user"),
+                new EndpointCase("POST /api/users/{id}/disable", "POST", "/api/users/" + SAMPLE_ID + "/disable", "{\"reason\":\"security policy\"}", 204, "user_admin", "guardian_user"),
+                new EndpointCase("POST /api/users/{id}/enable", "POST", "/api/users/" + SAMPLE_ID + "/enable", null, 204, "user_admin", "guardian_user"),
+                new EndpointCase("POST /api/users/{id}/unlock", "POST", "/api/users/" + SAMPLE_ID + "/unlock", null, 204, "user_admin", "guardian_user"),
 
-                new EndpointCase("GET /api/roles", "GET", "/api/roles", null, 200, "user_manager", "user_regular"),
-                new EndpointCase("GET /api/roles/lookup", "GET", "/api/roles/lookup", null, 200, "user_manager", "user_regular"),
-                new EndpointCase("GET /api/roles/{id}", "GET", "/api/roles/" + SAMPLE_ID, null, 200, "user_manager", "user_regular"),
-                new EndpointCase("POST /api/roles", "POST", "/api/roles", "{\"code\":\"NEW_ROLE\",\"name\":\"New Role\",\"isActive\":true}", 201, "user_admin", "user_regular"),
-                new EndpointCase("PUT /api/roles/{id}", "PUT", "/api/roles/" + SAMPLE_ID, "{\"name\":\"Updated Role\"}", 200, "user_admin", "user_regular"),
-                new EndpointCase("PUT /api/roles/{id}/permissions", "PUT", "/api/roles/" + SAMPLE_ID + "/permissions", "{\"permissionCodes\":[\"USER_READ\"]}", 200, "user_admin", "user_regular"),
-                new EndpointCase("DELETE /api/roles/{id}", "DELETE", "/api/roles/" + SAMPLE_ID, null, 204, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/roles", "GET", "/api/roles", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/roles/lookup", "GET", "/api/roles/lookup", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/roles/{id}", "GET", "/api/roles/" + SAMPLE_ID, null, 200, "user_admin", "ops_user"),
+                new EndpointCase("POST /api/roles", "POST", "/api/roles", "{\"code\":\"NEW_ROLE\",\"name\":\"New Role\",\"isActive\":true}", 201, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/roles/{id}", "PUT", "/api/roles/" + SAMPLE_ID, "{\"name\":\"Updated Role\"}", 200, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/roles/{id}/permissions", "PUT", "/api/roles/" + SAMPLE_ID + "/permissions", "{\"permissionCodes\":[\"USER_READ\"]}", 200, "user_admin", "ops_user"),
+                new EndpointCase("DELETE /api/roles/{id}", "DELETE", "/api/roles/" + SAMPLE_ID, null, 204, "user_admin", "ops_user"),
 
-                new EndpointCase("GET /api/permissions", "GET", "/api/permissions", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/permissions/lookup", "GET", "/api/permissions/lookup", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/permissions/{id}", "GET", "/api/permissions/" + SAMPLE_ID, null, 200, "user_admin", "user_regular"),
-                new EndpointCase("POST /api/permissions", "POST", "/api/permissions", "{\"code\":\"NEW_PERMISSION\",\"name\":\"New Permission\",\"module\":\"USER\"}", 201, "user_admin", "user_regular"),
-                new EndpointCase("PUT /api/permissions/{id}", "PUT", "/api/permissions/" + SAMPLE_ID, "{\"name\":\"Updated Permission\"}", 200, "user_admin", "user_regular"),
-                new EndpointCase("DELETE /api/permissions/{id}", "DELETE", "/api/permissions/" + SAMPLE_ID, null, 204, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/permissions", "GET", "/api/permissions", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/permissions/lookup", "GET", "/api/permissions/lookup", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/permissions/{id}", "GET", "/api/permissions/" + SAMPLE_ID, null, 200, "user_admin", "ops_user"),
+                new EndpointCase("POST /api/permissions", "POST", "/api/permissions", "{\"code\":\"NEW_PERMISSION\",\"name\":\"New Permission\",\"module\":\"USER\"}", 201, "user_admin", "ops_user"),
+                new EndpointCase("PUT /api/permissions/{id}", "PUT", "/api/permissions/" + SAMPLE_ID, "{\"name\":\"Updated Permission\"}", 200, "user_admin", "ops_user"),
+                new EndpointCase("DELETE /api/permissions/{id}", "DELETE", "/api/permissions/" + SAMPLE_ID, null, 204, "user_admin", "ops_user"),
 
-                new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_support", "user_regular"),
-                new EndpointCase("GET /api/catalog", "GET", "/api/catalog", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/scheduling", "GET", "/api/scheduling", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/scheduling/summary-count", "GET", "/api/scheduling/summary-count", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("POST /api/scheduling/reschedule", "POST", "/api/scheduling/reschedule", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"previousStartAt\":\"2026-01-01T08:00:00Z\",\"newStartAt\":\"2026-01-01T10:00:00Z\",\"reason\":\"Instructor availability\"}", 202, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/enrollment", "GET", "/api/enrollment", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("POST /api/enrollment/register", "POST", "/api/enrollment/register", "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"classGroupId\":\"22222222-2222-2222-2222-222222222222\"}", 201, "user_admin", "user_regular", "test-idem-key"),
-                new EndpointCase("POST /api/enrollment/{id}/cancel", "POST", "/api/enrollment/" + SAMPLE_ID + "/cancel", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/attendance", "GET", "/api/attendance", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("POST /api/attendance/submit", "POST", "/api/attendance/submit", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}", 202, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/billing", "GET", "/api/billing", null, 200, "user_admin", "user_regular"),
-                new EndpointCase("GET /api/notification", "GET", "/api/notification", null, 200, "user_admin", "user_regular")
+                new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_admin", "ops_user"),
+                new EndpointCase("GET /api/catalog", "GET", "/api/catalog", null, 200, "ops_user", "finance_user"),
+                new EndpointCase("GET /api/scheduling", "GET", "/api/scheduling", null, 200, "instructor_user", "guardian_user"),
+                new EndpointCase("GET /api/scheduling/summary-count", "GET", "/api/scheduling/summary-count", null, 200, "ops_user", "guardian_user"),
+                new EndpointCase("POST /api/scheduling/reschedule", "POST", "/api/scheduling/reschedule", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"previousStartAt\":\"2026-01-01T08:00:00Z\",\"newStartAt\":\"2026-01-01T10:00:00Z\",\"reason\":\"Instructor availability\"}", 202, "ops_user", "guardian_user"),
+                new EndpointCase("GET /api/enrollment", "GET", "/api/enrollment", null, 200, "guardian_user", "instructor_user"),
+                new EndpointCase("POST /api/enrollment/register", "POST", "/api/enrollment/register", "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"classGroupId\":\"22222222-2222-2222-2222-222222222222\"}", 201, "ops_user", "guardian_user", "test-idem-key"),
+                new EndpointCase("POST /api/enrollment/{id}/cancel", "POST", "/api/enrollment/" + SAMPLE_ID + "/cancel", null, 200, "ops_user", "guardian_user"),
+                new EndpointCase("GET /api/attendance", "GET", "/api/attendance", null, 200, "guardian_user", "finance_user"),
+                new EndpointCase("POST /api/attendance/submit", "POST", "/api/attendance/submit", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}", 202, "instructor_user", "guardian_user"),
+                new EndpointCase("GET /api/billing", "GET", "/api/billing", null, 200, "finance_user", "instructor_user"),
+                new EndpointCase("GET /api/notification", "GET", "/api/notification", null, 200, "guardian_user", "finance_user")
         );
     }
 
     private static Stream<EndpointCase> publicEndpoints() {
         return Stream.of(
-                new EndpointCase("POST /api/auth/refresh", "POST", "/api/auth/refresh", "{\"refreshToken\":\"dummy-refresh\"}", 200, "user_regular", "user_regular"),
-                new EndpointCase("POST /api/auth/logout", "POST", "/api/auth/logout", "{\"refreshToken\":\"dummy-refresh\"}", 204, "user_regular", "user_regular"),
-                new EndpointCase("POST /api/auth/password-reset/request", "POST", "/api/auth/password-reset/request", "{\"email\":\"public@example.com\",\"mode\":\"OTP\"}", 204, "user_regular", "user_regular")
+                new EndpointCase("POST /api/auth/refresh", "POST", "/api/auth/refresh", "{\"refreshToken\":\"dummy-refresh\"}", 200, "guardian_user", "guardian_user"),
+                new EndpointCase("POST /api/auth/logout", "POST", "/api/auth/logout", "{\"refreshToken\":\"dummy-refresh\"}", 204, "guardian_user", "guardian_user"),
+                new EndpointCase("POST /api/auth/password-reset/request", "POST", "/api/auth/password-reset/request", "{\"email\":\"public@example.com\",\"mode\":\"OTP\"}", 204, "guardian_user", "guardian_user")
         );
     }
 
