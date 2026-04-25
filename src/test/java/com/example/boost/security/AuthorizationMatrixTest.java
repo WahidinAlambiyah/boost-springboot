@@ -2,6 +2,8 @@ package com.example.boost.security;
 
 import com.example.boost.domain.dto.AuthResponse;
 import com.example.boost.domain.dto.IdNameResponse;
+import com.example.boost.domain.dto.PaymentRequest;
+import com.example.boost.domain.dto.PaymentResponse;
 import com.example.boost.domain.dto.PermissionResponse;
 import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.domain.dto.RoleResponse;
@@ -290,6 +292,13 @@ class AuthorizationMatrixTest {
 
         when(billingService.getSummaries()).thenReturn(List.of());
         when(billingService.getWritableSummaryCount()).thenReturn(0L);
+        when(billingService.pay(any(PaymentRequest.class), anyString()))
+                .thenReturn(new PaymentResponse(
+                        SAMPLE_ID,
+                        SAMPLE_ID,
+                        java.math.BigDecimal.valueOf(100000),
+                        "SUCCESS"
+                ));
 
         when(notificationService.getSummaries()).thenReturn(List.of());
         when(notificationService.getWritableSummaryCount()).thenReturn(0L);
@@ -403,16 +412,22 @@ class AuthorizationMatrixTest {
 
                 new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_admin", "ops_user"),
                 new EndpointCase("GET /api/catalog", "GET", "/api/catalog", null, 200, "ops_user", "finance_user"),
+                new EndpointCase("GET /api/catalog/summary-count", "GET", "/api/catalog/summary-count", null, 200, "ops_user", "guardian_user"),
                 new EndpointCase("GET /api/scheduling", "GET", "/api/scheduling", null, 200, "instructor_user", "guardian_user"),
                 new EndpointCase("GET /api/scheduling/summary-count", "GET", "/api/scheduling/summary-count", null, 200, "ops_user", "guardian_user"),
                 new EndpointCase("POST /api/scheduling/reschedule", "POST", "/api/scheduling/reschedule", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"previousStartAt\":\"2026-01-01T08:00:00Z\",\"newStartAt\":\"2026-01-01T10:00:00Z\",\"reason\":\"Instructor availability\"}", 202, "ops_user", "guardian_user"),
                 new EndpointCase("GET /api/enrollment", "GET", "/api/enrollment", null, 200, "guardian_user", "instructor_user"),
+                new EndpointCase("GET /api/enrollment/summary-count", "GET", "/api/enrollment/summary-count", null, 200, "ops_user", "guardian_user"),
                 new EndpointCase("POST /api/enrollment/register", "POST", "/api/enrollment/register", "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"classGroupId\":\"22222222-2222-2222-2222-222222222222\"}", 201, "ops_user", "guardian_user", "test-idem-key"),
                 new EndpointCase("POST /api/enrollment/{id}/cancel", "POST", "/api/enrollment/" + SAMPLE_ID + "/cancel", null, 200, "ops_user", "guardian_user"),
                 new EndpointCase("GET /api/attendance", "GET", "/api/attendance", null, 200, "guardian_user", "finance_user"),
+                new EndpointCase("GET /api/attendance/summary-count", "GET", "/api/attendance/summary-count", null, 200, "instructor_user", "guardian_user"),
                 new EndpointCase("POST /api/attendance/submit", "POST", "/api/attendance/submit", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}", 202, "instructor_user", "guardian_user"),
                 new EndpointCase("GET /api/billing", "GET", "/api/billing", null, 200, "finance_user", "instructor_user"),
-                new EndpointCase("GET /api/notification", "GET", "/api/notification", null, 200, "guardian_user", "finance_user")
+                new EndpointCase("GET /api/billing/summary-count", "GET", "/api/billing/summary-count", null, 200, "finance_user", "guardian_user"),
+                new EndpointCase("POST /api/billing/pay", "POST", "/api/billing/pay", "{\"invoiceId\":\"11111111-1111-1111-1111-111111111111\",\"amount\":250000}", 201, "finance_user", "guardian_user", "billing-idem-key"),
+                new EndpointCase("GET /api/notification", "GET", "/api/notification", null, 200, "guardian_user", "finance_user"),
+                new EndpointCase("GET /api/notification/summary-count", "GET", "/api/notification/summary-count", null, 200, "ops_user", "guardian_user")
         );
     }
 
