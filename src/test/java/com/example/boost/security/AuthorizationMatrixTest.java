@@ -7,6 +7,12 @@ import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.UserIdentifierResponse;
 import com.example.boost.domain.dto.UserResponse;
+import com.example.boost.catalog.application.CatalogService;
+import com.example.boost.scheduling.application.AttendanceService;
+import com.example.boost.scheduling.application.EnrollmentService;
+import com.example.boost.scheduling.application.SchedulingService;
+import com.example.boost.billing.application.BillingService;
+import com.example.boost.notification.application.NotificationService;
 import com.example.boost.iam.application.AuditLogService;
 import com.example.boost.iam.application.AuthService;
 import com.example.boost.iam.application.PasswordResetService;
@@ -41,6 +47,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doNothing;
@@ -106,6 +113,24 @@ class AuthorizationMatrixTest {
     @MockBean
     private UserDetailsService userDetailsService;
 
+    @MockBean
+    private CatalogService catalogService;
+
+    @MockBean
+    private SchedulingService schedulingService;
+
+    @MockBean
+    private EnrollmentService enrollmentService;
+
+    @MockBean
+    private AttendanceService attendanceService;
+
+    @MockBean
+    private BillingService billingService;
+
+    @MockBean
+    private NotificationService notificationService;
+
     private Map<String, TestActor> actors;
 
     @BeforeEach
@@ -117,7 +142,13 @@ class AuthorizationMatrixTest {
                         "USER_READ", "USER_WRITE", "USER_DELETE", "USER_DISABLE", "USER_ENABLE", "USER_UNLOCK",
                         "ROLE_READ", "ROLE_WRITE", "ROLE_DELETE",
                         "PERMISSION_READ", "PERMISSION_WRITE", "PERMISSION_DELETE",
-                        "AUDIT_READ"
+                        "AUDIT_READ",
+                        "CLASS_READ", "CLASS_WRITE",
+                        "SCHEDULE_READ", "SCHEDULE_WRITE",
+                        "ENROLLMENT_READ", "ENROLLMENT_WRITE",
+                        "ATTENDANCE_READ", "ATTENDANCE_MARK",
+                        "BILLING_READ", "BILLING_WRITE",
+                        "NOTIFICATION_READ", "NOTIFICATION_WRITE"
                 )
         );
         TestActor userManager = buildActor(
@@ -209,6 +240,30 @@ class AuthorizationMatrixTest {
         doNothing().when(passwordResetService).resendOtp(any());
         doNothing().when(passwordResetService).confirmWithOtp(any(), anyString(), anyString());
         doNothing().when(passwordResetService).confirmWithToken(anyString(), anyString());
+
+        when(catalogService.getSummaries()).thenReturn(List.of());
+        when(catalogService.getWritableSummaryCount()).thenReturn(0L);
+
+        when(schedulingService.getSummaries()).thenReturn(List.of());
+        when(schedulingService.getWritableSummaryCount()).thenReturn(0L);
+        doNothing().when(schedulingService).reschedule(any(), anyString(), anyString(), anyString());
+
+        when(enrollmentService.getSummaries()).thenReturn(List.of());
+        when(enrollmentService.getWritableSummaryCount()).thenReturn(0L);
+        when(enrollmentService.register(any(), any(), anyString()))
+                .thenReturn(new com.example.boost.domain.dto.EnrollmentActionResponse(SAMPLE_ID, "ENROLLED", null));
+        when(enrollmentService.cancelAndPromote(any()))
+                .thenReturn(new com.example.boost.domain.dto.EnrollmentActionResponse(SAMPLE_ID, "CANCELLED", null));
+
+        when(attendanceService.getSummaries()).thenReturn(List.of());
+        when(attendanceService.getWritableSummaryCount()).thenReturn(0L);
+        doNothing().when(attendanceService).submit(any(), anyString(), anyInt(), anyInt());
+
+        when(billingService.getSummaries()).thenReturn(List.of());
+        when(billingService.getWritableSummaryCount()).thenReturn(0L);
+
+        when(notificationService.getSummaries()).thenReturn(List.of());
+        when(notificationService.getWritableSummaryCount()).thenReturn(0L);
     }
 
     @DisplayName("Protected endpoint: role berhak mendapat status sukses")
@@ -255,6 +310,9 @@ class AuthorizationMatrixTest {
         if (endpointCase.requestBody() != null) {
             builder.contentType(MediaType.APPLICATION_JSON)
                     .content(endpointCase.requestBody());
+        }
+        if (endpointCase.idempotencyKey() != null) {
+            builder.header("Idempotency-Key", endpointCase.idempotencyKey());
         }
         if (token != null) {
             builder.header("Authorization", "Bearer " + token);
@@ -314,7 +372,18 @@ class AuthorizationMatrixTest {
                 new EndpointCase("PUT /api/permissions/{id}", "PUT", "/api/permissions/" + SAMPLE_ID, "{\"name\":\"Updated Permission\"}", 200, "user_admin", "user_regular"),
                 new EndpointCase("DELETE /api/permissions/{id}", "DELETE", "/api/permissions/" + SAMPLE_ID, null, 204, "user_admin", "user_regular"),
 
-                new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_support", "user_regular")
+                new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_support", "user_regular"),
+                new EndpointCase("GET /api/catalog", "GET", "/api/catalog", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/scheduling", "GET", "/api/scheduling", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/scheduling/summary-count", "GET", "/api/scheduling/summary-count", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("POST /api/scheduling/reschedule", "POST", "/api/scheduling/reschedule", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"previousStartAt\":\"2026-01-01T08:00:00Z\",\"newStartAt\":\"2026-01-01T10:00:00Z\",\"reason\":\"Instructor availability\"}", 202, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/enrollment", "GET", "/api/enrollment", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("POST /api/enrollment/register", "POST", "/api/enrollment/register", "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"classGroupId\":\"22222222-2222-2222-2222-222222222222\"}", 201, "user_admin", "user_regular", "test-idem-key"),
+                new EndpointCase("POST /api/enrollment/{id}/cancel", "POST", "/api/enrollment/" + SAMPLE_ID + "/cancel", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/attendance", "GET", "/api/attendance", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("POST /api/attendance/submit", "POST", "/api/attendance/submit", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}", 202, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/billing", "GET", "/api/billing", null, 200, "user_admin", "user_regular"),
+                new EndpointCase("GET /api/notification", "GET", "/api/notification", null, 200, "user_admin", "user_regular")
         );
     }
 
@@ -332,7 +401,18 @@ class AuthorizationMatrixTest {
                                 String requestBody,
                                 int successStatus,
                                 String authorizedActor,
-                                String forbiddenActor) {
+                                String forbiddenActor,
+                                String idempotencyKey) {
+
+        private EndpointCase(String description,
+                             String method,
+                             String path,
+                             String requestBody,
+                             int successStatus,
+                             String authorizedActor,
+                             String forbiddenActor) {
+            this(description, method, path, requestBody, successStatus, authorizedActor, forbiddenActor, null);
+        }
 
         @Override
         public String toString() {
