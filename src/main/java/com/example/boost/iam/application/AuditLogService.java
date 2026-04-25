@@ -2,10 +2,12 @@ package com.example.boost.iam.application;
 
 import com.example.boost.context.RequestContext;
 import com.example.boost.context.RequestContextData;
+import com.example.boost.domain.dto.AuditLogQuery;
 import com.example.boost.domain.dto.AuditLogResponse;
 import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.domain.mapper.AuditLogMapper;
 import com.example.boost.iam.infrastructure.AuditLogRepository;
+import com.example.boost.iam.infrastructure.AuditLogSpecifications;
 import com.example.boost.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -57,8 +58,8 @@ public class AuditLogService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AuditLogResponse> findAllResponses(Specification<AuditLog> specification, Pageable pageable) {
-        return auditLogRepository.findAll(specification, pageable)
+    public Page<AuditLogResponse> findAllResponses(AuditLogQuery query, Pageable pageable) {
+        return auditLogRepository.findAll(AuditLogSpecifications.fromQuery(query), pageable)
                 .map(auditLogMapper::toResponse);
     }
 
