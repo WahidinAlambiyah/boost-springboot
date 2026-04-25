@@ -15,6 +15,7 @@ import com.example.boost.iam.application.AuditLogService;
 import com.example.boost.iam.application.AuthService;
 import com.example.boost.iam.application.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(com.example.boost.security.MethodSecurityConfig.class)
+@Tag("refactor-gate")
 class AuthControllerTest {
 
     @Autowired
