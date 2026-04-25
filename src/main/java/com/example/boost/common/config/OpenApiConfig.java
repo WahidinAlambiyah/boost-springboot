@@ -1,8 +1,6 @@
 package com.example.boost.common.config;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
 
@@ -52,7 +50,13 @@ public class OpenApiConfig {
                         new Tag().name("3. User Management"),
                         new Tag().name("4. Role Management"),
                         new Tag().name("5. Permission Management"),
-                        new Tag().name("6. Audit Log")
+                        new Tag().name("6. Audit Log"),
+                        new Tag().name("7. Catalog"),
+                        new Tag().name("8. Scheduling"),
+                        new Tag().name("9. Enrollment"),
+                        new Tag().name("10. Attendance"),
+                        new Tag().name("11. Billing"),
+                        new Tag().name("12. Notification")
                 ));
     }
 
@@ -67,7 +71,7 @@ public class OpenApiConfig {
 
     @Bean
     @Order(2)
-    public OpenApiCustomizer sortTagsAlphabetically() {
+    public OpenApiCustomizer sortTagsByDefinedOrder() {
         return openApi -> {
             List<String> order = List.of(
                     "1. Authentication",
@@ -75,7 +79,13 @@ public class OpenApiConfig {
                     "3. User Management",
                     "4. Role Management",
                     "5. Permission Management",
-                    "6. Audit Log"
+                    "6. Audit Log",
+                    "7. Catalog",
+                    "8. Scheduling",
+                    "9. Enrollment",
+                    "10. Attendance",
+                    "11. Billing",
+                    "12. Notification"
             );
 
             openApi.setTags(
