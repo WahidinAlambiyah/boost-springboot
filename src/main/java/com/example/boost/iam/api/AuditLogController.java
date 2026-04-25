@@ -1,15 +1,14 @@
 package com.example.boost.iam.api;
 
 import com.example.boost.common.api.ApiResponse;
+import com.example.boost.domain.dto.AuditLogQuery;
 import com.example.boost.domain.dto.AuditLogResponse;
-import com.example.boost.domain.entity.AuditLog;
 import com.example.boost.iam.application.AuditLogService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,17 +40,18 @@ public class AuditLogController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) UUID requestId,
             Pageable pageable) {
-        Specification<AuditLog> specification = Specification.<AuditLog>where((root, query, cb) -> cb.conjunction())
-                .and(actorId == null ? null : (root, query, cb) -> cb.equal(root.get("actorId"), actorId))
-                .and(actorUsername == null ? null : (root, query, cb) -> cb.equal(root.get("actorUsername"), actorUsername))
-                .and(eventType == null ? null : (root, query, cb) -> cb.equal(root.get("eventType"), eventType))
-                .and(action == null ? null : (root, query, cb) -> cb.equal(root.get("action"), action))
-                .and(entityType == null ? null : (root, query, cb) -> cb.equal(root.get("entityType"), entityType))
-                .and(entityId == null ? null : (root, query, cb) -> cb.equal(root.get("entityId"), entityId))
-                .and(status == null ? null : (root, query, cb) -> cb.equal(root.get("status"), status))
-                .and(requestId == null ? null : (root, query, cb) -> cb.equal(root.get("requestId"), requestId));
+        AuditLogQuery query = AuditLogQuery.builder()
+                .actorId(actorId)
+                .actorUsername(actorUsername)
+                .eventType(eventType)
+                .action(action)
+                .entityType(entityType)
+                .entityId(entityId)
+                .status(status)
+                .requestId(requestId)
+                .build();
 
-        Page<AuditLogResponse> page = auditLogService.findAllResponses(specification, pageable);
+        Page<AuditLogResponse> page = auditLogService.findAllResponses(query, pageable);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Audit logs retrieved", page));
     }
 }
