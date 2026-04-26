@@ -37,7 +37,7 @@ export default function AuthBootstrap({ children }: AuthBootstrapProps) {
       }
 
       if (success && pathname === "/login") {
-        router.replace("/");
+        router.replace("/dashboard");
       }
 
       setBootstrapped(true);

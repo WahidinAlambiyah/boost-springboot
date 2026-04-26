@@ -1,57 +1,77 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { can, canAll, canAny } from "@/lib/permissions";
+import { canAny } from "@/lib/permissions";
 import { useAuthStore } from "@/store/auth";
 
 interface NavigationItem {
   label: string;
   href: string;
-  visible: (authorities: string[]) => boolean;
+  permissions?: string[];
 }
 
 const navigationItems: NavigationItem[] = [
   {
     label: "Dashboard",
-    href: "/",
-    visible: () => true,
+    href: "/dashboard",
   },
   {
-    label: "Users",
-    href: "/users",
-    visible: (authorities) => can(authorities, "users:read"),
+    label: "Catalog",
+    href: "/catalog",
+    permissions: ["CLASS_READ", "CLASS_WRITE"],
   },
   {
-    label: "Audit Logs",
-    href: "/audit-logs",
-    visible: (authorities) => canAny(authorities, ["audit:read", "audit:export"]),
+    label: "Enrollment",
+    href: "/enrollment",
+    permissions: ["ENROLLMENT_READ", "ENROLLMENT_WRITE"],
   },
   {
-    label: "Settings",
-    href: "/settings",
-    visible: (authorities) => canAll(authorities, ["settings:read", "settings:update"]),
+    label: "Attendance",
+    href: "/attendance",
+    permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"],
+  },
+  {
+    label: "Billing",
+    href: "/billing",
+    permissions: ["BILLING_READ", "BILLING_WRITE"],
   },
 ];
 
 export default function NavigationSidebar() {
+  const pathname = usePathname();
   const authorities = useAuthStore((state) => state.authorities);
 
-  const visibleItems = navigationItems.filter((item) => item.visible(authorities));
+  const visibleItems = navigationItems.filter((item) => {
+    if (!item.permissions) {
+      return true;
+    }
+
+    return canAny(authorities, item.permissions);
+  });
 
   return (
     <aside className="w-64 border-r border-zinc-200 bg-white p-4">
       <p className="mb-3 text-sm font-semibold uppercase text-zinc-500">Navigation</p>
       <nav className="flex flex-col gap-2">
-        {visibleItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
-          >
-            {item.label}
-          </Link>
-        ))}
+        {visibleItems.map((item) => {
+          const isActive = pathname === item.href;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`rounded-md px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? "bg-zinc-900 text-white"
+                  : "text-zinc-700 hover:bg-zinc-100"
+              }`}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );
