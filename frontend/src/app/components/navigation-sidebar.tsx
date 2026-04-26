@@ -33,6 +33,11 @@ const navigationItems: NavigationItem[] = [
     permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"],
   },
   {
+    label: "Scheduling",
+    href: "/scheduling",
+    permissions: ["SCHEDULE_READ", "SCHEDULE_WRITE"],
+  },
+  {
     label: "Billing",
     href: "/billing",
     permissions: ["BILLING_READ", "BILLING_WRITE"],
