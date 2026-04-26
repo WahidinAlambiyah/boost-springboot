@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/014-enrollment-optimistic-locking-and-idempotency.yaml
   - changeSet:
       id: 014-001-add-version-and-waitlist-columns
       author: codex

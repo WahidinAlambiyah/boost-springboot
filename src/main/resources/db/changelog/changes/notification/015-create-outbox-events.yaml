@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/015-create-outbox-events.yaml
   - changeSet:
       id: 015-001-create-outbox-events
       author: codex

@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/012-add-academic-ops-permissions.yaml
   - changeSet:
       id: 012-add-academic-ops-permissions
       author: codex

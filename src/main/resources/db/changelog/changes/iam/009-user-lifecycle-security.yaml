@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/009-user-lifecycle-security.yaml
   - changeSet:
       id: 009-add-user-lifecycle-fields
       author: boost

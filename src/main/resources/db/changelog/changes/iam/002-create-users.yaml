@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/002-create-users.yaml
+#   - changeSet:
+#       id: 002-000-enable-pgcrypto
+#       author: boost
+#       changes:
+#         - createSchema:
+#             schemaName: fastworks_springboot
+#         - sql:
+#             dbms: postgresql
+#             sql: create extension if not exists pgcrypto;
+  - changeSet:
+      id: 002-create-users-table
+      author: boost
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password_hash
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: varchar(255)
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_at
+                  type: timestamptz
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_username
+            columns:
+              - column:
+                  name: username
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_email
+            columns:
+              - column:
+                  name: email
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: users
+            indexName: idx_users_deleted_at
+            columns:
+              - column:
+                  name: deleted_at

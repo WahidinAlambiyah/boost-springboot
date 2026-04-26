@@ -1,4 +1,5 @@
 databaseChangeLog:
+  - logicalFilePath: db/changelog/changes/008-create-audit-log.yaml
   - changeSet:
       id: 008-create-audit-log-table
       author: boost

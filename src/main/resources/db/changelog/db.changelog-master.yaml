@@ -1,30 +1,30 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changes/002-create-users.yaml
+      file: db/changelog/changes/iam/002-create-users.yaml
   - include:
-      file: db/changelog/changes/003-create-roles.yaml
+      file: db/changelog/changes/iam/003-create-roles.yaml
   - include:
-      file: db/changelog/changes/004-create-permissions.yaml
+      file: db/changelog/changes/iam/004-create-permissions.yaml
   - include:
-      file: db/changelog/changes/005-create-user_roles.yaml
+      file: db/changelog/changes/iam/005-create-user_roles.yaml
   - include:
-      file: db/changelog/changes/006-create-role_permissions.yaml
+      file: db/changelog/changes/iam/006-create-role_permissions.yaml
   - include:
-      file: db/changelog/changes/007-seed-default-rbac.yaml
+      file: db/changelog/changes/iam/007-seed-default-rbac.yaml
   - include:
-      file: db/changelog/changes/008-create-audit-log.yaml
+      file: db/changelog/changes/iam/008-create-audit-log.yaml
   - include:
-      file: db/changelog/changes/009-user-lifecycle-security.yaml
+      file: db/changelog/changes/iam/009-user-lifecycle-security.yaml
   - include:
-      file: db/changelog/changes/010-add-password-changed-at.yaml
+      file: db/changelog/changes/iam/010-add-password-changed-at.yaml
   - include:
-      file: db/changelog/changes/011-create-password-reset-requests.yaml
+      file: db/changelog/changes/iam/011-create-password-reset-requests.yaml
   - include:
-      file: db/changelog/changes/012-add-academic-ops-permissions.yaml
-  - include:
-      file: db/changelog/changes/013-create-academic-core-and-billing.yaml
+      file: db/changelog/changes/iam/012-add-academic-ops-permissions.yaml
 
   - include:
-      file: db/changelog/changes/014-enrollment-optimistic-locking-and-idempotency.yaml
+      file: db/changelog/changes/academic/013-create-academic-core-and-billing.yaml
   - include:
-      file: db/changelog/changes/015-create-outbox-events.yaml
+      file: db/changelog/changes/scheduling/014-enrollment-optimistic-locking-and-idempotency.yaml
+  - include:
+      file: db/changelog/changes/notification/015-create-outbox-events.yaml
