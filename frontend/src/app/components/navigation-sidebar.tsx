@@ -42,6 +42,11 @@ const navigationItems: NavigationItem[] = [
     href: "/billing",
     permissions: ["BILLING_READ", "BILLING_WRITE"],
   },
+  {
+    label: "Notification",
+    href: "/notification",
+    permissions: ["NOTIFICATION_READ", "NOTIFICATION_WRITE"],
+  },
 ];
 
 export default function NavigationSidebar() {

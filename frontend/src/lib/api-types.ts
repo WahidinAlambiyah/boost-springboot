@@ -49,6 +49,30 @@ export interface ReschedulePayload {
   reason?: string;
 }
 
+export interface BillingSummary {
+  code: string;
+  name: string;
+  status: string;
+}
+
+export interface PaymentPayload {
+  invoiceId: string;
+  amount: number;
+}
+
+export interface PaymentResponse {
+  paymentId: string;
+  invoiceId: string;
+  amount: number;
+  status: string;
+}
+
+export interface NotificationSummary {
+  code: string;
+  name: string;
+  status: string;
+}
+
 export interface ValidationErrorPayload {
   errors?: Record<string, string>;
 }
