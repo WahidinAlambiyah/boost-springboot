@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
+import { logoutSession } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 
 export default function Topbar() {
@@ -9,7 +10,8 @@ export default function Topbar() {
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutSession();
     clearSession();
     router.replace("/login");
   };
