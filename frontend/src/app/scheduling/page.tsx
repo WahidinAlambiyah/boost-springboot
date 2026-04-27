@@ -4,7 +4,8 @@ import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
-import { ApiResponse, ReschedulePayload, SchedulingSummary } from "@/lib/api-types";
+import { ReschedulePayload, SchedulingSummary } from "@/lib/api-types";
+import { ApiResponse } from "@/types/api";
 import {
   parseErrorMessage,
   parseValidationErrors,

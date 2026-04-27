@@ -4,11 +4,8 @@ import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
-import {
-  ApiResponse,
-  AttendanceSubmitPayload,
-  AttendanceSummary,
-} from "@/lib/api-types";
+import { AttendanceSubmitPayload, AttendanceSummary } from "@/lib/api-types";
+import { ApiResponse } from "@/types/api";
 import { api } from "@/lib/api";
 import {
   parseErrorMessage,

@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
-import { ApiResponse, NotificationSummary } from "@/lib/api-types";
+import { NotificationSummary } from "@/lib/api-types";
+import { ApiResponse } from "@/types/api";
 import { api } from "@/lib/api";
 import { useStandardErrorRedirect } from "@/lib/error-handler";
 

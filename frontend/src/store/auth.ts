@@ -6,30 +6,15 @@ import {
   refreshAccessToken,
   setAuthTokens,
 } from "@/lib/api";
+import { ApiResponse, UserProfileResponse } from "@/types/api";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
-interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  isActive: boolean;
-  roles: string[];
-  permissions: string[];
-  createdAt: string;
-}
-
-interface ApiResponse<T> {
-  status: number;
-  message: string;
-  data: T;
-}
-
 interface AuthStore {
   status: AuthStatus;
-  user: UserProfile | null;
+  user: UserProfileResponse | null;
   authorities: string[];
-  hydrateSession: (payload: UserProfile) => void;
+  hydrateSession: (payload: UserProfileResponse) => void;
   clearSession: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   initializeSession: () => Promise<boolean>;
@@ -75,7 +60,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
 
     try {
-      const profileResponse = await api.get<ApiResponse<UserProfile>>("/api/users/me");
+      const profileResponse = await api.get<ApiResponse<UserProfileResponse>>("/api/users/me");
       const profile = profileResponse.data.data;
 
       set({
