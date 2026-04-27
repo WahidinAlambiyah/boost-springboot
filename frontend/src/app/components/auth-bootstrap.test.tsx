@@ -1,6 +1,7 @@
 import { render, waitFor } from "@testing-library/react";
 
 import AuthBootstrap from "@/app/components/auth-bootstrap";
+import { bootstrapSession } from "@/features/auth/bootstrapSession";
 
 const replace = vi.fn();
 const usePathnameMock = vi.fn();
@@ -8,7 +9,6 @@ const usePathnameMock = vi.fn();
 const mockStore = {
   status: "loading" as "loading" | "authenticated" | "unauthenticated",
   authorities: [] as string[],
-  initializeSession: vi.fn<() => Promise<boolean>>(),
 };
 
 vi.mock("next/navigation", () => ({
@@ -16,6 +16,10 @@ vi.mock("next/navigation", () => ({
     replace,
   }),
   usePathname: () => usePathnameMock(),
+}));
+
+vi.mock("@/features/auth/bootstrapSession", () => ({
+  bootstrapSession: vi.fn<() => Promise<boolean>>(),
 }));
 
 vi.mock("@/store/auth", () => ({
@@ -27,12 +31,15 @@ describe("AuthBootstrap route guard", () => {
     vi.clearAllMocks();
     mockStore.status = "loading";
     mockStore.authorities = [];
-    mockStore.initializeSession.mockReset();
+    vi.mocked(bootstrapSession).mockResolvedValue(true);
   });
 
   it("redirects unauthenticated users to /login for private routes", async () => {
     usePathnameMock.mockReturnValue("/dashboard");
-    mockStore.initializeSession.mockResolvedValue(false);
+    vi.mocked(bootstrapSession).mockImplementation(async () => {
+      mockStore.status = "unauthenticated";
+      return false;
+    });
 
     render(
       <AuthBootstrap>
@@ -47,7 +54,10 @@ describe("AuthBootstrap route guard", () => {
 
   it("redirects authenticated users away from /login", async () => {
     usePathnameMock.mockReturnValue("/login");
-    mockStore.initializeSession.mockResolvedValue(true);
+    vi.mocked(bootstrapSession).mockImplementation(async () => {
+      mockStore.status = "authenticated";
+      return true;
+    });
 
     render(
       <AuthBootstrap>
@@ -62,8 +72,10 @@ describe("AuthBootstrap route guard", () => {
 
   it("redirects unauthorized admin access to /forbidden", async () => {
     usePathnameMock.mockReturnValue("/admin");
-    mockStore.initializeSession.mockResolvedValue(true);
-    mockStore.status = "authenticated";
+    vi.mocked(bootstrapSession).mockImplementation(async () => {
+      mockStore.status = "authenticated";
+      return true;
+    });
     mockStore.authorities = ["CLASS_READ"];
 
     render(

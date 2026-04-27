@@ -1,12 +1,10 @@
 import { create } from "zustand";
 
 import {
-  api,
   clearAuthTokens,
-  refreshAccessToken,
   setAuthTokens,
 } from "@/lib/api";
-import { ApiResponse, UserProfileResponse } from "@/types/api";
+import { UserProfileResponse } from "@/types/api";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -17,7 +15,6 @@ interface AuthStore {
   hydrateSession: (payload: UserProfileResponse) => void;
   clearSession: () => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
-  initializeSession: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -43,41 +40,5 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   setTokens: (accessToken, refreshToken) => {
     setAuthTokens({ accessToken, refreshToken });
-  },
-
-  initializeSession: async () => {
-    set({ status: "loading" });
-
-    const refreshed = await refreshAccessToken();
-    if (!refreshed) {
-      clearAuthTokens();
-      set({
-        status: "unauthenticated",
-        user: null,
-        authorities: [],
-      });
-      return false;
-    }
-
-    try {
-      const profileResponse = await api.get<ApiResponse<UserProfileResponse>>("/api/users/me");
-      const profile = profileResponse.data.data;
-
-      set({
-        status: "authenticated",
-        user: profile,
-        authorities: profile.permissions ?? [],
-      });
-
-      return true;
-    } catch {
-      clearAuthTokens();
-      set({
-        status: "unauthenticated",
-        user: null,
-        authorities: [],
-      });
-      return false;
-    }
   },
 }));

@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { bootstrapSession } from "@/features/auth/bootstrapSession";
 import { can } from "@/lib/permissions";
 import { useAuthStore } from "@/store/auth";
 
@@ -17,7 +18,6 @@ export default function AuthBootstrap({ children }: AuthBootstrapProps) {
   const pathname = usePathname();
   const status = useAuthStore((state) => state.status);
   const authorities = useAuthStore((state) => state.authorities);
-  const initializeSession = useAuthStore((state) => state.initializeSession);
   const [bootstrapped, setBootstrapped] = useState(false);
 
   const isPublicRoute = useMemo(() => publicRoutes.has(pathname), [pathname]);
@@ -26,18 +26,10 @@ export default function AuthBootstrap({ children }: AuthBootstrapProps) {
     let isMounted = true;
 
     const bootstrap = async () => {
-      const success = await initializeSession();
+      await bootstrapSession();
 
       if (!isMounted) {
         return;
-      }
-
-      if (!success && !isPublicRoute) {
-        router.replace("/login");
-      }
-
-      if (success && pathname === "/login") {
-        router.replace("/dashboard");
       }
 
       setBootstrapped(true);
@@ -48,7 +40,21 @@ export default function AuthBootstrap({ children }: AuthBootstrapProps) {
     return () => {
       isMounted = false;
     };
-  }, [initializeSession, isPublicRoute, pathname, router]);
+  }, []);
+
+  useEffect(() => {
+    if (!bootstrapped) {
+      return;
+    }
+
+    if (status === "unauthenticated" && !isPublicRoute) {
+      router.replace("/login");
+    }
+
+    if (status === "authenticated" && pathname === "/login") {
+      router.replace("/dashboard");
+    }
+  }, [bootstrapped, isPublicRoute, pathname, router, status]);
 
   useEffect(() => {
     if (!bootstrapped || status !== "authenticated") {
