@@ -1,12 +1,11 @@
-import { api, refreshAccessToken } from "@/lib/api";
+import { authService } from "@/features/auth/auth.service";
 import { useAuthStore } from "@/store/auth";
-import { ApiResponse, UserProfileResponse } from "@/types/api";
 
 export const bootstrapSession = async (): Promise<boolean> => {
   useAuthStore.setState({ status: "loading" });
 
   const { hydrateSession, clearSession } = useAuthStore.getState();
-  const refreshed = await refreshAccessToken();
+  const refreshed = await authService.refresh();
 
   if (!refreshed) {
     clearSession();
@@ -14,8 +13,8 @@ export const bootstrapSession = async (): Promise<boolean> => {
   }
 
   try {
-    const profileResponse = await api.get<ApiResponse<UserProfileResponse>>("/api/users/me");
-    hydrateSession(profileResponse.data.data);
+    const profile = await authService.me();
+    hydrateSession(profile);
     return true;
   } catch {
     clearSession();
