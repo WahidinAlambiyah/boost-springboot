@@ -17,6 +17,7 @@ const moduleLinks: ModuleLink[] = [
   { label: "Enrollment", href: "/enrollment", permissions: ["ENROLLMENT_READ", "ENROLLMENT_WRITE"] },
   { label: "Attendance", href: "/attendance", permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"] },
   { label: "Billing", href: "/billing", permissions: ["BILLING_READ", "BILLING_WRITE"] },
+  { label: "Notification", href: "/notification", permissions: ["NOTIFICATION_READ", "NOTIFICATION_WRITE"] },
 ];
 
 export default function DashboardPage() {
