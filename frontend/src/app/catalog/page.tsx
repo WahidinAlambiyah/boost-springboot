@@ -3,7 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
-import { ApiResponse, CatalogSummary } from "@/lib/api-types";
+import { CatalogSummary } from "@/lib/api-types";
+import { ApiResponse } from "@/types/api";
 import { useStandardErrorRedirect } from "@/lib/error-handler";
 import { api } from "@/lib/api";
 

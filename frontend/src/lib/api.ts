@@ -1,19 +1,14 @@
 import axios, {
   AxiosError,
   AxiosHeaders,
-  InternalAxiosRequestConfig,
 } from "axios";
 
-interface ApiResponse<T> {
-  status: number;
-  message: string;
-  data: T;
-}
+import { ApiResponse, AuthResponse } from "@/types/api";
 
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
 }
 
 const ACCESS_TOKEN_KEY = "accessToken";
@@ -117,7 +112,7 @@ export const getRefreshToken = () => {
   return legacyRefreshToken;
 };
 
-export const setAuthTokens = (tokens: Partial<AuthTokens>) => {
+export const setAuthTokens = (tokens: Partial<AuthResponse>) => {
   const storage = getStorage();
 
   if (typeof tokens.accessToken === "string") {
@@ -177,7 +172,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await axios.post<ApiResponse<AuthTokens>>(
+    const response = await axios.post<ApiResponse<AuthResponse>>(
       `${API_BASE_URL}/api/auth/refresh`,
       { refreshToken },
       {
@@ -219,9 +214,7 @@ export const logoutSession = async (): Promise<void> => {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as
-      | (InternalAxiosRequestConfig & { _retry?: boolean })
-      | undefined;
+    const originalRequest = error.config;
 
     if (!originalRequest || error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);

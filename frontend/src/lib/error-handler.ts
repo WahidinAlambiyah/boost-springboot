@@ -3,29 +3,23 @@
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 
-import { ValidationErrorPayload } from "@/lib/api-types";
-
-interface ApiErrorBody {
-  status?: number;
-  message?: string;
-  data?: ValidationErrorPayload;
-}
+import { ErrorResponse } from "@/types/api";
 
 export const parseValidationErrors = (error: unknown): Record<string, string> => {
-  if (!(error instanceof AxiosError)) {
+  if (!(error instanceof AxiosError<ErrorResponse>)) {
     return {};
   }
 
-  const body = error.response?.data as ApiErrorBody | undefined;
+  const body = error.response?.data;
   return body?.data?.errors ?? {};
 };
 
 export const parseErrorMessage = (error: unknown): string => {
-  if (!(error instanceof AxiosError)) {
+  if (!(error instanceof AxiosError<ErrorResponse>)) {
     return "Terjadi kesalahan tidak terduga.";
   }
 
-  const body = error.response?.data as ApiErrorBody | undefined;
+  const body = error.response?.data;
   return body?.message ?? "Terjadi kesalahan tidak terduga.";
 };
 
