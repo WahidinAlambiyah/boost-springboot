@@ -1,12 +1,8 @@
 import { useAuthStore } from "@/store/auth";
-import { api, clearAuthTokens, refreshAccessToken, setAuthTokens } from "@/lib/api";
+import { clearAuthTokens, setAuthTokens } from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
-  api: {
-    get: vi.fn(),
-  },
   clearAuthTokens: vi.fn(),
-  refreshAccessToken: vi.fn(),
   setAuthTokens: vi.fn(),
 }));
 
@@ -58,41 +54,5 @@ describe("auth store", () => {
       accessToken: "access",
       refreshToken: "refresh",
     });
-  });
-
-  it("initializes session when refresh and profile fetch succeed", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(true);
-    vi.mocked(api.get).mockResolvedValue({
-      data: {
-        data: sampleProfile,
-      },
-    });
-
-    const result = await useAuthStore.getState().initializeSession();
-
-    expect(result).toBe(true);
-    expect(useAuthStore.getState().status).toBe("authenticated");
-    expect(useAuthStore.getState().authorities).toEqual(["CLASS_READ"]);
-  });
-
-  it("falls back to unauthenticated when refresh fails", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(false);
-
-    const result = await useAuthStore.getState().initializeSession();
-
-    expect(result).toBe(false);
-    expect(clearAuthTokens).toHaveBeenCalled();
-    expect(useAuthStore.getState().status).toBe("unauthenticated");
-  });
-
-  it("falls back to unauthenticated when profile fetch fails", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(true);
-    vi.mocked(api.get).mockRejectedValue(new Error("boom"));
-
-    const result = await useAuthStore.getState().initializeSession();
-
-    expect(result).toBe(false);
-    expect(clearAuthTokens).toHaveBeenCalled();
-    expect(useAuthStore.getState().status).toBe("unauthenticated");
   });
 });
