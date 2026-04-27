@@ -1,13 +1,12 @@
 import { bootstrapSession } from "@/features/auth/bootstrapSession";
-import { api, refreshAccessToken } from "@/lib/api";
+import { authService } from "@/features/auth/auth.service";
 import { useAuthStore } from "@/store/auth";
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: vi.fn(),
+vi.mock("@/features/auth/auth.service", () => ({
+  authService: {
+    refresh: vi.fn(),
+    me: vi.fn(),
   },
-  refreshAccessToken: vi.fn(),
-  clearAuthTokens: vi.fn(),
 }));
 
 const sampleProfile = {
@@ -27,16 +26,13 @@ describe("bootstrapSession", () => {
       status: "unauthenticated",
       user: null,
       authorities: [],
+      token: null,
     });
   });
 
   it("hydrates authenticated session when refresh and profile fetch succeed", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(true);
-    vi.mocked(api.get).mockResolvedValue({
-      data: {
-        data: sampleProfile,
-      },
-    });
+    vi.mocked(authService.refresh).mockResolvedValue(true);
+    vi.mocked(authService.me).mockResolvedValue(sampleProfile);
 
     const result = await bootstrapSession();
 
@@ -46,7 +42,7 @@ describe("bootstrapSession", () => {
   });
 
   it("clears session when refresh fails", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(false);
+    vi.mocked(authService.refresh).mockResolvedValue(false);
 
     const result = await bootstrapSession();
 
@@ -56,8 +52,8 @@ describe("bootstrapSession", () => {
   });
 
   it("clears session when profile fetch fails", async () => {
-    vi.mocked(refreshAccessToken).mockResolvedValue(true);
-    vi.mocked(api.get).mockRejectedValue(new Error("boom"));
+    vi.mocked(authService.refresh).mockResolvedValue(true);
+    vi.mocked(authService.me).mockRejectedValue(new Error("boom"));
 
     const result = await bootstrapSession();
 
