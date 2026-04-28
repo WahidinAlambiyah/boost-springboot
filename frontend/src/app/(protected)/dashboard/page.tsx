@@ -14,6 +14,7 @@ interface ModuleLink {
 
 const moduleLinks: ModuleLink[] = [
   { label: "Catalog", href: "/catalog", permissions: ["CLASS_READ", "CLASS_WRITE"] },
+  { label: "Scheduling", href: "/scheduling", permissions: ["SCHEDULE_READ", "SCHEDULE_WRITE"] },
   { label: "Enrollment", href: "/enrollment", permissions: ["ENROLLMENT_READ", "ENROLLMENT_WRITE"] },
   { label: "Attendance", href: "/attendance", permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"] },
   { label: "Billing", href: "/billing", permissions: ["BILLING_READ", "BILLING_WRITE"] },
