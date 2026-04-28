@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { bootstrapSession } from "@/features/auth/bootstrapSession";
-import { can } from "@/lib/permissions";
+import { hasAdminAccess } from "@/lib/admin-guard";
 import { useAuthStore } from "@/store/auth";
 
 interface AuthBootstrapProps {
@@ -61,7 +61,7 @@ export default function AuthBootstrap({ children }: AuthBootstrapProps) {
       return;
     }
 
-    if (pathname.startsWith("/admin") && !can(authorities, "admin:access")) {
+    if (pathname.startsWith("/admin") && !hasAdminAccess(authorities)) {
       router.replace("/forbidden");
     }
   }, [authorities, bootstrapped, pathname, router, status]);
