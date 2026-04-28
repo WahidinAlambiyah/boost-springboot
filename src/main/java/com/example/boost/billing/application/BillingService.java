@@ -1,17 +1,21 @@
 package com.example.boost.billing.application;
 
+import com.example.boost.billing.infrastructure.BillingRepository;
+import com.example.boost.billing.infrastructure.PaymentJpaRepository;
+import com.example.boost.common.exception.BadRequestException;
 import com.example.boost.domain.dto.BillingSummaryResponse;
 import com.example.boost.domain.dto.PaymentRequest;
 import com.example.boost.domain.dto.PaymentResponse;
 import com.example.boost.domain.entity.Payment;
 import com.example.boost.domain.entity.PaymentStatus;
-import com.example.boost.common.exception.BadRequestException;
 import com.example.boost.notification.application.OutboxEventService;
-import com.example.boost.billing.infrastructure.BillingRepository;
-import com.example.boost.billing.infrastructure.PaymentJpaRepository;
 import com.example.boost.scheduling.application.IdempotencyService;
+import com.example.boost.security.CurrentActor;
+import com.example.boost.security.CurrentActorProvider;
+import com.example.boost.security.ScopeGuardRepository;
 import com.example.boost.service.DomainMetricsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,22 +35,37 @@ public class BillingService {
     private final IdempotencyService idempotencyService;
     private final OutboxEventService outboxEventService;
     private final DomainMetricsService domainMetricsService;
+    private final CurrentActorProvider currentActorProvider;
+    private final ScopeGuardRepository scopeGuardRepository;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('BILLING_READ')")
     public List<BillingSummaryResponse> getSummaries() {
-        return billingRepository.findSummaries();
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        if (actor.hasRole("FINANCE") || actor.hasRole("OPS") || actor.hasRole("ADMIN")) {
+            return billingRepository.findSummaries(actor.userId(), false);
+        }
+        return billingRepository.findSummaries(actor.userId(), actor.hasRole("GUARDIAN"));
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('BILLING_WRITE')")
     public long getWritableSummaryCount() {
-        return billingRepository.findSummaries().size();
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        if (!scopeGuardRepository.financeOrOpsAllowedForBilling(actor)) {
+            throw new AccessDeniedException("Forbidden");
+        }
+        return billingRepository.findSummaries(actor.userId(), false).size();
     }
 
     @Transactional
     @PreAuthorize("hasAuthority('BILLING_WRITE')")
     public PaymentResponse pay(PaymentRequest request, String idempotencyKey) {
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        if (!scopeGuardRepository.financeOrOpsAllowedForBilling(actor)) {
+            throw new AccessDeniedException("Forbidden");
+        }
+
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             throw new BadRequestException("Idempotency-Key header is required");
         }

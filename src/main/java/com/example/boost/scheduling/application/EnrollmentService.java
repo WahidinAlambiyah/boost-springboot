@@ -1,25 +1,29 @@
 package com.example.boost.scheduling.application;
 
+import com.example.boost.catalog.application.port.CatalogQueryService;
+import com.example.boost.common.exception.BadRequestException;
+import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.domain.dto.EnrollmentActionResponse;
 import com.example.boost.domain.dto.EnrollmentSummaryResponse;
 import com.example.boost.domain.entity.ClassGroup;
 import com.example.boost.domain.entity.Enrollment;
 import com.example.boost.domain.entity.EnrollmentStatus;
-import com.example.boost.common.exception.BadRequestException;
-import com.example.boost.common.exception.NotFoundException;
-import com.example.boost.catalog.application.port.CatalogQueryService;
 import com.example.boost.notification.application.OutboxEventService;
-import com.example.boost.service.DomainMetricsService;
 import com.example.boost.scheduling.infrastructure.EnrollmentJpaRepository;
 import com.example.boost.scheduling.infrastructure.EnrollmentRepository;
+import com.example.boost.security.CurrentActor;
+import com.example.boost.security.CurrentActorProvider;
+import com.example.boost.security.ScopeGuardRepository;
+import com.example.boost.service.DomainMetricsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,22 +40,31 @@ public class EnrollmentService {
     private final IdempotencyService idempotencyService;
     private final OutboxEventService outboxEventService;
     private final DomainMetricsService domainMetricsService;
+    private final CurrentActorProvider currentActorProvider;
+    private final ScopeGuardRepository scopeGuardRepository;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ENROLLMENT_READ')")
     public List<EnrollmentSummaryResponse> getSummaries() {
-        return enrollmentRepository.findSummaries();
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        return enrollmentRepository.findSummaries(actor.userId(), actor.hasRole("GUARDIAN"));
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ENROLLMENT_WRITE')")
     public long getWritableSummaryCount() {
-        return enrollmentRepository.findSummaries().size();
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        return enrollmentRepository.findSummaries(actor.userId(), actor.hasRole("GUARDIAN")).size();
     }
 
     @Transactional
     @PreAuthorize("hasAuthority('ENROLLMENT_WRITE')")
     public EnrollmentActionResponse register(UUID studentId, UUID classGroupId, String idempotencyKey) {
+        CurrentActor actor = currentActorProvider.getCurrentActor();
+        if (actor.hasRole("GUARDIAN") && !scopeGuardRepository.guardianOwnsStudent(actor.userId(), studentId)) {
+            throw new AccessDeniedException("Forbidden");
+        }
+
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             throw new BadRequestException("Idempotency-Key header is required");
         }
