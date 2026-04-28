@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, ErrorInfo, ReactNode } from "react";
+import { logClientRuntimeError } from "@/lib/client-observability";
 
 interface AppErrorBoundaryProps {
   children: ReactNode;
@@ -21,6 +22,12 @@ export default class AppErrorBoundary extends Component<AppErrorBoundaryProps, A
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Unhandled app error", error, errorInfo);
+    logClientRuntimeError({
+      source: "react.error-boundary",
+      message: error.message,
+      stack: `${error.stack ?? ""}
+${errorInfo.componentStack ?? ""}`.trim(),
+    });
   }
 
   private handleRetry = () => {

@@ -32,17 +32,39 @@ Dokumen ini men-standardisasi setup frontend (Next.js) dari repo `frontend` ke V
 
 5. Catat output domain Vercel (contoh: `boost-frontend-abc123.vercel.app`) untuk dipakai sebagai target CNAME Cloudflare.
 
-## 2) Set environment production `NEXT_PUBLIC_API_URL`
+## 2) Set environment Vercel untuk dev/staging/prod
 
-Set environment variable production ke domain backend API (contoh: `https://api.domainkamu.com`).
+Gunakan variable publik berikut untuk frontend:
+
+- `NEXT_PUBLIC_APP_ENV`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT`
+
+Contoh matrix value:
+
+| Environment Vercel | NEXT_PUBLIC_APP_ENV | NEXT_PUBLIC_API_URL | NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT |
+|---|---|---|---|
+| Development (Preview) | `development` | `https://api-dev.domainkamu.com` | `https://api-dev.domainkamu.com/observability/runtime-errors` |
+| Staging (Preview) | `staging` | `https://api-staging.domainkamu.com` | `https://api-staging.domainkamu.com/observability/runtime-errors` |
+| Production | `production` | `https://api.domainkamu.com` | `https://api.domainkamu.com/observability/runtime-errors` |
 
 ### Opsi A — via CLI (direkomendasikan)
 
 ```bash
+# Development preview
+printf 'development' | vercel env add NEXT_PUBLIC_APP_ENV preview
+printf 'https://api-dev.domainkamu.com' | vercel env add NEXT_PUBLIC_API_URL preview
+printf 'https://api-dev.domainkamu.com/observability/runtime-errors' | vercel env add NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT preview
+
+# Production
+printf 'production' | vercel env add NEXT_PUBLIC_APP_ENV production
 printf 'https://api.domainkamu.com' | vercel env add NEXT_PUBLIC_API_URL production
+printf 'https://api.domainkamu.com/observability/runtime-errors' | vercel env add NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT production
 ```
 
-Jika sudah ada value lama dan ingin update, gunakan dashboard Vercel (Environment Variables) untuk edit value, lalu redeploy production:
+> Jika preview dipakai untuk **dev** dan **staging** sekaligus, pisahkan by branch environment (mis. `develop` vs `staging`) di Vercel dashboard.
+
+Setelah update env, redeploy:
 
 ```bash
 vercel --prod
@@ -51,20 +73,33 @@ vercel --prod
 ### Opsi B — via Dashboard Vercel
 
 - Project Settings → Environment Variables.
-- Tambahkan `NEXT_PUBLIC_API_URL`.
-- Environment: **Production**.
-- Redeploy deployment production terbaru.
+- Tambahkan semua variable di atas untuk scope **Preview** dan **Production**.
+- Gunakan branch filtering untuk membedakan dev/staging bila diperlukan.
+- Redeploy deployment terbaru setelah perubahan env.
 
-## 3) Atur DNS Cloudflare
+## 3) Atur DNS Cloudflare untuk domain `app.*`
+
+### A. Subdomain utama (`app.domainkamu.com`)
 
 Tambahkan record di zone Cloudflare:
 
 - **Type**: CNAME
-- **Name**: `app` (untuk `app.domainkamu.com`)
+- **Name**: `app`
 - **Target**: `<target-vercel>.vercel.app`
 - **Proxy status**: Proxied (orange cloud) *boleh*, tetapi perhatikan rule di bawah.
 
-Setelah DNS propagate, tambahkan domain `app.domainkamu.com` di Vercel Project → Domains agar certificate Vercel tervalidasi.
+### B. Wildcard subdomain aplikasi (`app.*`)
+
+Jika butuh pola multi-env seperti `app-dev.domainkamu.com`, `app-staging.domainkamu.com`, atau `app.<region>.domainkamu.com`, tambahkan CNAME wildcard:
+
+- **Type**: CNAME
+- **Name**: `app-*` **atau** `app` wildcard sesuai pola naming zone
+- **Target**: `<target-vercel>.vercel.app`
+- **Proxy status**: Proxied
+
+> Di Vercel, setiap hostname yang dipakai tetap harus diregistrasikan di Project → Domains (termasuk wildcard jika digunakan).
+
+Setelah DNS propagate, tambahkan domain-domain tersebut di Vercel Project → Domains agar certificate tervalidasi.
 
 ## 4) SSL mode + cache rule agar auth flow aman
 
@@ -116,7 +151,14 @@ Uji call API dari beberapa modul frontend (contoh: dashboard, billing, attendanc
 - Tidak ada CORS issue.
 - Response code sesuai ekspektasi (2xx untuk skenario normal).
 
-## 6) Acceptance criteria
+## 6) Checklist UAT (wajib lulus)
+
+- [ ] Login / refresh / logout stabil pada domain final.
+- [ ] Permission menu sesuai role (tidak over-privileged / under-privileged).
+- [ ] Call API lintas modul berhasil (dashboard, billing, attendance, scheduling, enrollment, catalog, notification).
+- [ ] Tidak ada loop redirect auth (`/login` ↔ protected route).
+
+## 7) Acceptance criteria
 
 Deploy dianggap selesai jika:
 
@@ -126,7 +168,7 @@ Deploy dianggap selesai jika:
 4. RBAC route guard sesuai permission.
 5. API lintas modul sukses tanpa error CORS/cache.
 
-## 7) Troubleshooting cepat
+## 8) Troubleshooting cepat
 
 - **Masih hitting environment lama**: pastikan redeploy setelah update env.
 - **Loop login setelah Cloudflare ON**: cek cache bypass untuk path auth + cookie/headers tidak di-strip.
