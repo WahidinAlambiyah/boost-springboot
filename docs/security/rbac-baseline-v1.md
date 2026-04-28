@@ -166,3 +166,10 @@ Di halaman GitHub Release untuk tag `rbac-baseline-v1.0.0`, lampirkan:
    - Kompatibel untuk endpoint public existing (`/api/auth/**`, actuator health/info/metrics/prometheus, OpenAPI/Swagger).
    - Endpoint selain public tetap `authenticated`.
    - Guard permission existing dipertahankan untuk controller/service yang sudah berjalan.
+
+### Catatan release migrasi naming scheduling (v1.1)
+
+- Canonical permission untuk scheduling adalah `SCHEDULE_READ`, `SCHEDULE_WRITE`, dan `SCHEDULE_RESCHEDULE`.
+- `SESSION_READ`, `SESSION_WRITE`, `SESSION_RESCHEDULE` dipertahankan sebagai alias deprecated sementara untuk kompatibilitas token/client lama.
+- Semua implementasi baru (backend guard, frontend mapping, dokumentasi) wajib menggunakan `SCHEDULE_*` sebagai acuan utama.
+- Target removal alias `SESSION_*` harus diumumkan pada release note saat seluruh client sudah migrasi.

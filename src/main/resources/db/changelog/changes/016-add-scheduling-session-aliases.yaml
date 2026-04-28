@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-add-scheduling-session-aliases
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('SESSION_READ', 'Session Read (Deprecated)', 'Deprecated alias for SCHEDULE_READ', 'SCHEDULING', true, now(), now()),
+                ('SESSION_WRITE', 'Session Write (Deprecated)', 'Deprecated alias for SCHEDULE_WRITE', 'SCHEDULING', true, now(), now()),
+                ('SESSION_RESCHEDULE', 'Session Reschedule (Deprecated)', 'Deprecated alias for SCHEDULE_RESCHEDULE', 'SCHEDULING', true, now(), now())
+              on conflict (code) do update
+              set
+                name = excluded.name,
+                description = excluded.description,
+                module = excluded.module,
+                is_active = excluded.is_active,
+                updated_at = now();
+
+              with alias_map(role_code, permission_code) as (
+                values
+                  ('ADMIN', 'SESSION_READ'),
+                  ('ADMIN', 'SESSION_WRITE'),
+                  ('ADMIN', 'SESSION_RESCHEDULE'),
+                  ('INSTRUCTOR', 'SESSION_READ'),
+                  ('OPS', 'SESSION_READ'),
+                  ('OPS', 'SESSION_WRITE'),
+                  ('OPS', 'SESSION_RESCHEDULE')
+              )
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from alias_map am
+              join fastworks_springboot.roles r on r.code = am.role_code
+              join fastworks_springboot.permissions p on p.code = am.permission_code
+              on conflict (role_id, permission_id) do nothing;

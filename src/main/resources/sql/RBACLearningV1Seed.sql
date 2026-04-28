@@ -25,10 +25,15 @@ values
     ('CLASS_READ',       'Class Read',       'Read class groups',                      'DELIVERY',   true, now(), now()),
     ('CLASS_WRITE',      'Class Write',      'Create/update class groups',             'DELIVERY',   true, now(), now()),
 
-    -- Session / scheduling
-    ('SESSION_READ',     'Session Read',     'Read class sessions',                    'SCHEDULING', true, now(), now()),
-    ('SESSION_WRITE',    'Session Write',    'Create/update class sessions',           'SCHEDULING', true, now(), now()),
-    ('SESSION_RESCHEDULE','Session Reschedule','Reschedule or cancel sessions',        'SCHEDULING', true, now(), now()),
+    -- Scheduling canonical
+    ('SCHEDULE_READ',       'Schedule Read',       'Read class schedules',                  'SCHEDULING', true, now(), now()),
+    ('SCHEDULE_WRITE',      'Schedule Write',      'Create/update class schedules',         'SCHEDULING', true, now(), now()),
+    ('SCHEDULE_RESCHEDULE', 'Schedule Reschedule', 'Reschedule or cancel class schedules',  'SCHEDULING', true, now(), now()),
+
+    -- Scheduling legacy alias (deprecated, transitional compatibility)
+    ('SESSION_READ',        'Session Read (Deprecated)',        'Deprecated alias for SCHEDULE_READ',        'SCHEDULING', true, now(), now()),
+    ('SESSION_WRITE',       'Session Write (Deprecated)',       'Deprecated alias for SCHEDULE_WRITE',       'SCHEDULING', true, now(), now()),
+    ('SESSION_RESCHEDULE',  'Session Reschedule (Deprecated)',  'Deprecated alias for SCHEDULE_RESCHEDULE',  'SCHEDULING', true, now(), now()),
 
     -- Student / guardian
     ('STUDENT_READ',     'Student Read',     'Read student profiles',                  'STUDENT',    true, now(), now()),
@@ -69,7 +74,8 @@ with role_perm(code_role, code_perm) as (
     values
         -- ADMIN -> all permissions
         ('ADMIN','PROGRAM_READ'),('ADMIN','PROGRAM_WRITE'),('ADMIN','COURSE_READ'),('ADMIN','COURSE_WRITE'),
-        ('ADMIN','CLASS_READ'),('ADMIN','CLASS_WRITE'),('ADMIN','SESSION_READ'),('ADMIN','SESSION_WRITE'),
+        ('ADMIN','CLASS_READ'),('ADMIN','CLASS_WRITE'),('ADMIN','SCHEDULE_READ'),('ADMIN','SCHEDULE_WRITE'),
+        ('ADMIN','SCHEDULE_RESCHEDULE'),('ADMIN','SESSION_READ'),('ADMIN','SESSION_WRITE'),
         ('ADMIN','SESSION_RESCHEDULE'),('ADMIN','STUDENT_READ'),('ADMIN','STUDENT_WRITE'),
         ('ADMIN','GUARDIAN_READ'),('ADMIN','GUARDIAN_WRITE'),('ADMIN','ENROLLMENT_READ'),
         ('ADMIN','ENROLLMENT_WRITE'),('ADMIN','WAITLIST_MANAGE'),('ADMIN','ATTENDANCE_READ'),
@@ -78,7 +84,7 @@ with role_perm(code_role, code_perm) as (
         ('ADMIN','REFUND_APPROVE'),('ADMIN','REPORT_EXPORT'),('ADMIN','AUDIT_READ'),
 
         -- INSTRUCTOR
-        ('INSTRUCTOR','CLASS_READ'),('INSTRUCTOR','SESSION_READ'),
+        ('INSTRUCTOR','CLASS_READ'),('INSTRUCTOR','SCHEDULE_READ'),('INSTRUCTOR','SESSION_READ'),
         ('INSTRUCTOR','ATTENDANCE_READ'),('INSTRUCTOR','ATTENDANCE_MARK'),
         ('INSTRUCTOR','PROGRESS_READ'),('INSTRUCTOR','PROGRESS_WRITE'),
         ('INSTRUCTOR','STUDENT_READ'),
@@ -91,6 +97,7 @@ with role_perm(code_role, code_perm) as (
         -- OPS
         ('OPS','PROGRAM_READ'),('OPS','COURSE_READ'),
         ('OPS','CLASS_READ'),('OPS','CLASS_WRITE'),
+        ('OPS','SCHEDULE_READ'),('OPS','SCHEDULE_WRITE'),('OPS','SCHEDULE_RESCHEDULE'),
         ('OPS','SESSION_READ'),('OPS','SESSION_WRITE'),('OPS','SESSION_RESCHEDULE'),
         ('OPS','STUDENT_READ'),('OPS','STUDENT_WRITE'),
         ('OPS','GUARDIAN_READ'),('OPS','GUARDIAN_WRITE'),

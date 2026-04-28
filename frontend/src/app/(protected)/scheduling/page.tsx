@@ -12,6 +12,7 @@ import {
   useStandardErrorRedirect,
 } from "@/lib/error-handler";
 import { QUERY_KEYS } from "@/lib/query-keys";
+import { SCHEDULING_GUARD_PERMISSIONS } from "@/lib/permission-mapping";
 import { schedulingService } from "@/features/scheduling/scheduling.service";
 
 const toIsoDateTime = (value: string) => new Date(value).toISOString();
@@ -64,7 +65,7 @@ export default function SchedulingPage() {
   };
 
   return (
-    <RequirePermission permissions={["SCHEDULING_READ", "SCHEDULING_RESCHEDULE"]} mode="any">
+    <RequirePermission permissions={[...SCHEDULING_GUARD_PERMISSIONS]} mode="any">
       <AppShell>
         <h1 className="text-2xl font-semibold text-zinc-900">Scheduling Module</h1>
         <p className="mt-2 text-zinc-600">Data scheduling + aksi reschedule.</p>
