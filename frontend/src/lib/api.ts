@@ -3,7 +3,7 @@ import axios, {
   AxiosHeaders,
 } from "axios";
 
-import { API_BASE_URL } from "@/lib/env";
+import { getApiBaseUrl } from "@/lib/env";
 import { handleGlobalHttpError } from "@/lib/http-error-events";
 import { ApiResponse, AuthResponse } from "@/types/api";
 
@@ -142,13 +142,14 @@ export const clearAuthTokens = () => {
 };
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 api.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
+
   const token = getAccessToken();
 
   if (!token) {
@@ -173,7 +174,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
 
   try {
     const response = await axios.post<ApiResponse<AuthResponse>>(
-      `${API_BASE_URL}/api/auth/refresh`,
+      `${getApiBaseUrl()}/api/auth/refresh`,
       { refreshToken },
       {
         headers: {
