@@ -1,0 +1,160 @@
+databaseChangeLog:
+  - changeSet:
+      id: 017-create-menus-table
+      author: codex
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: menus
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: parent_id
+                  type: uuid
+              - column:
+                  name: code
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: varchar(255)
+              - column:
+                  name: icon
+                  type: varchar(100)
+              - column:
+                  name: order_no
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_visible
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: menus
+            baseColumnNames: parent_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: menus
+            referencedColumnNames: id
+            constraintName: fk_menus_parent
+            onDelete: SET NULL
+        - addUniqueConstraint:
+            schemaName: fastworks_springboot
+            tableName: menus
+            columnNames: code
+            constraintName: uk_menus_code
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: menus
+            indexName: idx_menus_parent_order_active
+            columns:
+              - column:
+                  name: parent_id
+              - column:
+                  name: order_no
+              - column:
+                  name: is_active
+
+  - changeSet:
+      id: 017-create-menu-permissions-table
+      author: codex
+      changes:
+        - createTable:
+            schemaName: fastworks_springboot
+            tableName: menu_permissions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: menu_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: match_mode
+                  type: varchar(30)
+                  defaultValue: ANY
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: menu_permissions
+            baseColumnNames: menu_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: menus
+            referencedColumnNames: id
+            constraintName: fk_menu_permissions_menu
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: fastworks_springboot
+            baseTableName: menu_permissions
+            baseColumnNames: permission_id
+            referencedTableSchemaName: fastworks_springboot
+            referencedTableName: permissions
+            referencedColumnNames: id
+            constraintName: fk_menu_permissions_permission
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            schemaName: fastworks_springboot
+            tableName: menu_permissions
+            columnNames: menu_id, permission_id
+            constraintName: uk_menu_permissions_menu_permission
+        - createIndex:
+            schemaName: fastworks_springboot
+            tableName: menu_permissions
+            indexName: idx_menu_permissions_menu_permission
+            columns:
+              - column:
+                  name: menu_id
+              - column:
+                  name: permission_id
