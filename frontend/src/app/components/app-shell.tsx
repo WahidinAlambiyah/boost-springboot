@@ -1,4 +1,4 @@
-import NavigationSidebar from "@/app/components/navigation-sidebar";
+import Sidebar from "@/app/components/sidebar";
 import Topbar from "@/app/components/topbar";
 
 interface AppShellProps {
@@ -10,7 +10,7 @@ export default function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen bg-zinc-50">
       <Topbar />
       <div className="flex min-h-[calc(100vh-4rem)]">
-        <NavigationSidebar />
+        <Sidebar />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
