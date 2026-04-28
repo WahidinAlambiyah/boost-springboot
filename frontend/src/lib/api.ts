@@ -3,6 +3,7 @@ import axios, {
   AxiosHeaders,
 } from "axios";
 
+import { API_BASE_URL } from "@/lib/env";
 import { handleGlobalHttpError } from "@/lib/http-error-events";
 import { ApiResponse, AuthResponse } from "@/types/api";
 
@@ -16,8 +17,6 @@ const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const ENCRYPTED_REFRESH_TOKEN_KEY = "refreshToken.enc.v1";
 const REFRESH_TOKEN_CIPHER_SEED = "boost-refresh-token-seed-v1";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 let accessToken: string | null = null;
 let refreshTokenMemory: string | null = null;
