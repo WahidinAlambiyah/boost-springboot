@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -90,6 +92,23 @@ class EnrollmentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.enrollmentId").value(enrollmentId.toString()))
                 .andExpect(jsonPath("$.data.status").value("ENROLLED"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ENROLLMENT_WRITE")
+    void registerOtherGuardianStudentShouldReturnForbidden() throws Exception {
+        doThrow(new AccessDeniedException("Forbidden"))
+                .when(enrollmentService)
+                .register(any(UUID.class), any(UUID.class), anyString());
+
+        mockMvc.perform(post("/api/enrollment/register")
+                        .header("Idempotency-Key", " req-key ")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(java.util.Map.of(
+                                "studentId", UUID.randomUUID(),
+                                "classGroupId", UUID.randomUUID()
+                        ))))
+                .andExpect(status().isForbidden());
     }
 
     @ParameterizedTest(name = "{index} => {0}")
