@@ -30,3 +30,5 @@ databaseChangeLog:
       file: db/changelog/changes/015-create-outbox-events.yaml
   - include:
       file: db/changelog/changes/016-add-scheduling-session-aliases.yaml
+  - include:
+      file: db/changelog/changes/017-create-menus-and-menu-permissions.yaml
