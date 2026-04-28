@@ -40,6 +40,8 @@ Gunakan variable publik berikut untuk frontend:
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT`
 
+> Frontend sekarang melakukan **startup validation fail-fast**. Jika `NEXT_PUBLIC_API_URL` kosong/tidak di-set, proses startup/build akan gagal dengan error konfigurasi.
+
 Contoh matrix value:
 
 | Environment Vercel | NEXT_PUBLIC_APP_ENV | NEXT_PUBLIC_API_URL | NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT |
@@ -69,6 +71,8 @@ Setelah update env, redeploy:
 ```bash
 vercel --prod
 ```
+
+Untuk local development, copy `frontend/.env.example` menjadi `.env.local` lalu isi nilai environment sesuai target backend.
 
 ### Opsi B — via Dashboard Vercel
 

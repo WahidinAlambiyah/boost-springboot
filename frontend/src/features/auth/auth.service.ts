@@ -6,9 +6,8 @@ import {
   getRefreshToken,
   setAuthTokens,
 } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/env";
 import { ApiResponse, AuthResponse, UserProfileResponse } from "@/types/api";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 interface LoginPayload {
   username: string;
