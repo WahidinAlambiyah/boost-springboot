@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import LoadingSkeleton from "@/app/components/loading-skeleton";
 import { bootstrapSession } from "@/features/auth/bootstrapSession";
 import { useAuthStore } from "@/store/auth";
 
@@ -13,16 +14,8 @@ interface ProtectedLayoutProps {
 function ProtectedLayoutSkeleton() {
   return (
     <div className="min-h-screen bg-zinc-50 p-6">
-      <div className="mx-auto w-full max-w-6xl animate-pulse space-y-4">
-        <div className="h-10 w-full rounded-md bg-zinc-200" />
-        <div className="grid gap-4 md:grid-cols-[16rem,1fr]">
-          <div className="h-[70vh] rounded-md bg-zinc-200" />
-          <div className="space-y-3">
-            <div className="h-10 w-1/2 rounded-md bg-zinc-200" />
-            <div className="h-48 rounded-md bg-zinc-200" />
-            <div className="h-48 rounded-md bg-zinc-200" />
-          </div>
-        </div>
+      <div className="mx-auto w-full max-w-6xl">
+        <LoadingSkeleton rows={5} />
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
 
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 
 import { ErrorResponse } from "@/types/api";
+import { handleGlobalHttpError } from "@/lib/http-error-events";
 
 export type StandardErrorCode = 401 | 403 | 422 | "UNKNOWN";
 
@@ -40,18 +40,7 @@ export const parseErrorMessage = (error: unknown): string => {
 };
 
 export const useStandardErrorRedirect = () => {
-  const router = useRouter();
-
   return (error: unknown) => {
-    const status = getStandardErrorCode(error);
-
-    if (status === 401) {
-      router.replace("/login");
-      return;
-    }
-
-    if (status === 403) {
-      router.replace("/forbidden");
-    }
+    handleGlobalHttpError(error);
   };
 };
