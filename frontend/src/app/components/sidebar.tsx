@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { canAny } from "@/lib/permissions";
+import { SCHEDULING_SIDEBAR_PERMISSIONS } from "@/lib/permission-mapping";
 import { useAuthStore } from "@/store/auth";
 
 interface SidebarItem {
@@ -15,7 +16,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Catalog", href: "/catalog", permissions: ["CLASS_READ", "CLASS_WRITE"] },
-  { label: "Scheduling", href: "/scheduling", permissions: ["SCHEDULE_READ", "SCHEDULE_WRITE"] },
+  { label: "Scheduling", href: "/scheduling", permissions: [...SCHEDULING_SIDEBAR_PERMISSIONS] },
   { label: "Enrollment", href: "/enrollment", permissions: ["ENROLLMENT_READ", "ENROLLMENT_WRITE"] },
   { label: "Attendance", href: "/attendance", permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"] },
   { label: "Billing", href: "/billing", permissions: ["BILLING_READ", "BILLING_WRITE"] },
