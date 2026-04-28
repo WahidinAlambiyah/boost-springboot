@@ -3,6 +3,7 @@ import axios, {
   AxiosHeaders,
 } from "axios";
 
+import { handleGlobalHttpError } from "@/lib/http-error-events";
 import { ApiResponse, AuthResponse } from "@/types/api";
 
 declare module "axios" {
@@ -217,6 +218,9 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (!originalRequest || error.response?.status !== 401 || originalRequest._retry) {
+      handleGlobalHttpError(error, {
+        retry: originalRequest ? () => api(originalRequest) : undefined,
+      });
       return Promise.reject(error);
     }
 
@@ -235,6 +239,7 @@ api.interceptors.response.use(
 
     const refreshed = await refreshPromise;
     if (!refreshed) {
+      handleGlobalHttpError(error);
       return Promise.reject(error);
     }
 

@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
+import EmptyState from "@/app/components/empty-state";
+import LoadingSkeleton from "@/app/components/loading-skeleton";
 import { useStandardErrorRedirect } from "@/lib/error-handler";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { notificationService } from "@/features/notification/notification.service";
@@ -44,9 +46,7 @@ export default function NotificationPage() {
         <h1 className="text-2xl font-semibold text-zinc-900">Notification Module</h1>
         <p className="mt-2 text-zinc-600">Ringkasan notifikasi terbaru.</p>
 
-        {notificationQuery.isLoading ? (
-          <p className="mt-4 text-sm text-zinc-600">Memuat notifikasi...</p>
-        ) : null}
+        {notificationQuery.isLoading ? <LoadingSkeleton rows={4} /> : null}
 
         {notificationQuery.isError ? (
           <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -54,7 +54,14 @@ export default function NotificationPage() {
           </p>
         ) : null}
 
-        {notificationQuery.data ? (
+        {notificationQuery.data?.length === 0 ? (
+          <EmptyState
+            title="Data kosong"
+            description="Belum ada data notifikasi yang dapat ditampilkan."
+          />
+        ) : null}
+
+        {notificationQuery.data?.length ? (
           <div className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-zinc-100 text-zinc-700">
