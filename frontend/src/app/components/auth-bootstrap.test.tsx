@@ -70,6 +70,44 @@ describe("AuthBootstrap route guard", () => {
     });
   });
 
+
+  it("allows admin route when user has ROLE_ADMIN", async () => {
+    usePathnameMock.mockReturnValue("/admin");
+    vi.mocked(bootstrapSession).mockImplementation(async () => {
+      mockStore.status = "authenticated";
+      return true;
+    });
+    mockStore.authorities = ["ROLE_ADMIN"];
+
+    render(
+      <AuthBootstrap>
+        <div>Admin</div>
+      </AuthBootstrap>,
+    );
+
+    await waitFor(() => {
+      expect(replace).not.toHaveBeenCalledWith("/forbidden");
+    });
+  });
+
+  it("allows admin route when user has full admin permission bundle", async () => {
+    usePathnameMock.mockReturnValue("/admin");
+    vi.mocked(bootstrapSession).mockImplementation(async () => {
+      mockStore.status = "authenticated";
+      return true;
+    });
+    mockStore.authorities = ["USER_WRITE", "ROLE_WRITE", "PERMISSION_WRITE"];
+
+    render(
+      <AuthBootstrap>
+        <div>Admin</div>
+      </AuthBootstrap>,
+    );
+
+    await waitFor(() => {
+      expect(replace).not.toHaveBeenCalledWith("/forbidden");
+    });
+  });
   it("redirects unauthorized admin access to /forbidden", async () => {
     usePathnameMock.mockReturnValue("/admin");
     vi.mocked(bootstrapSession).mockImplementation(async () => {
