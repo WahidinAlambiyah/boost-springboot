@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { EnrollmentRegisterPayload, EnrollmentSummary } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -91,7 +92,8 @@ export default function EnrollmentPage() {
   };
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["ENROLLMENT_READ", "ENROLLMENT_WRITE"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Enrollment Module</h1>
       <p className="mt-2 text-zinc-600">Data enrollment + aksi register/cancel enrollment.</p>
 
@@ -187,6 +189,7 @@ export default function EnrollmentPage() {
           </p>
         ) : null}
       </section>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

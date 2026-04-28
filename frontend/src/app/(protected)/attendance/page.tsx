@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { AttendanceSubmitPayload, AttendanceSummary } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -84,7 +85,8 @@ export default function AttendancePage() {
   };
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["ATTENDANCE_READ", "ATTENDANCE_MARK"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Attendance Module</h1>
       <p className="mt-2 text-zinc-600">Data attendance + aksi submit attendance.</p>
 
@@ -200,6 +202,7 @@ export default function AttendancePage() {
           </p>
         ) : null}
       </section>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

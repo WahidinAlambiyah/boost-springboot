@@ -6,7 +6,7 @@ export default function ForbiddenPage() {
       <p className="text-6xl font-bold text-zinc-900">403</p>
       <h1 className="mt-3 text-2xl font-semibold text-zinc-900">Forbidden</h1>
       <p className="mt-2 max-w-md text-zinc-600">
-        Anda tidak memiliki permission untuk mengakses halaman ini.
+        Anda tidak memiliki role atau permission yang dibutuhkan untuk mengakses halaman ini.
       </p>
       <Link
         href="/dashboard"
