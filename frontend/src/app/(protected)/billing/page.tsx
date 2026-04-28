@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { BillingSummary, PaymentPayload, PaymentResponse } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -95,7 +96,8 @@ export default function BillingPage() {
   };
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["BILLING_READ", "BILLING_WRITE"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Billing Module</h1>
       <p className="mt-2 text-zinc-600">Ringkasan billing dan form pembayaran invoice.</p>
 
@@ -185,6 +187,7 @@ export default function BillingPage() {
           </p>
         ) : null}
       </section>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

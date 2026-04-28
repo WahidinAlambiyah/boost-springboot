@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { ReschedulePayload, SchedulingSummary } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -73,7 +74,8 @@ export default function SchedulingPage() {
   };
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["SCHEDULING_READ", "SCHEDULING_RESCHEDULE"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Scheduling Module</h1>
       <p className="mt-2 text-zinc-600">Data scheduling + aksi reschedule.</p>
 
@@ -180,6 +182,7 @@ export default function SchedulingPage() {
           </p>
         ) : null}
       </section>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

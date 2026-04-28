@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { NotificationSummary } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -44,7 +45,8 @@ export default function NotificationPage() {
   }
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["NOTIFICATION_READ", "NOTIFICATION_WRITE"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Notification Module</h1>
       <p className="mt-2 text-zinc-600">Ringkasan notifikasi terbaru.</p>
 
@@ -86,6 +88,7 @@ export default function NotificationPage() {
           </table>
         </div>
       ) : null}
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

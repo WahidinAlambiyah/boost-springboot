@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
 import { CatalogSummary } from "@/lib/api-types";
 import { ApiResponse } from "@/types/api";
@@ -26,7 +27,8 @@ export default function CatalogPage() {
   }
 
   return (
-    <AppShell>
+    <RequirePermission permissions={["CLASS_READ", "CLASS_WRITE"]} mode="any">
+      <AppShell>
       <h1 className="text-2xl font-semibold text-zinc-900">Catalog Module</h1>
       <p className="mt-2 text-zinc-600">Data katalog dari endpoint /api/catalog.</p>
 
@@ -62,6 +64,7 @@ export default function CatalogPage() {
           </table>
         </div>
       ) : null}
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }
