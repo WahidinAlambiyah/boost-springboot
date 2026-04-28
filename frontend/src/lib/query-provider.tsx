@@ -17,14 +17,18 @@ export default function QueryProvider({ children }: QueryProviderProps) {
         queryCache: new QueryCache({
           onError: (error, query) => {
             handleGlobalHttpError(error, {
-              retry: () => query.fetch(),
+              retry: async () => {
+                await query.fetch();
+              },
             });
           },
         }),
         mutationCache: new MutationCache({
           onError: (error, _variables, _context, mutation) => {
             handleGlobalHttpError(error, {
-              retry: () => mutation.execute(mutation.state.variables),
+              retry: async () => {
+                await mutation.execute(mutation.state.variables);
+              },
             });
           },
         }),

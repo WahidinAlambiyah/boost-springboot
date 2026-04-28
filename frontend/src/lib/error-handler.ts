@@ -22,20 +22,20 @@ export const getStandardErrorCode = (error: unknown): StandardErrorCode => {
 };
 
 export const parseValidationErrors = (error: unknown): Record<string, string> => {
-  if (getStandardErrorCode(error) !== 422 || !(error instanceof AxiosError<ErrorResponse>)) {
+  if (getStandardErrorCode(error) !== 422 || !(error instanceof AxiosError)) {
     return {};
   }
 
-  const body = error.response?.data;
+  const body = error.response?.data as ErrorResponse | undefined;
   return body?.data?.errors ?? {};
 };
 
 export const parseErrorMessage = (error: unknown): string => {
-  if (!(error instanceof AxiosError<ErrorResponse>)) {
+  if (!(error instanceof AxiosError)) {
     return "Terjadi kesalahan tidak terduga.";
   }
 
-  const body = error.response?.data;
+  const body = error.response?.data as ErrorResponse | undefined;
   return body?.message ?? "Terjadi kesalahan tidak terduga.";
 };
 
