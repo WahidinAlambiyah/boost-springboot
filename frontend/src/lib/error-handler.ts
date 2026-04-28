@@ -5,8 +5,24 @@ import { useRouter } from "next/navigation";
 
 import { ErrorResponse } from "@/types/api";
 
+export type StandardErrorCode = 401 | 403 | 422 | "UNKNOWN";
+
+export const getStandardErrorCode = (error: unknown): StandardErrorCode => {
+  if (!(error instanceof AxiosError)) {
+    return "UNKNOWN";
+  }
+
+  const status = error.response?.status;
+
+  if (status === 401 || status === 403 || status === 422) {
+    return status;
+  }
+
+  return "UNKNOWN";
+};
+
 export const parseValidationErrors = (error: unknown): Record<string, string> => {
-  if (!(error instanceof AxiosError<ErrorResponse>)) {
+  if (getStandardErrorCode(error) !== 422 || !(error instanceof AxiosError<ErrorResponse>)) {
     return {};
   }
 
@@ -27,11 +43,8 @@ export const useStandardErrorRedirect = () => {
   const router = useRouter();
 
   return (error: unknown) => {
-    if (!(error instanceof AxiosError)) {
-      return;
-    }
+    const status = getStandardErrorCode(error);
 
-    const status = error.response?.status;
     if (status === 401) {
       router.replace("/login");
       return;
