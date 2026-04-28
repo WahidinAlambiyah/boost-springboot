@@ -6,7 +6,7 @@ import {
   getRefreshToken,
   setAuthTokens,
 } from "@/lib/api";
-import { API_BASE_URL } from "@/lib/env";
+import { getApiBaseUrl } from "@/lib/env";
 import { ApiResponse, AuthResponse, UserProfileResponse } from "@/types/api";
 
 interface LoginPayload {
@@ -32,7 +32,7 @@ export const authService = {
 
     try {
       const response = await axios.post<ApiResponse<AuthResponse>>(
-        `${API_BASE_URL}/api/auth/refresh`,
+        `${getApiBaseUrl()}/api/auth/refresh`,
         { refreshToken },
         {
           headers: {
