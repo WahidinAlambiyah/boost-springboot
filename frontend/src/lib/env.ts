@@ -1,25 +1,23 @@
-const API_URL_ENV_KEYS = [
-  "NEXT_PUBLIC_API_URL",
-  "NEXT_PUBLIC_API_BASE_URL",
-] as const;
-
-const readPublicEnv = (key: string): string | null => {
-  const value = process.env[key];
-
+const normalizeEnvValue = (value: string | undefined): string | null => {
   if (!value) {
     return null;
   }
 
-  const trimmedValue = value.trim();
-  return trimmedValue.length > 0 ? trimmedValue : null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const resolveApiBaseUrlFromPublicEnv = (): string | null => {
+  return (
+    normalizeEnvValue(process.env.NEXT_PUBLIC_API_URL) ??
+    normalizeEnvValue(process.env.NEXT_PUBLIC_API_BASE_URL)
+  );
 };
 
 export const getApiBaseUrl = (): string => {
-  for (const key of API_URL_ENV_KEYS) {
-    const value = readPublicEnv(key);
-    if (value) {
-      return value;
-    }
+  const resolvedApiBaseUrl = resolveApiBaseUrlFromPublicEnv();
+  if (resolvedApiBaseUrl) {
+    return resolvedApiBaseUrl;
   }
 
   throw new Error(
