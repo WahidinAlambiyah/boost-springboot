@@ -36,6 +36,7 @@ public class RoleService {
     private final PermissionRepository permissionRepository;
     private final AuditLogService auditLogService;
     private final RoleMapper roleMapper;
+    private final MenuService menuService;
 
     @Transactional(readOnly = true)
     public Page<RoleResponse> getRoles(Pageable pageable) {
@@ -69,6 +70,7 @@ public class RoleService {
         role.setDescription(request.getDescription());
         role.setActive(request.getIsActive() == null || request.getIsActive());
         Role saved = roleRepository.save(role);
+        menuService.evictAllMenuCaches();
         return roleMapper.toResponse(saved);
     }
 
@@ -87,6 +89,7 @@ public class RoleService {
             role.setActive(request.getIsActive());
         }
         Role saved = roleRepository.save(role);
+        menuService.evictAllMenuCaches();
         return roleMapper.toResponse(saved);
     }
 
@@ -96,6 +99,7 @@ public class RoleService {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Role not found"));
         roleRepository.delete(role);
+        menuService.evictAllMenuCaches();
     }
 
     @Transactional
@@ -127,6 +131,7 @@ public class RoleService {
             role.getRolePermissions().add(rolePermission);
         }
         Role saved = roleRepository.save(role);
+        menuService.evictAllMenuCaches();
         Set<String> afterPermissions = saved.getRolePermissions().stream()
                 .map(rolePermission -> rolePermission.getPermission().getCode())
                 .collect(java.util.stream.Collectors.toSet());

@@ -36,6 +36,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
     private final UserMapper userMapper;
+    private final MenuService menuService;
 
     @Transactional(readOnly = true)
     public Page<UserResponse> getUsers(Pageable pageable, String search) {
@@ -107,6 +108,7 @@ public class UserService {
         Set<String> beforeRoles = user.getRoleCodes();
         user.setRoles(resolveRoles(roleCodes));
         User saved = userRepository.save(user);
+        menuService.evictUserMenuCache(saved.getId());
         Set<String> afterRoles = saved.getRoleCodes();
         Set<String> added = new HashSet<>(afterRoles);
         added.removeAll(beforeRoles);
