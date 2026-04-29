@@ -10,6 +10,8 @@ import { ApiResponse, AuthResponse } from "@/types/api";
 declare module "axios" {
   interface InternalAxiosRequestConfig {
     _retry?: boolean;
+    _requestId?: string;
+    _requestStartedAt?: number;
   }
 }
 
@@ -21,6 +23,53 @@ const REFRESH_TOKEN_CIPHER_SEED = "boost-refresh-token-seed-v1";
 let accessToken: string | null = null;
 let refreshTokenMemory: string | null = null;
 let refreshPromise: Promise<boolean> | null = null;
+const isHttpDebugEnabled =
+  process.env.NEXT_PUBLIC_HTTP_DEBUG === "true" && process.env.NODE_ENV !== "production";
+
+const createRequestId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `req-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const summarizePayload = (payload: unknown, maxLength = 220) => {
+  if (typeof payload === "undefined") {
+    return "none";
+  }
+
+  if (payload === null) {
+    return "null";
+  }
+
+  if (typeof payload === "string") {
+    return payload.length > maxLength ? `${payload.slice(0, maxLength)}...` : payload;
+  }
+
+  try {
+    const json = JSON.stringify(payload);
+    return json.length > maxLength ? `${json.slice(0, maxLength)}...` : json;
+  } catch {
+    return "[unserializable]";
+  }
+};
+
+const estimateResponseSize = (data: unknown) => {
+  if (typeof data === "undefined" || data === null) {
+    return "0B";
+  }
+
+  if (typeof data === "string") {
+    return `${data.length}B`;
+  }
+
+  try {
+    return `${JSON.stringify(data).length}B`;
+  } catch {
+    return "unknown";
+  }
+};
 
 const getStorage = () => {
   if (typeof window === "undefined") {
@@ -149,8 +198,20 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   config.baseURL = getApiBaseUrl();
+  config._requestId = createRequestId();
+  config._requestStartedAt = Date.now();
 
   const token = getAccessToken();
+
+  if (isHttpDebugEnabled) {
+    console.info("[HTTP REQUEST]", {
+      timestamp: new Date(config._requestStartedAt).toISOString(),
+      requestId: config._requestId,
+      method: config.method?.toUpperCase() ?? "GET",
+      url: `${config.baseURL ?? ""}${config.url ?? ""}`,
+      payload: summarizePayload(config.params ?? config.data),
+    });
+  }
 
   if (!token) {
     return config;
@@ -161,6 +222,7 @@ api.interceptors.request.use((config) => {
   }
 
   config.headers.set("Authorization", `Bearer ${token}`);
+
   return config;
 });
 
@@ -213,11 +275,38 @@ export const logoutSession = async (): Promise<void> => {
 };
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const duration = response.config._requestStartedAt
+      ? Date.now() - response.config._requestStartedAt
+      : undefined;
+
+    if (isHttpDebugEnabled) {
+      console.info("[HTTP RESPONSE]", {
+        requestId: response.config._requestId,
+        status: response.status,
+        durationMs: duration,
+        responseSize: estimateResponseSize(response.data),
+      });
+    }
+
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
+    const shouldRetry = Boolean(originalRequest && status === 401 && !originalRequest._retry);
 
-    if (!originalRequest || error.response?.status !== 401 || originalRequest._retry) {
+    if (isHttpDebugEnabled) {
+      console.error("[HTTP ERROR]", {
+        requestId: originalRequest?._requestId,
+        status,
+        code: error.code,
+        message: error.message,
+        retryStatus: shouldRetry ? "scheduled" : "not-scheduled",
+      });
+    }
+
+    if (!originalRequest || status !== 401 || originalRequest._retry) {
       handleGlobalHttpError(error, {
         retry: originalRequest ? () => api(originalRequest) : undefined,
       });
