@@ -14,7 +14,8 @@ export const bootstrapSession = async (): Promise<boolean> => {
 
   try {
     const profile = await authService.me();
-    hydrateSession(profile);
+    const menu = await authService.menu();
+    hydrateSession(profile, undefined, menu);
     return true;
   } catch {
     clearSession();
