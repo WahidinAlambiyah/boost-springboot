@@ -10,7 +10,7 @@ const hasVisibleChildren = (item: MenuItemResponse): boolean =>
   item.children?.some((child) => isMenuVisible(child)) ?? false;
 
 const isMenuVisible = (item: MenuItemResponse): boolean => {
-  if (!item.visible) {
+  if (item.visible === false) {
     return false;
   }
 

@@ -89,6 +89,23 @@ class MenuServiceTest {
                 .containsExactly("DASHBOARD");
     }
 
+
+    @Test
+    void menuResponseContainsVisibilityFlags() {
+        UUID userId = UUID.randomUUID();
+        Menu dashboard = menu("DASHBOARD", "/dashboard", 1);
+
+        when(permissionRepository.findCodesByUserId(userId)).thenReturn(List.of());
+        when(menuRepository.findByIsActiveTrueAndIsVisibleTrueOrderByOrderNoAsc())
+                .thenReturn(List.of(dashboard));
+
+        List<MenuNodeResponse> result = menuService.getMenuForCurrentUser(userId);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().visible()).isTrue();
+        assertThat(result.getFirst().isActive()).isTrue();
+    }
+
     private Menu menu(String code, String path, int orderNo) {
         return Menu.builder()
                 .id(UUID.randomUUID())

@@ -51,4 +51,18 @@ describe("Sidebar", () => {
     expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
     expect(screen.getByText("Billing")).toBeInTheDocument();
   });
+
+  it("treats missing visible from backend DTO as visible", () => {
+    const payload = [
+      { id: "1", label: "Dashboard", path: "/dashboard", children: [] },
+      { id: "2", label: "Billing", path: "/billing", visible: false, children: [] },
+    ] as unknown as MenuItemResponse[];
+
+    useAuthStore.setState({ menu: payload });
+    render(<Sidebar />);
+
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.queryByText("Billing")).not.toBeInTheDocument();
+  });
+
 });
