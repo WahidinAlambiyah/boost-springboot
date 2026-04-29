@@ -6,6 +6,7 @@ import axios, {
 import { getApiBaseUrl } from "@/lib/env";
 import { logCriticalHttpError } from "@/lib/client-observability";
 import { handleGlobalHttpError } from "@/lib/http-error-events";
+import { addHttpDebugEntry } from "@/lib/http-debug-store";
 import { ApiResponse, AuthResponse } from "@/types/api";
 
 declare module "axios" {
@@ -339,6 +340,16 @@ api.interceptors.response.use(
       : undefined;
 
     if (isHttpDebugEnabled) {
+      const path = sanitizePath(response.config.url);
+      addHttpDebugEntry({
+        requestId: response.config._requestId ?? createRequestId(),
+        method: response.config.method?.toUpperCase() ?? "GET",
+        path,
+        status: response.status,
+        durationMs: duration ?? 0,
+        timestamp: new Date().toISOString(),
+      });
+
       console.info("[HTTP RESPONSE]", {
         requestId: response.config._requestId,
         status: response.status,
@@ -369,6 +380,15 @@ api.interceptors.response.use(
     }
 
     if (isHttpDebugEnabled) {
+      addHttpDebugEntry({
+        requestId: originalRequest?._requestId ?? createRequestId(),
+        method: originalRequest?.method?.toUpperCase() ?? "GET",
+        path: sanitizePath(originalRequest?.url),
+        status: status ?? NETWORK_FAILURE_STATUS,
+        durationMs: duration ?? 0,
+        timestamp: new Date().toISOString(),
+      });
+
       console.error("[HTTP ERROR]", {
         requestId: originalRequest?._requestId,
         status,
