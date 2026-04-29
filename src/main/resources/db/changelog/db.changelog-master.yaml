@@ -32,3 +32,6 @@ databaseChangeLog:
       file: db/changelog/changes/016-add-scheduling-session-aliases.yaml
   - include:
       file: db/changelog/changes/017-create-menus-and-menu-permissions.yaml
+
+  - include:
+      file: db/changelog/changes/018-add-menu-admin-permissions.yaml
