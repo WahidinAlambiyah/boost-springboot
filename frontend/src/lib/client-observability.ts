@@ -7,6 +7,18 @@ export interface RuntimeErrorPayload {
   timestamp: string;
 }
 
+export interface CriticalHttpErrorPayload {
+  requestId: string;
+  method: string;
+  path: string;
+  status: number;
+  duration: number;
+  userId?: string;
+  timestamp: string;
+}
+
+type ObservabilityPayload = RuntimeErrorPayload | CriticalHttpErrorPayload;
+
 const getRuntimeLogEndpoint = (): string | null => {
   const value = process.env.NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT;
   if (!value) {
@@ -17,7 +29,7 @@ const getRuntimeLogEndpoint = (): string | null => {
   return normalizedValue.length > 0 ? normalizedValue : null;
 };
 
-const sendPayload = (payload: RuntimeErrorPayload) => {
+const sendPayload = (payload: ObservabilityPayload) => {
   const endpoint = getRuntimeLogEndpoint();
 
   if (!endpoint) {
@@ -40,6 +52,13 @@ const sendPayload = (payload: RuntimeErrorPayload) => {
     },
     body,
     keepalive: true,
+  });
+};
+
+export const logCriticalHttpError = (payload: Omit<CriticalHttpErrorPayload, "timestamp">) => {
+  sendPayload({
+    ...payload,
+    timestamp: new Date().toISOString(),
   });
 };
 
