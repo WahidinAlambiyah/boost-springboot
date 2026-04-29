@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 public class PermissionService {
     private final PermissionRepository permissionRepository;
     private final PermissionMapper permissionMapper;
+    private final MenuService menuService;
 
     @Transactional(readOnly = true)
     public Page<PermissionResponse> getPermissions(Pageable pageable) {
@@ -62,6 +63,7 @@ public class PermissionService {
         permission.setDescription(request.getDescription());
         permission.setActive(request.getIsActive() == null || request.getIsActive());
         Permission saved = permissionRepository.save(permission);
+        menuService.evictAllMenuCaches();
         return permissionMapper.toResponse(saved);
     }
 
@@ -83,6 +85,7 @@ public class PermissionService {
             permission.setActive(request.getIsActive());
         }
         Permission saved = permissionRepository.save(permission);
+        menuService.evictAllMenuCaches();
         return permissionMapper.toResponse(saved);
     }
 
@@ -92,5 +95,6 @@ public class PermissionService {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Permission not found"));
         permissionRepository.delete(permission);
+        menuService.evictAllMenuCaches();
     }
 }
