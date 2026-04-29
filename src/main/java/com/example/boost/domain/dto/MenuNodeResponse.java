@@ -10,7 +10,7 @@ public record MenuNodeResponse(
         UUID id,
         UUID parentId,
         String code,
-        String name,
+        String label,
         String path,
         String icon,
         Integer orderNo,
