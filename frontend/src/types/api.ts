@@ -20,6 +20,15 @@ export interface UserProfileResponse {
   createdAt: string;
 }
 
+export interface MenuItemResponse {
+  id: string;
+  label: string;
+  path?: string | null;
+  icon?: string | null;
+  visible: boolean;
+  children?: MenuItemResponse[];
+}
+
 export interface ErrorResponse {
   status?: number;
   message?: string;

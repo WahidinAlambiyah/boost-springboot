@@ -7,7 +7,12 @@ import {
   setAuthTokens,
 } from "@/lib/api";
 import { getApiBaseUrl } from "@/lib/env";
-import { ApiResponse, AuthResponse, UserProfileResponse } from "@/types/api";
+import {
+  ApiResponse,
+  AuthResponse,
+  MenuItemResponse,
+  UserProfileResponse,
+} from "@/types/api";
 
 interface LoginPayload {
   username: string;
@@ -67,6 +72,11 @@ export const authService = {
 
   async me(): Promise<UserProfileResponse> {
     const response = await api.get<ApiResponse<UserProfileResponse>>("/api/users/me");
+    return response.data.data;
+  },
+
+  async menu(): Promise<MenuItemResponse[]> {
+    const response = await api.get<ApiResponse<MenuItemResponse[]>>("/api/me/menu");
     return response.data.data;
   },
 };
