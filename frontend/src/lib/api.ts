@@ -4,6 +4,7 @@ import axios, {
 } from "axios";
 
 import { getApiBaseUrl } from "@/lib/env";
+import { logCriticalHttpError } from "@/lib/client-observability";
 import { handleGlobalHttpError } from "@/lib/http-error-events";
 import { ApiResponse, AuthResponse } from "@/types/api";
 
@@ -32,6 +33,63 @@ const createRequestId = () => {
   }
 
   return `req-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const NETWORK_FAILURE_STATUS = 0;
+
+const sanitizePath = (url?: string) => {
+  if (!url) {
+    return "unknown";
+  }
+
+  try {
+    const normalized = new URL(url, getApiBaseUrl());
+    return normalized.pathname;
+  } catch {
+    return url.split("?")[0] || "unknown";
+  }
+};
+
+const logCriticalErrorEvent = ({
+  requestId,
+  method,
+  path,
+  status,
+  duration,
+}: {
+  requestId?: string;
+  method?: string;
+  path?: string;
+  status: number;
+  duration?: number;
+}) => {
+  let tokenUserId: string | undefined;
+
+  const token = getAccessToken();
+  if (token) {
+    try {
+      const payloadPart = token.split(".")[1];
+      if (payloadPart && typeof globalThis.atob === "function") {
+        const decoded = JSON.parse(globalThis.atob(payloadPart)) as {
+          userId?: string;
+          sub?: string;
+          id?: string;
+        };
+        tokenUserId = decoded.userId ?? decoded.sub ?? decoded.id;
+      }
+    } catch {
+      tokenUserId = undefined;
+    }
+  }
+
+  logCriticalHttpError({
+    requestId: requestId ?? createRequestId(),
+    method: method?.toUpperCase() ?? "GET",
+    path: sanitizePath(path),
+    status,
+    duration: duration ?? 0,
+    userId: tokenUserId,
+  });
 };
 
 const summarizePayload = (payload: unknown, maxLength = 220) => {
@@ -294,7 +352,21 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config;
     const status = error.response?.status;
+    const duration = originalRequest?._requestStartedAt ? Date.now() - originalRequest._requestStartedAt : undefined;
     const shouldRetry = Boolean(originalRequest && status === 401 && !originalRequest._retry);
+
+    const isCriticalStatus = typeof status === "number" && status >= 400 && status < 600;
+    const isNetworkFailure = !status;
+
+    if (isCriticalStatus || isNetworkFailure) {
+      logCriticalErrorEvent({
+        requestId: originalRequest?._requestId,
+        method: originalRequest?.method,
+        path: originalRequest?.url,
+        status: status ?? NETWORK_FAILURE_STATUS,
+        duration,
+      });
+    }
 
     if (isHttpDebugEnabled) {
       console.error("[HTTP ERROR]", {
