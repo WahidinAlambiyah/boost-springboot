@@ -103,6 +103,8 @@ public class MenuService {
                 .path(menu.getPath())
                 .icon(menu.getIcon())
                 .orderNo(menu.getOrderNo())
+                .visible(menu.isVisible())
+                .isActive(menu.isActive())
                 .children(new ArrayList<>())
                 .build();
     }

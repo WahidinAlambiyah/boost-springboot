@@ -14,6 +14,8 @@ public record MenuNodeResponse(
         String path,
         String icon,
         Integer orderNo,
+        Boolean visible,
+        Boolean isActive,
         List<MenuNodeResponse> children
 ) {
 }
