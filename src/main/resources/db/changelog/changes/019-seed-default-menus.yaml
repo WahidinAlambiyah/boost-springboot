@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 019-seed-default-menu-tree-and-permissions
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.menus (code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              values
+                ('DASHBOARD',    'Dashboard',   '/dashboard',   'layout-dashboard', 10, true, true, now(), now()),
+                ('CATALOG',      'Catalog',     '/catalog',     'book-open',        20, true, true, now(), now()),
+                ('SCHEDULING',   'Scheduling',  '/scheduling',  'calendar-days',    30, true, true, now(), now()),
+                ('ENROLLMENT',   'Enrollment',  '/enrollment',  'clipboard-check',  40, true, true, now(), now()),
+                ('ATTENDANCE',   'Attendance',  '/attendance',  'user-check',       50, true, true, now(), now()),
+                ('BILLING',      'Billing',     '/billing',     'wallet',           60, true, true, now(), now()),
+                ('NOTIFICATION', 'Notification','/notification','bell',             70, true, true, now(), now()),
+                ('ADMIN',        'Admin',       '/admin',       'shield',           80, true, true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.menus (parent_id, code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              select m_admin.id, v.code, v.name, v.path, v.icon, v.order_no, true, true, now(), now()
+              from fastworks_springboot.menus m_admin
+              cross join (
+                values
+                  ('ADMIN_USER',       'User Management',       '/admin/users',       'users',      10),
+                  ('ADMIN_ROLE',       'Role Management',       '/admin/roles',       'user-cog',   20),
+                  ('ADMIN_PERMISSION', 'Permission Management', '/admin/permissions', 'key-round',  30),
+                  ('ADMIN_AUDIT',      'Audit Log',             '/admin/audit',       'history',    40)
+              ) as v(code, name, path, icon, order_no)
+              where m_admin.code = 'ADMIN'
+              on conflict (code) do nothing;
+
+              with menu_perm(menu_code, perm_code) as (
+                values
+                  ('DASHBOARD',       'REPORT_EXPORT'),
+                  ('CATALOG',         'CLASS_READ'),
+                  ('SCHEDULING',      'SCHEDULE_READ'),
+                  ('ENROLLMENT',      'ENROLLMENT_READ'),
+                  ('ATTENDANCE',      'ATTENDANCE_READ'),
+                  ('BILLING',         'BILLING_READ'),
+                  ('NOTIFICATION',    'NOTIFICATION_READ'),
+                  ('ADMIN',           'USER_READ'),
+                  ('ADMIN_USER',      'USER_READ'),
+                  ('ADMIN_ROLE',      'ROLE_READ'),
+                  ('ADMIN_PERMISSION','PERMISSION_READ'),
+                  ('ADMIN_AUDIT',     'AUDIT_READ')
+              )
+              insert into fastworks_springboot.menu_permissions (menu_id, permission_id, match_mode, created_at)
+              select m.id, p.id, 'ANY', now()
+              from menu_perm mp
+              join fastworks_springboot.menus m on m.code = mp.menu_code
+              join fastworks_springboot.permissions p on p.code = mp.perm_code
+              on conflict (menu_id, permission_id) do nothing;
