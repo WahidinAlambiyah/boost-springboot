@@ -99,7 +99,7 @@ public class MenuService {
                 .id(menu.getId())
                 .parentId(menu.getParent() != null ? menu.getParent().getId() : null)
                 .code(menu.getCode())
-                .name(menu.getName())
+                .label(menu.getName())
                 .path(menu.getPath())
                 .icon(menu.getIcon())
                 .orderNo(menu.getOrderNo())

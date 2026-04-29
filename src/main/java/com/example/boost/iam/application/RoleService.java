@@ -153,6 +153,17 @@ public class RoleService {
                     .statusSuccess()
                     .save();
         }
+        if (!added.isEmpty() || !removed.isEmpty()) {
+            auditLogService.rbacEvent("MENU_CONFIG_UPDATED")
+                    .entity("MENU_CONFIG", "role:" + saved.getId())
+                    .metadata(java.util.Map.of(
+                            "roleCode", saved.getCode(),
+                            "addedPermissions", added,
+                            "removedPermissions", removed
+                    ))
+                    .statusSuccess()
+                    .save();
+        }
         return roleMapper.toResponse(saved);
     }
 }

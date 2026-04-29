@@ -1,6 +1,7 @@
 package com.example.boost.service;
 
 import com.example.boost.iam.application.AuditLogService;
+import com.example.boost.iam.application.MenuService;
 import com.example.boost.iam.application.RoleService;
 
 import com.example.boost.domain.dto.RoleCreateRequest;
@@ -41,6 +42,8 @@ class RoleServiceTest {
 
     @Mock
     private RoleMapper roleMapper;
+    @Mock
+    private MenuService menuService;
 
     @InjectMocks
     private RoleService roleService;
