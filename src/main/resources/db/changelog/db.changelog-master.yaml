@@ -37,3 +37,5 @@ databaseChangeLog:
       file: db/changelog/changes/018-add-menu-admin-permissions.yaml
   - include:
       file: db/changelog/changes/019-seed-default-menus.yaml
+  - include:
+      file: db/changelog/changes/020-add-academy-multi-tenancy.yaml
