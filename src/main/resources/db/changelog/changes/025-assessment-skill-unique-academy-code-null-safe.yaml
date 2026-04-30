@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 025-001-assessment-skill-unique-academy-code-null-safe
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              drop index if exists fastworks_springboot.uk_assessment_skills_active_academy_code;
+
+              create unique index if not exists uk_assessment_skills_active_academy_code
+                on fastworks_springboot.assessment_skills((coalesce(academy_id, '00000000-0000-0000-0000-000000000000'::uuid)), code)
+                where deleted_at is null;
