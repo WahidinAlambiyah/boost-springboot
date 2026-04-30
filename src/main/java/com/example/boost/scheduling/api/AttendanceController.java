@@ -1,5 +1,7 @@
 package com.example.boost.scheduling.api;
 
+import com.example.boost.domain.dto.AttendanceBatchUpsertRequest;
+import com.example.boost.domain.dto.AttendanceBatchUpsertResponse;
 import com.example.boost.domain.dto.AttendanceSummaryResponse;
 import com.example.boost.domain.dto.AttendanceSubmitRequest;
 import com.example.boost.domain.dto.AttendanceUpsertRequest;
@@ -109,6 +111,22 @@ public class AttendanceController {
                 new AttendanceUpsertRequest(request.attendanceStatus(), request.checkInAt(), request.remarks())
         );
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Attendance upserted", "ok"));
+    }
+
+    @PostMapping("/sessions/{classSessionId}/batch-upsert")
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    @Operation(summary = "Batch upsert attendance by session")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Attendance batch upserted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation failed")
+    })
+    public ResponseEntity<ApiResponse<AttendanceBatchUpsertResponse>> upsertSessionAttendanceBatch(
+            @PathVariable UUID classSessionId,
+            @Valid @RequestBody AttendanceBatchUpsertRequest request) {
+        AttendanceBatchUpsertResponse response = attendanceService.upsertSessionAttendanceBatch(classSessionId, request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Attendance batch upserted", response));
     }
 
     @PutMapping("/sessions/{classSessionId}/students/{studentId}")
