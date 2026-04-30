@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,20 @@ public class StudentAssessmentService {
         return toDetail(studentAssessmentRepository.findWithScoresById(saved.getId()).orElseThrow(() -> new NotFoundException("Assessment not found")));
     }
 
+    @Transactional(readOnly = true)
+    public List<AssessmentDetailResponse> list(UUID studentId, UUID classSessionId, OffsetDateTime from, OffsetDateTime to) {
+        return studentAssessmentRepository.findAssessments(studentId, classSessionId, from, to)
+                .stream()
+                .map(this::toDetail)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AssessmentDetailResponse getById(UUID id) {
+        return toDetail(studentAssessmentRepository.findActiveWithScoresById(id)
+                .orElseThrow(() -> new NotFoundException("Assessment not found")));
+    }
+
     @Transactional
     public AssessmentDetailResponse update(UUID id, UUID academyId, AssessmentUpdateRequest request) {
         StudentAssessment assessment = studentAssessmentRepository.findWithScoresById(id)
@@ -71,9 +86,9 @@ public class StudentAssessmentService {
 
     @Transactional
     public void softDelete(UUID id) {
-        StudentAssessment assessment = studentAssessmentRepository.findWithScoresById(id)
+        StudentAssessment assessment = studentAssessmentRepository.findActiveWithScoresById(id)
                 .orElseThrow(() -> new NotFoundException("Assessment not found"));
-        java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         assessment.setDeletedAt(now);
         for (StudentAssessmentScore score : assessment.getScores()) {
             score.setDeletedAt(now);
@@ -108,7 +123,9 @@ public class StudentAssessmentService {
     }
 
     private AssessmentDetailResponse toDetail(StudentAssessment assessment) {
-        List<AssessmentDetailResponse.AssessmentScoreDetailResponse> scores = assessment.getScores().stream().map(score ->
+        List<AssessmentDetailResponse.AssessmentScoreDetailResponse> scores = assessment.getScores().stream()
+                .filter(score -> score.getDeletedAt() == null)
+                .map(score ->
                 new AssessmentDetailResponse.AssessmentScoreDetailResponse(
                         score.getSkill().getId(),
                         score.getSkill().getCode(),

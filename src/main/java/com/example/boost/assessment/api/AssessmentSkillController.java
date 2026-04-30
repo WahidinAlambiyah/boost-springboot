@@ -57,8 +57,8 @@ public class AssessmentSkillController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ASSESSMENT_WRITE')")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable UUID id) {
         assessmentSkillService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Assessment skill deleted", "deleted"));
     }
 }

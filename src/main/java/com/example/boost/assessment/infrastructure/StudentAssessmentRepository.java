@@ -15,7 +15,8 @@ public interface StudentAssessmentRepository extends JpaRepository<StudentAssess
     @Query("""
             select sa
             from StudentAssessment sa
-            where (:studentId is null or sa.studentId = :studentId)
+            where sa.deletedAt is null
+              and (:studentId is null or sa.studentId = :studentId)
               and (:classSessionId is null or sa.classSessionId = :classSessionId)
               and (:from is null or sa.assessedAt >= :from)
               and (:to is null or sa.assessedAt <= :to)
@@ -25,6 +26,10 @@ public interface StudentAssessmentRepository extends JpaRepository<StudentAssess
 
     @EntityGraph(attributePaths = {"academy", "scores", "scores.skill"})
     Optional<StudentAssessment> findWithScoresById(UUID id);
+
+    @EntityGraph(attributePaths = {"academy", "scores", "scores.skill"})
+    @Query("select sa from StudentAssessment sa where sa.id = :id and sa.deletedAt is null")
+    Optional<StudentAssessment> findActiveWithScoresById(@Param("id") UUID id);
 
     @Query(value = "select exists(select 1 from fastworks_springboot.students s where s.id = :studentId and s.academy_id = :academyId)", nativeQuery = true)
     boolean existsStudentInAcademy(@Param("studentId") UUID studentId, @Param("academyId") UUID academyId);
