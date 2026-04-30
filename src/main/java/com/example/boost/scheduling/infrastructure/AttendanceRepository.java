@@ -1,6 +1,8 @@
 package com.example.boost.scheduling.infrastructure;
 
 import com.example.boost.domain.dto.AttendanceSummaryResponse;
+import com.example.boost.domain.dto.AttendanceUpsertRequest;
+import com.example.boost.domain.dto.SessionAttendanceStudentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -51,6 +53,56 @@ public class AttendanceRepository {
                 actorUserId,
                 instructorScope,
                 actorUserId
+        );
+    }
+
+    public List<SessionAttendanceStudentResponse> findByClassSessionId(UUID classSessionId) {
+        String sql = """
+                select ar.student_id as studentId,
+                       s.full_name as studentName,
+                       ar.attendance_status as attendanceStatus,
+                       ar.check_in_at as checkInAt,
+                       ar.remarks as remarks
+                from fastworks_springboot.attendance_records ar
+                join fastworks_springboot.students s on s.id = ar.student_id and s.deleted_at is null
+                where ar.class_session_id = ?
+                  and ar.deleted_at is null
+                order by s.full_name asc
+                """;
+
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new SessionAttendanceStudentResponse(
+                        rs.getObject("studentId", UUID.class),
+                        rs.getString("studentName"),
+                        rs.getString("attendanceStatus"),
+                        rs.getTimestamp("checkInAt") == null ? null : rs.getTimestamp("checkInAt").toInstant(),
+                        rs.getString("remarks")
+                ),
+                classSessionId
+        );
+    }
+
+    public void upsertAttendance(UUID classSessionId, UUID studentId, AttendanceUpsertRequest request) {
+        String sql = """
+                insert into fastworks_springboot.attendance_records
+                    (class_session_id, student_id, attendance_status, check_in_at, remarks)
+                values (?, ?, ?, ?, ?)
+                on conflict (class_session_id, student_id)
+                do update set
+                    attendance_status = excluded.attendance_status,
+                    check_in_at = excluded.check_in_at,
+                    remarks = excluded.remarks,
+                    updated_at = now(),
+                    deleted_at = null
+                """;
+
+        jdbcTemplate.update(
+                sql,
+                classSessionId,
+                studentId,
+                request.attendanceStatus(),
+                request.checkInAt(),
+                request.remarks()
         );
     }
 }
