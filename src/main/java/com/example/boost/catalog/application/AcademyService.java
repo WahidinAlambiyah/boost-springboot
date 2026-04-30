@@ -65,7 +65,7 @@ public class AcademyService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_DELETE')")
+    @PreAuthorize("hasAuthority('ACADEMY_WRITE')")
     public void delete(UUID id) {
         Academy academy = academyRepository.getActiveByIdOrThrow(id);
         if (!academy.isActive()) {

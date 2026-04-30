@@ -29,7 +29,7 @@ public class CoachProfileService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('ACADEMY_READ')")
+    @PreAuthorize("hasAuthority('COACH_READ')")
     public Page<CoachProfileResponse> list(UUID academyId, String keyword, Pageable pageable) {
         if (keyword == null || keyword.isBlank()) {
             return coachProfileRepository.findByAcademyId(academyId, pageable).map(this::toResponse);
@@ -39,13 +39,13 @@ public class CoachProfileService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('ACADEMY_READ')")
-    public CoachProfileResponse getById(UUID id, UUID academyId) {
-        return toResponse(coachProfileRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId));
+    @PreAuthorize("hasAuthority('COACH_READ')")
+    public CoachProfileResponse getById(UUID id) {
+        return toResponse(coachProfileRepository.getActiveByIdOrThrow(id));
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_WRITE')")
+    @PreAuthorize("hasAuthority('COACH_WRITE')")
     public CoachProfileResponse create(CoachProfileCreateRequest request) {
         Academy academy = academyRepository.getActiveByIdOrThrow(request.getAcademyId());
         User user = userRepository.findById(request.getUserId())
@@ -71,9 +71,9 @@ public class CoachProfileService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_WRITE')")
-    public CoachProfileResponse update(UUID id, UUID academyId, CoachProfileUpdateRequest request) {
-        CoachProfile coachProfile = coachProfileRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId);
+    @PreAuthorize("hasAuthority('COACH_WRITE')")
+    public CoachProfileResponse update(UUID id, CoachProfileUpdateRequest request) {
+        CoachProfile coachProfile = coachProfileRepository.getActiveByIdOrThrow(id);
         coachProfile.setFullName(request.getFullName());
         coachProfile.setPhone(request.getPhone());
         coachProfile.setSpecialties(request.getSpecialties());
@@ -82,9 +82,9 @@ public class CoachProfileService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_DELETE')")
-    public void delete(UUID id, UUID academyId) {
-        CoachProfile coachProfile = coachProfileRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId);
+    @PreAuthorize("hasAuthority('COACH_WRITE')")
+    public void delete(UUID id) {
+        CoachProfile coachProfile = coachProfileRepository.getActiveByIdOrThrow(id);
         if (!coachProfile.isActive()) {
             throw new ConflictException("Coach profile already inactive");
         }
