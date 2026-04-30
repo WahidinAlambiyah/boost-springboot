@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class AssessmentRequestValidator {
     private final AssessmentSkillRepository assessmentSkillRepository;
 
-    public void validateScores(List<AssessmentScoreRequest> scores) {
+    public Map<String, AssessmentSkill> validateAndResolveScores(List<AssessmentScoreRequest> scores, java.util.UUID academyId) {
         if (scores == null || scores.isEmpty()) {
             throw new BadRequestException("scores must not be empty");
         }
@@ -38,6 +38,9 @@ public class AssessmentRequestValidator {
         List<AssessmentSkill> skills = assessmentSkillRepository.findByCodeInAndActiveTrue(skillCodes);
         Map<String, AssessmentSkill> byCode = new HashMap<>();
         for (AssessmentSkill skill : skills) {
+            if (skill.getAcademy() != null && !academyId.equals(skill.getAcademy().getId())) {
+                continue;
+            }
             byCode.put(skill.getCode().toLowerCase(Locale.ROOT), skill);
         }
 
@@ -51,5 +54,7 @@ public class AssessmentRequestValidator {
                 throw new BadRequestException("score exceeds max_score for skillCode " + score.skillCode());
             }
         }
+
+        return byCode;
     }
 }
