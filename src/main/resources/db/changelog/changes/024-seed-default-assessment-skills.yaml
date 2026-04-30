@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 024-001-add-assessment-skill-columns
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              alter table fastworks_springboot.assessment_skills
+                add column if not exists order_no integer;
+
+              alter table fastworks_springboot.assessment_skills
+                add column if not exists is_active boolean not null default true;
+
+              alter table fastworks_springboot.assessment_skills
+                add column if not exists max_score integer not null default 5;
+
+  - changeSet:
+      id: 024-002-seed-default-assessment-skills
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.assessment_skills (
+                academy_id,
+                code,
+                name,
+                order_no,
+                is_active,
+                max_score,
+                created_at,
+                updated_at
+              )
+              select
+                null,
+                v.code,
+                v.name,
+                v.order_no,
+                true,
+                5,
+                now(),
+                now()
+              from (
+                values
+                  ('BALANCE', 'BALANCE', 1),
+                  ('START_POSITION', 'START_POSITION', 2),
+                  ('PUSH_TECHNIQUE', 'PUSH_TECHNIQUE', 3),
+                  ('STEERING_CONTROL', 'STEERING_CONTROL', 4),
+                  ('BRAKING', 'BRAKING', 5),
+                  ('CORNERING', 'CORNERING', 6),
+                  ('TRACK_AWARENESS', 'TRACK_AWARENESS', 7),
+                  ('CONFIDENCE', 'CONFIDENCE', 8),
+                  ('FOCUS_DISCIPLINE', 'FOCUS_DISCIPLINE', 9),
+                  ('SPORTSMANSHIP', 'SPORTSMANSHIP', 10)
+              ) as v(code, name, order_no)
+              where not exists (
+                select 1
+                from fastworks_springboot.assessment_skills s
+                where s.academy_id is null
+                  and s.code = v.code
+                  and s.deleted_at is null
+              );
