@@ -69,6 +69,9 @@ public class ClassSessionConflictService {
         List<SessionConflict> conflicts = new ArrayList<>();
 
         for (ClassSession overlapping : overlappingSessions) {
+            if ("CANCELLED".equalsIgnoreCase(overlapping.getStatus())) {
+                continue;
+            }
             conflicts.add(SessionConflict.builder()
                     .type(ConflictType.TIME_OVERLAP)
                     .conflictingSessionId(overlapping.getId())
