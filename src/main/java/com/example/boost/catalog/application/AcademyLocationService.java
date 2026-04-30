@@ -25,7 +25,7 @@ public class AcademyLocationService {
     private final AcademyRepository academyRepository;
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('ACADEMY_READ')")
+    @PreAuthorize("hasAuthority('LOCATION_READ')")
     public Page<AcademyLocationResponse> list(UUID academyId, String keyword, Pageable pageable) {
         if (keyword == null || keyword.isBlank()) {
             return academyLocationRepository.findByAcademyId(academyId, pageable).map(this::toResponse);
@@ -37,13 +37,13 @@ public class AcademyLocationService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('ACADEMY_READ')")
-    public AcademyLocationResponse getById(UUID id, UUID academyId) {
-        return toResponse(academyLocationRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId));
+    @PreAuthorize("hasAuthority('LOCATION_READ')")
+    public AcademyLocationResponse getById(UUID id) {
+        return toResponse(academyLocationRepository.getActiveByIdOrThrow(id));
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_WRITE')")
+    @PreAuthorize("hasAuthority('LOCATION_WRITE')")
     public AcademyLocationResponse create(AcademyLocationCreateRequest request) {
         Academy academy = academyRepository.getActiveByIdOrThrow(request.getAcademyId());
         academyLocationRepository.ensureActiveCodeUnique(request.getAcademyId(), request.getCode());
@@ -65,9 +65,9 @@ public class AcademyLocationService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_WRITE')")
-    public AcademyLocationResponse update(UUID id, UUID academyId, AcademyLocationUpdateRequest request) {
-        AcademyLocation academyLocation = academyLocationRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId);
+    @PreAuthorize("hasAuthority('LOCATION_WRITE')")
+    public AcademyLocationResponse update(UUID id, AcademyLocationUpdateRequest request) {
+        AcademyLocation academyLocation = academyLocationRepository.getActiveByIdOrThrow(id);
         academyLocation.setName(request.getName());
         academyLocation.setAddress(request.getAddress());
         academyLocation.setCity(request.getCity());
@@ -80,9 +80,9 @@ public class AcademyLocationService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ACADEMY_DELETE')")
-    public void delete(UUID id, UUID academyId) {
-        AcademyLocation academyLocation = academyLocationRepository.getActiveByIdAndAcademyIdOrThrow(id, academyId);
+    @PreAuthorize("hasAuthority('LOCATION_WRITE')")
+    public void delete(UUID id) {
+        AcademyLocation academyLocation = academyLocationRepository.getActiveByIdOrThrow(id);
         if (!academyLocation.isActive()) {
             throw new ConflictException("Academy location already inactive");
         }
