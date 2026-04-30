@@ -9,6 +9,7 @@ import com.example.boost.domain.dto.RegisterResponse;
 import com.example.boost.domain.dto.RoleResponse;
 import com.example.boost.domain.dto.UserIdentifierResponse;
 import com.example.boost.domain.dto.UserResponse;
+import com.example.boost.catalog.application.AcademyLocationService;
 import com.example.boost.catalog.application.CatalogService;
 import com.example.boost.scheduling.application.AttendanceService;
 import com.example.boost.scheduling.application.EnrollmentService;
@@ -119,6 +120,9 @@ class AuthorizationMatrixTest {
     private CatalogService catalogService;
 
     @MockBean
+    private AcademyLocationService academyLocationService;
+
+    @MockBean
     private SchedulingService schedulingService;
 
     @MockBean
@@ -150,7 +154,8 @@ class AuthorizationMatrixTest {
                         "ENROLLMENT_READ", "ENROLLMENT_WRITE",
                         "ATTENDANCE_READ", "ATTENDANCE_MARK",
                         "BILLING_READ", "BILLING_WRITE",
-                        "NOTIFICATION_READ", "NOTIFICATION_WRITE"
+                        "NOTIFICATION_READ", "NOTIFICATION_WRITE",
+                        "LOCATION_READ", "LOCATION_WRITE"
                 )
         );
         TestActor opsUser = buildActor(
@@ -161,7 +166,8 @@ class AuthorizationMatrixTest {
                         "SCHEDULE_READ", "SCHEDULE_WRITE",
                         "ENROLLMENT_READ", "ENROLLMENT_WRITE",
                         "ATTENDANCE_READ", "ATTENDANCE_MARK",
-                        "NOTIFICATION_READ", "NOTIFICATION_WRITE"
+                        "NOTIFICATION_READ", "NOTIFICATION_WRITE",
+                        "LOCATION_READ", "LOCATION_WRITE"
                 )
         );
         TestActor instructorUser = buildActor(
@@ -274,6 +280,9 @@ class AuthorizationMatrixTest {
 
         when(catalogService.getSummaries()).thenReturn(List.of());
         when(catalogService.getWritableSummaryCount()).thenReturn(0L);
+
+        when(academyLocationService.list(any(), nullable(String.class), any()))
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
         when(schedulingService.getSummaries()).thenReturn(List.of());
         when(schedulingService.getWritableSummaryCount()).thenReturn(0L);
@@ -413,6 +422,8 @@ class AuthorizationMatrixTest {
                 new EndpointCase("GET /api/audit-logs", "GET", "/api/audit-logs", null, 200, "user_admin", "ops_user"),
                 new EndpointCase("GET /api/catalog", "GET", "/api/catalog", null, 200, "ops_user", "finance_user"),
                 new EndpointCase("GET /api/catalog/summary-count", "GET", "/api/catalog/summary-count", null, 200, "ops_user", "guardian_user"),
+                new EndpointCase("GET /api/academy-locations", "GET", "/api/academy-locations?academyId=" + SAMPLE_ID, null, 200, "user_admin", "guardian_user"),
+                new EndpointCase("POST /api/academy-locations", "POST", "/api/academy-locations", "{\"academyId\":\"11111111-1111-1111-1111-111111111111\",\"code\":\"JKT01\",\"name\":\"Jakarta Center\",\"address\":\"Jl. Sudirman 1\",\"city\":\"Jakarta\",\"state\":\"DKI Jakarta\",\"postalCode\":\"10220\",\"country\":\"ID\",\"timezone\":\"Asia/Jakarta\"}", 201, "user_admin", "guardian_user"),
                 new EndpointCase("GET /api/scheduling", "GET", "/api/scheduling", null, 200, "instructor_user", "guardian_user"),
                 new EndpointCase("GET /api/scheduling/summary-count", "GET", "/api/scheduling/summary-count", null, 200, "ops_user", "guardian_user"),
                 new EndpointCase("POST /api/scheduling/reschedule", "POST", "/api/scheduling/reschedule", "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"previousStartAt\":\"2026-01-01T08:00:00Z\",\"newStartAt\":\"2026-01-01T10:00:00Z\",\"reason\":\"Instructor availability\"}", 202, "ops_user", "guardian_user"),
