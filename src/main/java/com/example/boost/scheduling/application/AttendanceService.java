@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import com.example.boost.domain.dto.AttendanceBatchUpsertRequest;
+import com.example.boost.domain.dto.AttendanceBatchUpsertResponse;
 import java.util.Map;
 import java.util.UUID;
 
@@ -72,6 +74,16 @@ public class AttendanceService {
     @PreAuthorize("hasAuthority('ATTENDANCE_READ')")
     public List<SessionAttendanceStudentResponse> getSessionAttendances(UUID classSessionId) {
         return attendanceRepository.findByClassSessionId(classSessionId);
+    }
+
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    public AttendanceBatchUpsertResponse upsertSessionAttendanceBatch(UUID classSessionId, AttendanceBatchUpsertRequest request) {
+        for (var record : request.records()) {
+            upsertStudentAttendance(classSessionId, record.studentId(), record.attendance());
+        }
+        return new AttendanceBatchUpsertResponse(request.records().size(), "ok");
     }
 
     @Transactional
