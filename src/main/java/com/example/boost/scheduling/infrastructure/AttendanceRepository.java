@@ -82,6 +82,21 @@ public class AttendanceRepository {
         );
     }
 
+    public boolean existsActiveStudentInAcademy(UUID studentId, UUID academyId) {
+        String sql = """
+                select exists (
+                    select 1
+                    from fastworks_springboot.students s
+                    where s.id = ?
+                      and s.academy_id = ?
+                      and s.deleted_at is null
+                )
+                """;
+
+        Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, studentId, academyId);
+        return Boolean.TRUE.equals(exists);
+    }
+
     public void upsertAttendance(UUID classSessionId, UUID studentId, AttendanceUpsertRequest request) {
         String sql = """
                 insert into fastworks_springboot.attendance_records

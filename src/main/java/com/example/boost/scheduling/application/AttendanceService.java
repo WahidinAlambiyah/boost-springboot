@@ -1,10 +1,15 @@
 package com.example.boost.scheduling.application;
 
+import com.example.boost.common.exception.NotFoundException;
+import com.example.boost.common.exception.UnprocessableEntityException;
 import com.example.boost.domain.dto.AttendanceSummaryResponse;
 import com.example.boost.domain.dto.AttendanceUpsertRequest;
 import com.example.boost.domain.dto.SessionAttendanceStudentResponse;
 import com.example.boost.notification.application.OutboxEventService;
+import com.example.boost.domain.entity.ClassSession;
 import com.example.boost.scheduling.infrastructure.AttendanceRepository;
+import com.example.boost.scheduling.infrastructure.ClassSessionRepository;
+import com.example.boost.scheduling.infrastructure.EnrollmentJpaRepository;
 import com.example.boost.security.CurrentActor;
 import com.example.boost.security.CurrentActorProvider;
 import com.example.boost.security.ScopeGuardRepository;
@@ -25,6 +30,8 @@ public class AttendanceService {
     private final OutboxEventService outboxEventService;
     private final CurrentActorProvider currentActorProvider;
     private final ScopeGuardRepository scopeGuardRepository;
+    private final ClassSessionRepository classSessionRepository;
+    private final EnrollmentJpaRepository enrollmentJpaRepository;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ATTENDANCE_READ')")
@@ -70,6 +77,22 @@ public class AttendanceService {
     @Transactional
     @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
     public void upsertStudentAttendance(UUID classSessionId, UUID studentId, AttendanceUpsertRequest request) {
+        ClassSession session = classSessionRepository.findByIdAndDeletedAtIsNull(classSessionId)
+                .orElseThrow(() -> new NotFoundException("Class session not found"));
+        UUID academyId = session.getClassGroup().getAcademy().getId();
+
+        if (!attendanceRepository.existsActiveStudentInAcademy(studentId, academyId)) {
+            throw new NotFoundException("Student not found in session academy");
+        }
+
+        // NOTE: Trial model is not available yet, so attendance validation currently enforces
+        // academy-scope student existence and ACTIVE enrollment in the class group only.
+        if (!enrollmentJpaRepository.findByStudentIdAndClassGroupId(studentId, session.getClassGroup().getId())
+                .filter(e -> "ACTIVE".equals(e.getStatus().name()))
+                .isPresent()) {
+            throw new UnprocessableEntityException("Student is not actively enrolled in class group session");
+        }
+
         attendanceRepository.upsertAttendance(classSessionId, studentId, request);
     }
 }
