@@ -83,10 +83,21 @@ Contoh:
 
 Sebelum merge, pastikan checklist ini lengkap di deskripsi PR:
 
-- [ ] **Module boundary**: tidak ada akses lintas modul langsung (entity/repository/table).
-- [ ] **Test**: unit/integration test ditambah atau disesuaikan dan lulus.
-- [ ] **Migration**: migration ditambahkan (jika ada perubahan schema) dan rollback dipertimbangkan.
-- [ ] **Swagger update**: endpoint, schema request/response, dan status code terbaru sudah terpublikasi.
+- [ ] **Compile success**: build backend sukses tanpa error kompilasi.
+- [ ] **Liquibase on empty DB**: migration sukses di database kosong.
+- [ ] **Liquibase on legacy DB**: migration sukses di database berisi data lama, termasuk backfill `academy_id` berjalan sesuai ekspektasi.
+- [ ] **Default academy seed**: data default academy ter-seed setelah migration.
+- [ ] **New permission seed**: permission baru ter-seed dan dapat dipakai pada role assignment.
+- [ ] **Swagger update**: endpoint baru muncul di OpenAPI/Swagger dengan request/response/status code yang benar.
+- [ ] **Regression safety**: endpoint existing tetap lulus test regression.
+
+### Backend command gate (ikuti pipeline repo)
+
+Gunakan satu command gate backend berikut sebelum merge (subset test + OpenAPI compliance):
+
+```bash
+mvn -Dtest=AuthorizationLookupRepositoryTest,OpenApiDocumentationComplianceTest test
+```
 
 ---
 
