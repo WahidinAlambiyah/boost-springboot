@@ -1,0 +1,190 @@
+databaseChangeLog:
+  - changeSet:
+      id: 020-001-create-academies-and-related-tables
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              create table if not exists fastworks_springboot.academies (
+                id uuid primary key default gen_random_uuid(),
+                code varchar(50) not null,
+                name varchar(255) not null,
+                description text,
+                phone varchar(30),
+                email varchar(255),
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create unique index if not exists uk_academies_code on fastworks_springboot.academies(code);
+
+              create table if not exists fastworks_springboot.academy_locations (
+                id uuid primary key default gen_random_uuid(),
+                academy_id uuid not null references fastworks_springboot.academies(id),
+                code varchar(50) not null,
+                name varchar(255) not null,
+                address text,
+                city varchar(100),
+                state varchar(100),
+                postal_code varchar(20),
+                country varchar(100),
+                timezone varchar(100),
+                phone varchar(30),
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create unique index if not exists uk_academy_locations_active_academy_code
+                on fastworks_springboot.academy_locations(academy_id, code)
+                where deleted_at is null;
+
+              create table if not exists fastworks_springboot.coach_profiles (
+                id uuid primary key default gen_random_uuid(),
+                academy_id uuid not null references fastworks_springboot.academies(id),
+                user_id uuid not null references fastworks_springboot.users(id),
+                coach_no varchar(50),
+                full_name varchar(255),
+                phone varchar(30),
+                specialties text,
+                bio text,
+                is_active boolean not null default true,
+                created_at timestamptz not null default now(),
+                updated_at timestamptz not null default now(),
+                deleted_at timestamptz
+              );
+
+              create unique index if not exists uk_coach_profiles_active_academy_user
+                on fastworks_springboot.coach_profiles(academy_id, user_id)
+                where deleted_at is null;
+
+  - changeSet:
+      id: 020-002-add-academy-id-and-student-columns
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              alter table if exists fastworks_springboot.students add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.guardians add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.programs add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.courses add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.class_groups add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.class_sessions add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.enrollments add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.invoices add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.payments add column if not exists academy_id uuid;
+              alter table if exists fastworks_springboot.notifications add column if not exists academy_id uuid;
+
+              alter table if exists fastworks_springboot.students add column if not exists nickname varchar(255);
+              alter table if exists fastworks_springboot.students add column if not exists gender varchar(20);
+              alter table if exists fastworks_springboot.students add column if not exists medical_notes text;
+              alter table if exists fastworks_springboot.students add column if not exists allergy_notes text;
+              alter table if exists fastworks_springboot.students add column if not exists emergency_contact_name varchar(255);
+              alter table if exists fastworks_springboot.students add column if not exists emergency_contact_phone varchar(30);
+              alter table if exists fastworks_springboot.students add column if not exists photo_consent boolean not null default false;
+              alter table if exists fastworks_springboot.students add column if not exists current_level varchar(50);
+
+  - changeSet:
+      id: 020-003-seed-default-academy-backfill-and-constraints
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.academies (code, name)
+              values ('DEFAULT', 'Default Academy')
+              on conflict (code) do nothing;
+
+              update fastworks_springboot.students
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.guardians
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.programs
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.courses
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.class_groups
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.class_sessions
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.enrollments
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.invoices
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.payments
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              update fastworks_springboot.notifications
+              set academy_id = (select id from fastworks_springboot.academies where code = 'DEFAULT')
+              where academy_id is null;
+
+              alter table if exists fastworks_springboot.students alter column academy_id set not null;
+              alter table if exists fastworks_springboot.guardians alter column academy_id set not null;
+              alter table if exists fastworks_springboot.programs alter column academy_id set not null;
+              alter table if exists fastworks_springboot.courses alter column academy_id set not null;
+              alter table if exists fastworks_springboot.class_groups alter column academy_id set not null;
+              alter table if exists fastworks_springboot.class_sessions alter column academy_id set not null;
+              alter table if exists fastworks_springboot.enrollments alter column academy_id set not null;
+              alter table if exists fastworks_springboot.invoices alter column academy_id set not null;
+              alter table if exists fastworks_springboot.payments alter column academy_id set not null;
+              alter table if exists fastworks_springboot.notifications alter column academy_id set not null;
+
+              do $$
+              begin
+                if not exists (select 1 from pg_constraint where conname = 'fk_students_academy') then
+                  alter table fastworks_springboot.students add constraint fk_students_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_guardians_academy') then
+                  alter table fastworks_springboot.guardians add constraint fk_guardians_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_programs_academy') then
+                  alter table fastworks_springboot.programs add constraint fk_programs_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_courses_academy') then
+                  alter table fastworks_springboot.courses add constraint fk_courses_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_class_groups_academy') then
+                  alter table fastworks_springboot.class_groups add constraint fk_class_groups_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_class_sessions_academy') then
+                  alter table fastworks_springboot.class_sessions add constraint fk_class_sessions_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_enrollments_academy') then
+                  alter table fastworks_springboot.enrollments add constraint fk_enrollments_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_invoices_academy') then
+                  alter table fastworks_springboot.invoices add constraint fk_invoices_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_payments_academy') then
+                  alter table fastworks_springboot.payments add constraint fk_payments_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+                if not exists (select 1 from pg_constraint where conname = 'fk_notifications_academy') then
+                  alter table fastworks_springboot.notifications add constraint fk_notifications_academy foreign key (academy_id) references fastworks_springboot.academies(id);
+                end if;
+              end
+              $$;
