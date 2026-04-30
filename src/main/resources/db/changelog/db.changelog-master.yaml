@@ -39,3 +39,5 @@ databaseChangeLog:
       file: db/changelog/changes/019-seed-default-menus.yaml
   - include:
       file: db/changelog/changes/020-add-academy-multi-tenancy.yaml
+  - include:
+      file: db/changelog/changes/021-seed-rbac-phase-1-permissions.yaml
