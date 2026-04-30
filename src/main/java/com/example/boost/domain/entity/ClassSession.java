@@ -40,6 +40,11 @@ public class ClassSession {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "location_id")
+    private UUID locationId;
+
+    private String status;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
