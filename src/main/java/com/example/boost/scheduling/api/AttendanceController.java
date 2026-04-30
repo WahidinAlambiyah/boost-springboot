@@ -2,6 +2,9 @@ package com.example.boost.scheduling.api;
 
 import com.example.boost.domain.dto.AttendanceSummaryResponse;
 import com.example.boost.domain.dto.AttendanceSubmitRequest;
+import com.example.boost.domain.dto.AttendanceUpsertRequest;
+import com.example.boost.domain.dto.SessionAttendanceStudentResponse;
+import com.example.boost.domain.dto.SessionAttendanceStudentUpsertRequest;
 import com.example.boost.scheduling.application.AttendanceService;
 import com.example.boost.common.api.ApiResponse;
 import jakarta.validation.Valid;
@@ -19,8 +22,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @Tag(name = "10. Attendance")
@@ -82,5 +88,36 @@ public class AttendanceController {
         );
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(ApiResponse.success(HttpStatus.ACCEPTED.value(), "Attendance submitted event captured", "queued"));
+    }
+
+    @GetMapping("/sessions/{classSessionId}")
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ')")
+    public ResponseEntity<ApiResponse<List<SessionAttendanceStudentResponse>>> getSessionAttendances(
+            @PathVariable UUID classSessionId) {
+        List<SessionAttendanceStudentResponse> data = attendanceService.getSessionAttendances(classSessionId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Session attendance retrieved", data));
+    }
+
+    @PostMapping("/sessions/{classSessionId}/students")
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    public ResponseEntity<ApiResponse<String>> upsertStudentAttendanceBySession(
+            @PathVariable UUID classSessionId,
+            @Valid @RequestBody SessionAttendanceStudentUpsertRequest request) {
+        attendanceService.upsertStudentAttendance(
+                classSessionId,
+                request.studentId(),
+                new AttendanceUpsertRequest(request.attendanceStatus(), request.checkInAt(), request.remarks())
+        );
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Attendance upserted", "ok"));
+    }
+
+    @PutMapping("/sessions/{classSessionId}/students/{studentId}")
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    public ResponseEntity<ApiResponse<String>> upsertStudentAttendance(
+            @PathVariable UUID classSessionId,
+            @PathVariable UUID studentId,
+            @Valid @RequestBody AttendanceUpsertRequest request) {
+        attendanceService.upsertStudentAttendance(classSessionId, studentId, request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Attendance upserted", "ok"));
     }
 }

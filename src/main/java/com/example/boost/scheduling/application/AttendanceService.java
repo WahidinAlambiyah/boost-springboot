@@ -1,6 +1,8 @@
 package com.example.boost.scheduling.application;
 
 import com.example.boost.domain.dto.AttendanceSummaryResponse;
+import com.example.boost.domain.dto.AttendanceUpsertRequest;
+import com.example.boost.domain.dto.SessionAttendanceStudentResponse;
 import com.example.boost.notification.application.OutboxEventService;
 import com.example.boost.scheduling.infrastructure.AttendanceRepository;
 import com.example.boost.security.CurrentActor;
@@ -57,5 +59,17 @@ public class AttendanceService {
                         "absentCount", absentCount
                 )
         );
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ATTENDANCE_READ')")
+    public List<SessionAttendanceStudentResponse> getSessionAttendances(UUID classSessionId) {
+        return attendanceRepository.findByClassSessionId(classSessionId);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
+    public void upsertStudentAttendance(UUID classSessionId, UUID studentId, AttendanceUpsertRequest request) {
+        attendanceRepository.upsertAttendance(classSessionId, studentId, request);
     }
 }

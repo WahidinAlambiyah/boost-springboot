@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.doNothing;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -114,6 +116,12 @@ class AttendanceControllerTest {
                 org.mockito.ArgumentMatchers.anyInt(),
                 org.mockito.ArgumentMatchers.anyInt()
         );
+        when(attendanceService.getSessionAttendances(org.mockito.ArgumentMatchers.any(UUID.class))).thenReturn(List.of());
+        doNothing().when(attendanceService).upsertStudentAttendance(
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any()
+        );
 
         MockHttpServletRequestBuilder request = testCase.request();
         setSecurityContext(testCase.authority());
@@ -125,6 +133,8 @@ class AttendanceControllerTest {
 
     private static Stream<EndpointAccessCase> endpointSecurityCases() {
         String submitBody = "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}";
+        String upsertBody = "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"attendanceStatus\":\"PRESENT\",\"remarks\":\"on time\"}";
+        String upsertStudentBody = "{\"attendanceStatus\":\"PRESENT\",\"remarks\":\"on time\"}";
         return Stream.of(
                 new EndpointAccessCase("GET /api/attendance without token -> 401", get("/api/attendance"), null, 401),
                 new EndpointAccessCase("GET /api/attendance wrong role -> 403", get("/api/attendance"), "ATTENDANCE_MARK", 403),
@@ -143,6 +153,20 @@ class AttendanceControllerTest {
                 new EndpointAccessCase("POST /api/attendance/submit correct role -> 202", post("/api/attendance/submit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(submitBody), "ATTENDANCE_MARK", 202)
+                ,
+                new EndpointAccessCase("GET /api/attendance/sessions/{id} correct role -> 200",
+                        get("/api/attendance/sessions/11111111-1111-1111-1111-111111111111"),
+                        "ATTENDANCE_READ", 200),
+                new EndpointAccessCase("POST /api/attendance/sessions/{id}/students correct role -> 200",
+                        post("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/students")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(upsertBody),
+                        "ATTENDANCE_MARK", 200),
+                new EndpointAccessCase("PUT /api/attendance/sessions/{id}/students/{studentId} correct role -> 200",
+                        put("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/students/11111111-1111-1111-1111-111111111111")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(upsertStudentBody),
+                        "ATTENDANCE_MARK", 200)
         );
     }
 
