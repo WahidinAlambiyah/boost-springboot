@@ -2,12 +2,7 @@ package com.example.boost.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -15,37 +10,32 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "payments", schema = "fastworks_springboot")
+@Table(name = "academies", schema = "fastworks_springboot")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
-public class Payment {
+public class Academy {
     @Id
     private UUID id;
 
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "academy_id", nullable = false)
-    private Academy academy;
-
-    @Column(name = "invoice_id", nullable = false)
-    private UUID invoiceId;
+    @Column(nullable = false, unique = true)
+    private String code;
 
     @Column(nullable = false)
-    private BigDecimal amount;
+    private String name;
 
-    @Column(name = "payment_date", nullable = false)
-    private LocalDate paymentDate;
+    private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus status;
+    private String phone;
+
+    private String email;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
@@ -53,17 +43,14 @@ public class Payment {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     @PrePersist
     public void onCreate() {
         OffsetDateTime now = OffsetDateTime.now();
         if (id == null) {
             id = UUID.randomUUID();
-        }
-        if (paymentDate == null) {
-            paymentDate = LocalDate.now();
-        }
-        if (status == null) {
-            status = PaymentStatus.SUCCESS;
         }
         createdAt = now;
         updatedAt = now;

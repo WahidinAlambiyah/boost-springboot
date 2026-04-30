@@ -3,56 +3,53 @@ package com.example.boost.domain.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "enrollments", schema = "fastworks_springboot")
+@Table(name = "coach_profiles", schema = "fastworks_springboot")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
-public class Enrollment {
+public class CoachProfile {
     @Id
     private UUID id;
-
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "academy_id", nullable = false)
     private Academy academy;
 
-    @Column(name = "student_id", nullable = false)
-    private UUID studentId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "class_group_id", nullable = false)
-    private UUID classGroupId;
+    @Column(name = "coach_no")
+    private String coachNo;
 
-    @Column(name = "enrollment_date", nullable = false)
-    private LocalDate enrollmentDate;
+    @Column(name = "full_name")
+    private String fullName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EnrollmentStatus status;
+    private String phone;
 
-    @Column(name = "waitlist_position")
-    private Integer waitlistPosition;
+    private String specialties;
 
-    @Version
-    @Column(nullable = false)
-    private Long version;
+    private String bio;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
@@ -62,16 +59,12 @@ public class Enrollment {
 
     @PrePersist
     public void onCreate() {
+        OffsetDateTime now = OffsetDateTime.now();
         if (id == null) {
             id = UUID.randomUUID();
         }
-        if (enrollmentDate == null) {
-            enrollmentDate = LocalDate.now();
-        }
-        if (version == null) {
-            version = 0L;
-        }
-        updatedAt = OffsetDateTime.now();
+        createdAt = now;
+        updatedAt = now;
     }
 
     @PreUpdate
