@@ -2,6 +2,8 @@ package com.example.boost.service;
 
 import com.example.boost.common.exception.NotFoundException;
 import com.example.boost.common.exception.UnprocessableEntityException;
+import com.example.boost.domain.dto.AttendanceBatchUpsertRecordRequest;
+import com.example.boost.domain.dto.AttendanceBatchUpsertRequest;
 import com.example.boost.domain.dto.AttendanceUpsertRequest;
 import com.example.boost.domain.entity.Academy;
 import com.example.boost.domain.entity.ClassGroup;
@@ -106,6 +108,34 @@ class AttendanceServiceTest {
         verify(attendanceRepository).upsertAttendance(classSessionId, studentId, new AttendanceUpsertRequest("PRESENT", null, null));
     }
 
+
+
+    @Test
+    void batchUpsertShouldProcessRecordsIncludingDuplicateStudentInSameSession() {
+        UUID classSessionId = UUID.randomUUID();
+        UUID studentId = UUID.randomUUID();
+        UUID academyId = UUID.randomUUID();
+        UUID classGroupId = UUID.randomUUID();
+
+        ClassSession session = session(classSessionId, academyId);
+        session.getClassGroup().setId(classGroupId);
+        when(classSessionRepository.findByIdAndDeletedAtIsNull(classSessionId)).thenReturn(Optional.of(session));
+        when(attendanceRepository.existsActiveStudentInAcademy(studentId, academyId)).thenReturn(true);
+        Enrollment active = new Enrollment();
+        active.setStatus(EnrollmentStatus.ACTIVE);
+        when(enrollmentJpaRepository.findByStudentIdAndClassGroupId(studentId, classGroupId)).thenReturn(Optional.of(active));
+
+        AttendanceUpsertRequest first = new AttendanceUpsertRequest("PRESENT", null, "first");
+        AttendanceUpsertRequest second = new AttendanceUpsertRequest("LATE", null, "update");
+
+        attendanceService.upsertSessionAttendanceBatch(classSessionId, new AttendanceBatchUpsertRequest(java.util.List.of(
+                new AttendanceBatchUpsertRecordRequest(studentId, first),
+                new AttendanceBatchUpsertRecordRequest(studentId, second)
+        )));
+
+        verify(attendanceRepository).upsertAttendance(classSessionId, studentId, first);
+        verify(attendanceRepository).upsertAttendance(classSessionId, studentId, second);
+    }
     private ClassSession session(UUID sessionId, UUID academyId) {
         Academy academy = new Academy();
         academy.setId(academyId);

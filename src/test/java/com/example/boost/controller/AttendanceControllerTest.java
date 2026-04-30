@@ -122,6 +122,8 @@ class AttendanceControllerTest {
                 org.mockito.ArgumentMatchers.any(UUID.class),
                 org.mockito.ArgumentMatchers.any()
         );
+        when(attendanceService.upsertSessionAttendanceBatch(org.mockito.ArgumentMatchers.any(UUID.class), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new com.example.boost.domain.dto.AttendanceBatchUpsertResponse(1, "ok"));
 
         MockHttpServletRequestBuilder request = testCase.request();
         setSecurityContext(testCase.authority());
@@ -135,6 +137,7 @@ class AttendanceControllerTest {
         String submitBody = "{\"classGroupId\":\"11111111-1111-1111-1111-111111111111\",\"sessionDate\":\"2026-01-01\",\"presentCount\":10,\"absentCount\":2}";
         String upsertBody = "{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"attendanceStatus\":\"PRESENT\",\"remarks\":\"on time\"}";
         String upsertStudentBody = "{\"attendanceStatus\":\"PRESENT\",\"remarks\":\"on time\"}";
+        String batchBody = "{\"records\":[{\"studentId\":\"11111111-1111-1111-1111-111111111111\",\"attendance\":{\"attendanceStatus\":\"PRESENT\",\"remarks\":\"on time\"}}]}";
         return Stream.of(
                 new EndpointAccessCase("GET /api/attendance without token -> 401", get("/api/attendance"), null, 401),
                 new EndpointAccessCase("GET /api/attendance wrong role -> 403", get("/api/attendance"), "ATTENDANCE_MARK", 403),
@@ -166,6 +169,38 @@ class AttendanceControllerTest {
                         put("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/students/11111111-1111-1111-1111-111111111111")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(upsertStudentBody),
+                        "ATTENDANCE_MARK", 200)
+
+                ,new EndpointAccessCase("GET /api/attendance/sessions/{id} without token -> 401",
+                        get("/api/attendance/sessions/11111111-1111-1111-1111-111111111111"),
+                        null, 401),
+                new EndpointAccessCase("GET /api/attendance/sessions/{id} wrong role -> 403",
+                        get("/api/attendance/sessions/11111111-1111-1111-1111-111111111111"),
+                        "ATTENDANCE_MARK", 403),
+                new EndpointAccessCase("POST /api/attendance/sessions/{id}/students wrong role -> 403",
+                        post("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/students")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(upsertBody),
+                        "ATTENDANCE_READ", 403),
+                new EndpointAccessCase("PUT /api/attendance/sessions/{id}/students/{studentId} wrong role -> 403",
+                        put("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/students/11111111-1111-1111-1111-111111111111")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(upsertStudentBody),
+                        "ATTENDANCE_READ", 403),
+                new EndpointAccessCase("POST /api/attendance/sessions/{id}/batch without token -> 401",
+                        post("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/batch")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(batchBody),
+                        null, 401),
+                new EndpointAccessCase("POST /api/attendance/sessions/{id}/batch wrong role -> 403",
+                        post("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/batch")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(batchBody),
+                        "ATTENDANCE_READ", 403),
+                new EndpointAccessCase("POST /api/attendance/sessions/{id}/batch correct role -> 200",
+                        post("/api/attendance/sessions/11111111-1111-1111-1111-111111111111/batch")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(batchBody),
                         "ATTENDANCE_MARK", 200)
         );
     }
