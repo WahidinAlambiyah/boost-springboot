@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 021-seed-rbac-phase-1-permissions
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('ACADEMY_READ', 'Academy Read', 'Read academy data', 'ACADEMY', true, now(), now()),
+                ('ACADEMY_WRITE', 'Academy Write', 'Manage academy data', 'ACADEMY', true, now(), now()),
+                ('LOCATION_READ', 'Location Read', 'Read location data', 'LOCATION', true, now(), now()),
+                ('LOCATION_WRITE', 'Location Write', 'Manage location data', 'LOCATION', true, now(), now()),
+                ('COACH_READ', 'Coach Read', 'Read coach data', 'COACH', true, now(), now()),
+                ('COACH_WRITE', 'Coach Write', 'Manage coach data', 'COACH', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p
+                on p.code in ('ACADEMY_READ', 'ACADEMY_WRITE', 'LOCATION_READ', 'LOCATION_WRITE', 'COACH_READ', 'COACH_WRITE')
+              where r.code in ('ADMIN', 'ROLE_ADMIN')
+              on conflict (role_id, permission_id) do nothing;
