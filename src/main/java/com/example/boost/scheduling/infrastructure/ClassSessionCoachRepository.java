@@ -35,14 +35,16 @@ public interface ClassSessionCoachRepository extends JpaRepository<ClassSessionC
             select csc from ClassSessionCoach csc
             join csc.classSession cs
             where csc.coach.id = :coachId
+              and csc.academy.id = :academyId
               and csc.deletedAt is null
               and cs.deletedAt is null
-              and cs.id <> :excludedClassSessionId
+              and (:excludedClassSessionId is null or cs.id <> :excludedClassSessionId)
               and cs.sessionDate = :sessionDate
               and cs.startTime < :endTime
               and cs.endTime > :startTime
             """)
     List<ClassSessionCoach> findCoachOverlaps(
+            @Param("academyId") UUID academyId,
             @Param("coachId") UUID coachId,
             @Param("sessionDate") LocalDate sessionDate,
             @Param("startTime") LocalTime startTime,
