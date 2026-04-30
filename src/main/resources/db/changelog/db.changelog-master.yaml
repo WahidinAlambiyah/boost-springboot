@@ -47,3 +47,6 @@ databaseChangeLog:
       file: db/changelog/changes/023-create-student-assessments.yaml
   - include:
       file: db/changelog/changes/024-seed-default-assessment-skills.yaml
+
+  - include:
+      file: db/changelog/changes/025-assessment-skill-unique-academy-code-null-safe.yaml
