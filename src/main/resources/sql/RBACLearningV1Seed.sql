@@ -51,6 +51,8 @@ values
     ('ATTENDANCE_MARK',  'Attendance Mark',  'Mark attendance',                        'ATTENDANCE', true, now(), now()),
     ('PROGRESS_READ',    'Progress Read',    'Read progress notes/results',            'PROGRESS',   true, now(), now()),
     ('PROGRESS_WRITE',   'Progress Write',   'Write progress notes/results',           'PROGRESS',   true, now(), now()),
+    ('ASSESSMENT_READ',  'Assessment Read',  'Read assessment records and results',    'ASSESSMENT', true, now(), now()),
+    ('ASSESSMENT_WRITE', 'Assessment Write', 'Create/update assessment records/results','ASSESSMENT', true, now(), now()),
 
     -- Billing
     ('BILLING_READ',     'Billing Read',     'Read invoices/payments',                 'BILLING',    true, now(), now()),
@@ -94,6 +96,7 @@ with role_perm(code_role, code_perm) as (
         ('INSTRUCTOR','CLASS_READ'),('INSTRUCTOR','SCHEDULE_READ'),('INSTRUCTOR','SESSION_READ'),
         ('INSTRUCTOR','ATTENDANCE_READ'),('INSTRUCTOR','ATTENDANCE_MARK'),
         ('INSTRUCTOR','PROGRESS_READ'),('INSTRUCTOR','PROGRESS_WRITE'),
+        ('INSTRUCTOR','ASSESSMENT_READ'),('INSTRUCTOR','ASSESSMENT_WRITE'),
         ('INSTRUCTOR','STUDENT_READ'),
 
         -- GUARDIAN
@@ -110,6 +113,7 @@ with role_perm(code_role, code_perm) as (
         ('OPS','GUARDIAN_READ'),('OPS','GUARDIAN_WRITE'),
         ('OPS','ENROLLMENT_READ'),('OPS','ENROLLMENT_WRITE'),('OPS','WAITLIST_MANAGE'),
         ('OPS','ATTENDANCE_READ'),('OPS','REPORT_EXPORT'),
+        ('OPS','ASSESSMENT_READ'),
 
         -- FINANCE
         ('FINANCE','BILLING_READ'),('FINANCE','INVOICE_WRITE'),

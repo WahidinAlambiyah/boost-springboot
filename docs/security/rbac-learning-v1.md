@@ -58,6 +58,8 @@ Dokumen ini mendefinisikan model Role-Based Access Control (RBAC) untuk domain k
 - `ATTENDANCE_MARK`
 - `PROGRESS_READ`
 - `PROGRESS_WRITE`
+- `ASSESSMENT_READ`
+- `ASSESSMENT_WRITE`
 
 ### Billing / Reporting / Audit
 - `BILLING_READ`
@@ -93,6 +95,8 @@ Dokumen ini mendefinisikan model Role-Based Access Control (RBAC) untuk domain k
 | ATTENDANCE_MARK | ✅ | ✅ |  |  |  |
 | PROGRESS_READ | ✅ | ✅ | ✅* |  |  |
 | PROGRESS_WRITE | ✅ | ✅ |  |  |  |
+| ASSESSMENT_READ | ✅ | ✅ |  | ✅ |  |
+| ASSESSMENT_WRITE | ✅ | ✅ |  |  |  |
 | BILLING_READ | ✅ |  | ✅* |  | ✅ |
 | INVOICE_WRITE | ✅ |  |  |  | ✅ |
 | PAYMENT_RECORD | ✅ |  |  |  | ✅ |
