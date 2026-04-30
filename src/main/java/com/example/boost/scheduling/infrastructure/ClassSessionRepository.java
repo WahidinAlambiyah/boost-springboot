@@ -12,6 +12,11 @@ import java.util.UUID;
 
 public interface ClassSessionRepository extends JpaRepository<ClassSession, UUID> {
 
+    List<ClassSession> findAllByDeletedAtIsNull();
+
+    java.util.Optional<ClassSession> findByIdAndDeletedAtIsNull(UUID id);
+
+
     @Query("""
             select cs from ClassSession cs
             join cs.classGroup cg
