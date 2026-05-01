@@ -218,7 +218,7 @@ export interface ClassSessionCreateRequest {
   status?: string;
 }
 
-export interface ClassSessionUpdateRequest extends ClassSessionCreateRequest {}
+export type ClassSessionUpdateRequest = ClassSessionCreateRequest;
 
 export interface ClassSessionConflict {
   type: "TIME_OVERLAP" | "LOCATION_OVERLAP" | "COACH_OVERLAP";
@@ -254,7 +254,7 @@ export interface ClassSessionCoachCreateRequest {
   notes?: string;
 }
 
-export interface ClassSessionCoachUpdateRequest extends ClassSessionCoachCreateRequest {}
+export type ClassSessionCoachUpdateRequest = ClassSessionCoachCreateRequest;
 
 export interface AttendanceRecord {
   studentId: string;
@@ -323,7 +323,7 @@ export interface StudentAssessmentCreateRequest {
   scores: StudentAssessmentSkillScore[];
 }
 
-export interface StudentAssessmentUpdateRequest extends StudentAssessmentCreateRequest {}
+export type StudentAssessmentUpdateRequest = StudentAssessmentCreateRequest;
 
 export interface StudentProgressReport {
   student: {
