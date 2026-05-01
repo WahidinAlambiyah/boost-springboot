@@ -39,11 +39,11 @@ public class StudentPackageSubscriptionController {
                 .body(ApiResponse.success(HttpStatus.CREATED.value(), "Student package subscription created", response));
     }
 
-    @PutMapping("/{subscriptionId}")
+    @PutMapping
     @PreAuthorize("hasAuthority('PACKAGE_WRITE')")
     public ResponseEntity<ApiResponse<StudentPackageSubscriptionResponse>> update(
             @PathVariable UUID studentId,
-            @PathVariable UUID subscriptionId,
+            @RequestParam UUID subscriptionId,
             @Valid @RequestBody StudentPackageSubscriptionUpdateRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Student package subscription updated",
