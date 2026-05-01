@@ -46,6 +46,10 @@ Permission berikut ditambahkan tanpa mengubah permission lama:
 - `ATTENDANCE_MARK`
 - `BILLING_READ`
 - `BILLING_WRITE`
+- `PACKAGE_READ`
+- `PACKAGE_WRITE`
+- `PAYROLL_READ`
+- `PAYROLL_WRITE`
 - `NOTIFICATION_READ`
 - `NOTIFICATION_WRITE`
 
@@ -58,10 +62,13 @@ Semua permission baseline di atas.
 Tidak ada permission langsung (empty direct permission set).
 
 ### `SUPPORT`
-Tidak ada permission langsung (empty direct permission set).
+- `PACKAGE_READ`
+- `PACKAGE_WRITE`
 
 ### `FINANCE`
-Tidak ada permission langsung (empty direct permission set).
+- `PACKAGE_READ`
+- `PAYROLL_READ`
+- `PAYROLL_WRITE`
 
 ### `USER_MANAGER`
 Tidak ada permission langsung (empty direct permission set).

@@ -66,6 +66,10 @@ Dokumen ini mendefinisikan model Role-Based Access Control (RBAC) untuk domain k
 - `INVOICE_WRITE`
 - `PAYMENT_RECORD`
 - `REFUND_APPROVE`
+- `PACKAGE_READ`
+- `PACKAGE_WRITE`
+- `PAYROLL_READ`
+- `PAYROLL_WRITE`
 - `REPORT_EXPORT`
 - `AUDIT_READ`
 
@@ -101,6 +105,10 @@ Dokumen ini mendefinisikan model Role-Based Access Control (RBAC) untuk domain k
 | INVOICE_WRITE | ✅ |  |  |  | ✅ |
 | PAYMENT_RECORD | ✅ |  |  |  | ✅ |
 | REFUND_APPROVE | ✅ |  |  |  | ✅ |
+| PACKAGE_READ | ✅ |  |  | ✅ | ✅ |
+| PACKAGE_WRITE | ✅ |  |  | ✅ |  |
+| PAYROLL_READ | ✅ |  |  |  | ✅ |
+| PAYROLL_WRITE | ✅ |  |  |  | ✅ |
 | REPORT_EXPORT | ✅ |  |  | ✅ | ✅ |
 | AUDIT_READ | ✅ |  |  |  |  |
 
