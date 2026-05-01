@@ -24,7 +24,7 @@ export default function AcademiesPage() {
   const canWrite = useMemo(() => can(authorities, "ACADEMY_WRITE"), [authorities]);
 
   const academiesQuery = useQuery({
-    queryKey: [...QUERY_KEYS.academies.list(), search],
+    queryKey: QUERY_KEYS.academies.filter({ search: search || undefined }),
     queryFn: () => academyService.list({ search }),
   });
 

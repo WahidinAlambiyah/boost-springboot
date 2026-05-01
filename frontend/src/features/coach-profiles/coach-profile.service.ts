@@ -1,7 +1,6 @@
-import { CoachProfile } from "@/lib/api-types";
+import { CoachProfile, CoachProfileCreateRequest, CoachProfileUpdateRequest } from "@/lib/api-types";
 import { api } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
-import { CoachProfileFormSubmitValues } from "@/features/coach-profiles/coach-profile.schema";
 
 export interface CoachProfileListParams {
   academyId?: string;
@@ -24,12 +23,12 @@ export const coachProfileService = {
     return response.data.data;
   },
 
-  async create(payload: CoachProfileFormSubmitValues): Promise<ApiResponse<CoachProfile>> {
+  async create(payload: CoachProfileCreateRequest): Promise<ApiResponse<CoachProfile>> {
     const response = await api.post<ApiResponse<CoachProfile>>("/api/coach-profiles", payload);
     return response.data;
   },
 
-  async update(id: string, payload: CoachProfileFormSubmitValues): Promise<ApiResponse<CoachProfile>> {
+  async update(id: string, payload: CoachProfileUpdateRequest): Promise<ApiResponse<CoachProfile>> {
     const response = await api.put<ApiResponse<CoachProfile>>(`/api/coach-profiles/${id}`, payload);
     return response.data;
   },

@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { Student } from "@/lib/api-types";
+import { Student, StudentUpdateRequest } from "@/lib/api-types";
 import { StudentFormValues } from "@/features/students/student.schema";
 import { ApiResponse } from "@/types/api";
 
@@ -30,7 +30,7 @@ export const studentService = {
     const response = await api.post<ApiResponse<Student>>("/api/students", payload);
     return response.data;
   },
-  async update(id: string, payload: StudentFormValues): Promise<ApiResponse<Student>> {
+  async update(id: string, payload: StudentUpdateRequest): Promise<ApiResponse<Student>> {
     if (!isStudentsEndpointEnabled) throwNotImplemented();
     const response = await api.put<ApiResponse<Student>>(`/api/students/${id}`, payload);
     return response.data;

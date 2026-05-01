@@ -30,9 +30,22 @@ export const QUERY_KEYS = {
   billing: ["billing"] as const,
   notification: ["notification"] as const,
 
-  academies: createEntityKeys<{ academyId?: string | number }>("academies"),
-  academyLocations: createEntityKeys<{ academyId?: string | number }>("academyLocations"),
-  coachProfiles: createEntityKeys<{ academyId?: string | number }>("coachProfiles"),
+  academies: createEntityKeys<{ academyId?: string | number; search?: string }>("academies"),
+  academyLocations: {
+    ...createEntityKeys<{ academyId?: string | number }>("academyLocations"),
+    byAcademy: (academyId?: string | number) =>
+      academyId
+        ? (["academyLocations", "byAcademy", academyId] as const)
+        : (["academyLocations", "byAcademy", "all"] as const),
+  },
+  coachProfiles: {
+    ...createEntityKeys<{ academyId?: string | number }>("coachProfiles"),
+    byAcademy: (academyId?: string | number) =>
+      academyId
+        ? (["coachProfiles", "byAcademy", academyId] as const)
+        : (["coachProfiles", "byAcademy", "all"] as const),
+  },
+  students: createEntityKeys<{ academyId?: string | number }>("students"),
   classSessions: createEntityKeys<{ academyId?: string | number } & DateRange>("classSessions"),
   classSessionCoaches: createEntityKeys<{
     academyId?: string | number;
