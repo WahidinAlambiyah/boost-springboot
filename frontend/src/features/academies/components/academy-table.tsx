@@ -1,6 +1,8 @@
 "use client";
 
 import { Academy } from "@/lib/api-types";
+import { ConfirmDialog } from "@/app/components/confirm-dialog";
+import { StatusBadge } from "@/app/components/status-badge";
 
 interface AcademyTableProps {
   academies: Academy[];
@@ -28,16 +30,25 @@ export default function AcademyTable({ academies, canWrite, onEdit, onDelete }: 
               <td className="px-4 py-2">{academy.code}</td>
               <td className="px-4 py-2">{academy.name}</td>
               <td className="px-4 py-2">{academy.email || academy.phone || "-"}</td>
-              <td className="px-4 py-2">{academy.isActive ? "Yes" : "No"}</td>
+              <td className="px-4 py-2">
+                <StatusBadge label={academy.isActive ? "Active" : "Inactive"} tone={academy.isActive ? "success" : "neutral"} />
+              </td>
               {canWrite ? (
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
                     <button type="button" className="rounded border border-zinc-300 px-2 py-1" onClick={() => onEdit(academy)}>
                       Edit
                     </button>
-                    <button type="button" className="rounded border border-red-300 px-2 py-1 text-red-700" onClick={() => onDelete(academy)}>
-                      Delete
-                    </button>
+                    <ConfirmDialog
+                      options={{ title: "Hapus academy?", description: `Academy ${academy.name} akan dihapus.`, confirmText: "Hapus" }}
+                      onConfirm={() => onDelete(academy)}
+                    >
+                      {(open) => (
+                        <button type="button" className="rounded border border-red-300 px-2 py-1 text-red-700" onClick={open}>
+                          Delete
+                        </button>
+                      )}
+                    </ConfirmDialog>
                   </div>
                 </td>
               ) : null}

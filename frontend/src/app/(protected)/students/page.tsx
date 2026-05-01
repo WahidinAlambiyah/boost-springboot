@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import EmptyState from "@/app/components/empty-state";
+import { ErrorMessage } from "@/app/components/error-message";
+import LoadingSkeleton from "@/app/components/loading-skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
@@ -15,6 +18,7 @@ import { QUERY_KEYS } from "@/lib/query-keys";
 export default function StudentsPage() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Student | null>(null);
+  const [formVersion, setFormVersion] = useState(0);
 
   const studentsQuery = useQuery({
     queryKey: QUERY_KEYS.students.list(),
@@ -25,6 +29,7 @@ export default function StudentsPage() {
   const createMutation = useMutation({
     mutationFn: (values: StudentFormValues) => studentService.create(values),
     onSuccess: async () => {
+      setFormVersion((prev) => prev + 1);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.students.all });
     },
   });
@@ -34,6 +39,7 @@ export default function StudentsPage() {
       studentService.update(id, values),
     onSuccess: async () => {
       setSelected(null);
+      setFormVersion((prev) => prev + 1);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.students.all });
     },
   });
@@ -50,12 +56,16 @@ export default function StudentsPage() {
         ) : (
           <>
             <div className="mt-6">
-              {studentsQuery.data ? (
+              {studentsQuery.isLoading ? <LoadingSkeleton rows={6} /> : null}
+              {studentsQuery.isError ? <ErrorMessage message="Gagal memuat data students." /> : null}
+              {studentsQuery.data && studentsQuery.data.length === 0 ? <EmptyState title="Belum ada student" description="Silakan tambah student baru." /> : null}
+              {studentsQuery.data && studentsQuery.data.length > 0 ? (
                 <StudentTable students={studentsQuery.data} canWrite={true} onEdit={setSelected} />
               ) : null}
+              {(createMutation.error || updateMutation.error) ? <ErrorMessage className="mt-4" message="Aksi gagal diproses. Coba lagi." /> : null}
             </div>
             <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
-              <StudentForm
+              <StudentForm key={`student-form-${selected?.id ?? "new"}-${formVersion}`}
                 initialData={selected}
                 canWrite={true}
                 isSubmitting={createMutation.isPending || updateMutation.isPending}
