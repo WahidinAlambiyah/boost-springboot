@@ -19,7 +19,7 @@ describe("Sidebar", () => {
     });
   });
 
-  it("renders sidebar based on menu payload", () => {
+  it("renders sidebar based on menu payload and local fallback", () => {
     const payload: MenuItemResponse[] = [
       { id: "1", label: "Dashboard", path: "/dashboard", visible: true, children: [] },
       { id: "2", label: "Billing", path: "/billing", visible: true, children: [] },
@@ -32,6 +32,7 @@ describe("Sidebar", () => {
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Billing")).toBeInTheDocument();
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
+    expect(screen.getByText("Academies")).toBeInTheDocument();
   });
 
   it("updates rendered menu immediately when payload changes", () => {
@@ -65,4 +66,17 @@ describe("Sidebar", () => {
     expect(screen.queryByText("Billing")).not.toBeInTheDocument();
   });
 
+});
+
+
+it("does not duplicate local fallback if backend path already exists", () => {
+  const payload: MenuItemResponse[] = [
+    { id: "1", label: "Academies", path: "/academies", visible: true, children: [] },
+  ];
+
+  useAuthStore.setState({ menu: payload });
+  render(<Sidebar />);
+
+  expect(screen.getAllByText("Academies")).toHaveLength(1);
+  expect(screen.getByText("Students")).toBeInTheDocument();
 });
