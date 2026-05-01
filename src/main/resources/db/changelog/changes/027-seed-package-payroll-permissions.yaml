@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 027-seed-package-payroll-permissions
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('PACKAGE_READ', 'Package Read', 'Read training package data', 'PACKAGE', true, now(), now()),
+                ('PACKAGE_WRITE', 'Package Write', 'Manage training package data', 'PACKAGE', true, now(), now()),
+                ('PAYROLL_READ', 'Payroll Read', 'Read coach payroll data', 'PAYROLL', true, now(), now()),
+                ('PAYROLL_WRITE', 'Payroll Write', 'Manage coach payroll data', 'PAYROLL', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p
+                on p.code in ('PACKAGE_READ', 'PACKAGE_WRITE', 'PAYROLL_READ', 'PAYROLL_WRITE')
+              where r.code in ('ADMIN', 'ROLE_ADMIN')
+              on conflict (role_id, permission_id) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p
+                on p.code in ('PACKAGE_READ', 'PACKAGE_WRITE')
+              where r.code in ('SUPPORT', 'OPS')
+              on conflict (role_id, permission_id) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p
+                on p.code in ('PACKAGE_READ', 'PAYROLL_READ', 'PAYROLL_WRITE')
+              where r.code = 'FINANCE'
+              on conflict (role_id, permission_id) do nothing;
