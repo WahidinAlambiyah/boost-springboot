@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 029-add-academic-menu-paths
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.menus (code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              values
+                ('ACADEMIES', 'Academies', '/academies', 'school', 81, true, true, now(), now()),
+                ('ACADEMY_LOCATIONS', 'Academy Locations', '/academy-locations', 'map-pin', 82, true, true, now(), now()),
+                ('COACH_PROFILES', 'Coach Profiles', '/coach-profiles', 'user-round', 83, true, true, now(), now()),
+                ('STUDENTS', 'Students', '/students', 'graduation-cap', 84, true, true, now(), now())
+              on conflict (code) do update
+                set name = excluded.name,
+                    path = excluded.path,
+                    icon = excluded.icon,
+                    order_no = excluded.order_no,
+                    is_active = true,
+                    is_visible = true,
+                    updated_at = now();
