@@ -46,7 +46,7 @@ public class StudentPackageSubscription {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Column(name = "remaining_sessions", nullable = false)
+    @Column(name = "remaining_sessions")
     private Integer remainingSessions;
 
     @Column(name = "created_at", nullable = false)

@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface StudentPackageSubscriptionRepository extends JpaRepository<StudentPackageSubscription, UUID> {
     List<StudentPackageSubscription> findByStudentIdAndDeletedAtIsNullOrderByCreatedAtDesc(UUID studentId);
+
+    java.util.Optional<StudentPackageSubscription> findByIdAndDeletedAtIsNull(UUID id);
 }
