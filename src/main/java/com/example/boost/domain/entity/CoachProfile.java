@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -47,6 +48,9 @@ public class CoachProfile {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    @Column(name = "monthly_salary", nullable = false, precision = 14, scale = 2)
+    private BigDecimal monthlySalary = BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

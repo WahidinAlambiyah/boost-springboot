@@ -25,6 +25,8 @@ public interface CoachProfileRepository extends JpaRepository<CoachProfile, UUID
 
     Optional<CoachProfile> findByIdAndAcademyIdAndDeletedAtIsNull(UUID id, UUID academyId);
 
+    java.util.List<CoachProfile> findByAcademyIdAndIsActiveTrueAndDeletedAtIsNull(UUID academyId);
+
     boolean existsByAcademyIdAndUserIdAndDeletedAtIsNull(UUID academyId, UUID userId);
 
     default CoachProfile getActiveByIdOrThrow(UUID id) {
