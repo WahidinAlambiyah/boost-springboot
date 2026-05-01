@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 028-add-coach-monthly-salary
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              alter table fastworks_springboot.coach_profiles
+                add column if not exists monthly_salary numeric(14,2) not null default 0;

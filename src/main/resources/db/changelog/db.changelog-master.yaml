@@ -55,3 +55,6 @@ databaseChangeLog:
       file: db/changelog/changes/026-create-training-packages-and-coach-payroll.yaml
   - include:
       file: db/changelog/changes/027-seed-package-payroll-permissions.yaml
+
+  - include:
+      file: db/changelog/changes/028-add-coach-monthly-salary.yaml
