@@ -1,12 +1,10 @@
-## Summary
+## Release Note Milestone
+
+## Ringkasan
 
 - 
 
-## Testing
-
-- 
-
-## Checklist Wajib Sebelum Merge / Tag Milestone
+## Checklist Wajib Sebelum Release / Tag Milestone
 
 - [ ] compile sukses
 - [ ] migration sukses
