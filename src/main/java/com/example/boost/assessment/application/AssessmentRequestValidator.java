@@ -49,6 +49,9 @@ public class AssessmentRequestValidator {
             if (skill == null) {
                 throw new BadRequestException("Unknown skillCode: " + score.skillCode());
             }
+            if (score.score().compareTo(BigDecimal.ONE) < 0) {
+                throw new BadRequestException("score must be at least 1 for skillCode " + score.skillCode());
+            }
             BigDecimal max = BigDecimal.valueOf(skill.getMaxScore());
             if (score.score().compareTo(max) > 0) {
                 throw new BadRequestException("score exceeds max_score for skillCode " + score.skillCode());

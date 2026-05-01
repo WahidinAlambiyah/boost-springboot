@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,8 +75,8 @@ class AttendanceRepositoryIntegrationTest {
         jdbcTemplate.update("insert into fastworks_springboot.class_sessions(id, deleted_at) values (?, ?)", classSessionId, null);
         jdbcTemplate.update("insert into fastworks_springboot.students(id, full_name, deleted_at) values (?, ?, ?)", studentId, "Student A", null);
 
-        attendanceRepository.upsertAttendance(classSessionId, studentId, new AttendanceUpsertRequest("PRESENT", OffsetDateTime.parse("2026-01-01T08:00:00Z"), "first post"));
-        attendanceRepository.upsertAttendance(classSessionId, studentId, new AttendanceUpsertRequest("LATE", OffsetDateTime.parse("2026-01-01T08:15:00Z"), "second post/put"));
+        attendanceRepository.upsertAttendance(classSessionId, studentId, new AttendanceUpsertRequest("PRESENT", java.time.Instant.parse("2026-01-01T08:00:00Z"), "first post"));
+        attendanceRepository.upsertAttendance(classSessionId, studentId, new AttendanceUpsertRequest("LATE", java.time.Instant.parse("2026-01-01T08:15:00Z"), "second post/put"));
 
         Integer rowCount = jdbcTemplate.queryForObject(
                 "select count(*) from fastworks_springboot.attendance_records where class_session_id = ? and student_id = ?",
