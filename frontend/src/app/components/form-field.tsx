@@ -1,3 +1,5 @@
+"use client";
+
 import type { InputHTMLAttributes, ReactNode } from "react";
 
 export interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
