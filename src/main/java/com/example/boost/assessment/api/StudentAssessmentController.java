@@ -5,6 +5,11 @@ import com.example.boost.common.api.ApiResponse;
 import com.example.boost.domain.dto.AssessmentCreateRequest;
 import com.example.boost.domain.dto.AssessmentDetailResponse;
 import com.example.boost.domain.dto.AssessmentUpdateRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,11 +24,20 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/assessments")
 @RequiredArgsConstructor
+@Tag(name = "14. Assessment")
 public class StudentAssessmentController {
     private final StudentAssessmentService studentAssessmentService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('ASSESSMENT_READ')")
+    @Operation(summary = "List assessments")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessments retrieved"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     public ResponseEntity<ApiResponse<List<AssessmentDetailResponse>>> list(
             @RequestParam(required = false) UUID studentId,
             @RequestParam(required = false) UUID classSessionId,
@@ -35,6 +49,14 @@ public class StudentAssessmentController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ASSESSMENT_WRITE')")
+    @Operation(summary = "Create assessment")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Assessment created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     public ResponseEntity<ApiResponse<AssessmentDetailResponse>> create(@RequestParam UUID academyId,
                                                                         @Valid @RequestBody AssessmentCreateRequest request) {
         AssessmentDetailResponse response = studentAssessmentService.create(academyId, request);
@@ -44,6 +66,14 @@ public class StudentAssessmentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ASSESSMENT_READ')")
+    @Operation(summary = "Get assessment by id")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment retrieved"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     public ResponseEntity<ApiResponse<AssessmentDetailResponse>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Assessment retrieved",
                 studentAssessmentService.getById(id)));
@@ -51,6 +81,14 @@ public class StudentAssessmentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ASSESSMENT_WRITE')")
+    @Operation(summary = "Update assessment")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     public ResponseEntity<ApiResponse<AssessmentDetailResponse>> update(@PathVariable UUID id,
                                                                         @RequestParam UUID academyId,
                                                                         @Valid @RequestBody AssessmentUpdateRequest request) {
@@ -60,6 +98,14 @@ public class StudentAssessmentController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ASSESSMENT_WRITE')")
+    @Operation(summary = "Delete assessment")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Assessment deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
     public ResponseEntity<ApiResponse<String>> delete(@PathVariable UUID id) {
         studentAssessmentService.softDelete(id);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Assessment deleted", "deleted"));

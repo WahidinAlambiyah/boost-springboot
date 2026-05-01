@@ -66,7 +66,10 @@ public class OpenApiConfig {
                         new Tag().name("9. Enrollment"),
                         new Tag().name("10. Attendance"),
                         new Tag().name("11. Billing"),
-                        new Tag().name("12. Notification")
+                        new Tag().name("12. Notification"),
+                        new Tag().name("13. Assessment Skills"),
+                        new Tag().name("14. Assessment"),
+                        new Tag().name("15. Reporting")
                 ));
     }
 
@@ -98,7 +101,10 @@ public class OpenApiConfig {
                     "9. Enrollment",
                     "10. Attendance",
                     "11. Billing",
-                    "12. Notification"
+                    "12. Notification",
+                    "13. Assessment Skills",
+                    "14. Assessment",
+                    "15. Reporting"
             );
 
             openApi.setTags(
