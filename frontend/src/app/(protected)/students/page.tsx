@@ -10,13 +10,14 @@ import StudentTable from "@/features/students/components/student-table";
 import { StudentFormValues } from "@/features/students/student.schema";
 import { studentService } from "@/features/students/student.service";
 import { Student } from "@/lib/api-types";
+import { QUERY_KEYS } from "@/lib/query-keys";
 
 export default function StudentsPage() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Student | null>(null);
 
   const studentsQuery = useQuery({
-    queryKey: ["students", "list"],
+    queryKey: QUERY_KEYS.students.list(),
     queryFn: () => studentService.list(),
     enabled: studentService.isEndpointEnabled,
   });
@@ -24,7 +25,7 @@ export default function StudentsPage() {
   const createMutation = useMutation({
     mutationFn: (values: StudentFormValues) => studentService.create(values),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.students.all });
     },
   });
 
@@ -33,7 +34,7 @@ export default function StudentsPage() {
       studentService.update(id, values),
     onSuccess: async () => {
       setSelected(null);
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.students.all });
     },
   });
 

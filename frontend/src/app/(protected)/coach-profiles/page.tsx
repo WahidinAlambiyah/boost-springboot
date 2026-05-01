@@ -23,8 +23,11 @@ export default function CoachProfilesPage() {
   const canWrite = useMemo(() => can(authorities, "COACH_WRITE"), [authorities]);
 
   const academiesQuery = useQuery({ queryKey: QUERY_KEYS.academies.list(), queryFn: () => academyService.list() });
-  const usersQuery = useQuery({ queryKey: ["users", "list"], queryFn: () => coachProfileService.listUsers() });
-  const profilesQuery = useQuery({ queryKey: [...QUERY_KEYS.coachProfiles.list(), academyId], queryFn: () => coachProfileService.list({ academyId: academyId || undefined }) });
+  const usersQuery = useQuery({ queryKey: ["users", "list"] as const, queryFn: () => coachProfileService.listUsers() });
+  const profilesQuery = useQuery({
+    queryKey: QUERY_KEYS.coachProfiles.byAcademy(academyId || undefined),
+    queryFn: () => coachProfileService.list({ academyId: academyId || undefined }),
+  });
 
   const invalidateProfiles = async () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachProfiles.all });
 

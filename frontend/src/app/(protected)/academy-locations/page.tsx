@@ -23,7 +23,10 @@ export default function AcademyLocationsPage() {
   const canWrite = useMemo(() => can(authorities, "LOCATION_WRITE"), [authorities]);
 
   const academiesQuery = useQuery({ queryKey: QUERY_KEYS.academies.list(), queryFn: () => academyService.list() });
-  const locationsQuery = useQuery({ queryKey: [...QUERY_KEYS.academyLocations.list(), academyId], queryFn: () => academyLocationService.list({ academyId: academyId || undefined }) });
+  const locationsQuery = useQuery({
+    queryKey: QUERY_KEYS.academyLocations.byAcademy(academyId || undefined),
+    queryFn: () => academyLocationService.list({ academyId: academyId || undefined }),
+  });
 
   const invalidateLocations = async () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.academyLocations.all });
 
