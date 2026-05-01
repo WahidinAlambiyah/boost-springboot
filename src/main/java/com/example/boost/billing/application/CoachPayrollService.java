@@ -81,6 +81,17 @@ public class CoachPayrollService {
         return toResponse(periodRepository.save(period));
     }
 
+    @Transactional(readOnly = true)
+    public List<PayrollResponse> findByMonthAndYear(Integer month, Integer year) {
+        return periodRepository.findByPeriodMonthAndPeriodYearAndDeletedAtIsNullOrderByCreatedAtDesc(month, year)
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PayrollResponse findById(UUID payrollPeriodId) {
+        return toResponse(getPeriod(payrollPeriodId));
+    }
+
     @Transactional
     public PayrollResponse markPaid(UUID payrollPeriodId) {
         CoachPayrollPeriod period = getPeriod(payrollPeriodId);
