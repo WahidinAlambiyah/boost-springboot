@@ -71,9 +71,24 @@ databaseChangeLog:
                 deleted_at timestamptz
               );
 
+              create unique index if not exists uk_student_assessment_scores_assessment_skill
+                on fastworks_springboot.student_assessment_scores(assessment_id, skill_id);
+
+  - changeSet:
+      id: 023-004-add-fk-student-assessment-scores-assessment
+      author: codex
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
               do $$
               begin
-                if not exists (select 1 from pg_constraint where conname = 'fk_student_assessment_scores_assessment') then
+                if not exists (
+                  select 1
+                  from pg_constraint
+                  where conname = 'fk_student_assessment_scores_assessment'
+                ) then
                   alter table fastworks_springboot.student_assessment_scores
                     add constraint fk_student_assessment_scores_assessment
                     foreign key (assessment_id)
@@ -83,9 +98,21 @@ databaseChangeLog:
               end
               $$;
 
+  - changeSet:
+      id: 023-005-add-fk-student-assessment-scores-skill
+      author: codex
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
               do $$
               begin
-                if not exists (select 1 from pg_constraint where conname = 'fk_student_assessment_scores_skill') then
+                if not exists (
+                  select 1
+                  from pg_constraint
+                  where conname = 'fk_student_assessment_scores_skill'
+                ) then
                   alter table fastworks_springboot.student_assessment_scores
                     add constraint fk_student_assessment_scores_skill
                     foreign key (skill_id)
@@ -93,6 +120,3 @@ databaseChangeLog:
                 end if;
               end
               $$;
-
-              create unique index if not exists uk_student_assessment_scores_assessment_skill
-                on fastworks_springboot.student_assessment_scores(assessment_id, skill_id);

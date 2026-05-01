@@ -13,9 +13,21 @@ databaseChangeLog:
               alter table if exists fastworks_springboot.class_sessions
                 add column if not exists notes text;
 
+  - changeSet:
+      id: 022-002-add-class-sessions-location-foreign-key
+      author: codex
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
               do $$
               begin
-                if not exists (select 1 from pg_constraint where conname = 'fk_class_sessions_location') then
+                if not exists (
+                  select 1
+                  from pg_constraint
+                  where conname = 'fk_class_sessions_location'
+                ) then
                   alter table fastworks_springboot.class_sessions
                     add constraint fk_class_sessions_location
                     foreign key (location_id)
@@ -25,7 +37,7 @@ databaseChangeLog:
               $$;
 
   - changeSet:
-      id: 022-002-create-class-session-coaches
+      id: 022-003-create-class-session-coaches
       author: codex
       changes:
         - sql:
