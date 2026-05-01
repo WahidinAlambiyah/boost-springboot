@@ -1,0 +1,76 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import StudentForm from "@/features/students/components/student-form";
+import StudentTable from "@/features/students/components/student-table";
+import { StudentFormValues } from "@/features/students/student.schema";
+import { studentService } from "@/features/students/student.service";
+import { Student } from "@/lib/api-types";
+
+export default function StudentsPage() {
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<Student | null>(null);
+
+  const studentsQuery = useQuery({
+    queryKey: ["students", "list"],
+    queryFn: () => studentService.list(),
+    enabled: studentService.isEndpointEnabled,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (values: StudentFormValues) => studentService.create(values),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: StudentFormValues }) =>
+      studentService.update(id, values),
+    onSuccess: async () => {
+      setSelected(null);
+      await queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+
+  return (
+    <RequirePermission permissions="STUDENT_READ">
+      <AppShell>
+        <h1 className="text-2xl font-semibold text-zinc-900">Students</h1>
+
+        {!studentService.isEndpointEnabled ? (
+          <p className="mt-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+            Students endpoint belum tersedia
+          </p>
+        ) : (
+          <>
+            <div className="mt-6">
+              {studentsQuery.data ? (
+                <StudentTable students={studentsQuery.data} canWrite={true} onEdit={setSelected} />
+              ) : null}
+            </div>
+            <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
+              <StudentForm
+                initialData={selected}
+                canWrite={true}
+                isSubmitting={createMutation.isPending || updateMutation.isPending}
+                onCancelEdit={() => setSelected(null)}
+                onSubmit={(values) => {
+                  if (selected) {
+                    updateMutation.mutate({ id: selected.id, values });
+                    return;
+                  }
+                  createMutation.mutate(values);
+                }}
+              />
+            </div>
+          </>
+        )}
+      </AppShell>
+    </RequirePermission>
+  );
+}
