@@ -60,7 +60,7 @@ export default function AssessmentForm({
   const scores = form.watch("scores");
 
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+    <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <label className="text-sm"><span className="mb-1 block">Class Session</span><select disabled={!canWrite || isSubmitting} className="w-full rounded-md border border-zinc-300 px-3 py-2" {...form.register("classSessionId")}><option value="">Pilih Session</option>{classSessions.map((session) => <option key={session.id} value={session.id}>{session.sessionDate} {session.startTime}-{session.endTime}</option>)}</select></label>
         <label className="text-sm"><span className="mb-1 block">Student</span><select disabled={!canWrite || isSubmitting} className="w-full rounded-md border border-zinc-300 px-3 py-2" {...form.register("studentId")}><option value="">Pilih Student</option>{students.map((student) => <option key={student.id} value={student.id}>{student.fullName}</option>)}</select></label>
@@ -69,22 +69,26 @@ export default function AssessmentForm({
 
       <label className="block text-sm"><span className="mb-1 block">Overall Notes / Recommendation</span><textarea disabled={!canWrite || isSubmitting} rows={3} className="w-full rounded-md border border-zinc-300 px-3 py-2" placeholder="Isi overall notes dan recommendation" {...form.register("notes")} /></label>
 
-      <div className="space-y-3">
-        {skills.map((skill, index) => (
-          <SkillScoreInput
-            key={skill.id}
-            label={`${skill.name} (${skill.code})`}
-            maxScore={skill.maxScore}
-            value={scores?.[index]?.score ?? 1}
-            notes={scores?.[index]?.notes ?? ""}
-            disabled={!canWrite || isSubmitting}
-            onChange={(score) => form.setValue(`scores.${index}.score`, score, { shouldValidate: true })}
-            onNotesChange={(notes) => form.setValue(`scores.${index}.notes`, notes)}
-          />
-        ))}
-      </div>
+      {skills.length === 0 ? (
+        <EmptyState title="Belum ada assessment skill" description="Tambahkan assessment skill terlebih dahulu sebelum membuat assessment." />
+      ) : (
+        <div className="space-y-3">
+          {skills.map((skill, index) => (
+            <SkillScoreInput
+              key={skill.id}
+              label={`${skill.name} (${skill.code})`}
+              maxScore={skill.maxScore}
+              value={scores?.[index]?.score ?? 1}
+              notes={scores?.[index]?.notes ?? ""}
+              disabled={!canWrite || isSubmitting}
+              onChange={(score) => form.setValue(`scores.${index}.score`, score, { shouldValidate: true })}
+              onNotesChange={(notes) => form.setValue(`scores.${index}.notes`, notes)}
+            />
+          ))}
+        </div>
+      )}
 
-      {canWrite ? <button type="submit" disabled={isSubmitting} className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50">
+      {canWrite ? <button type="submit" disabled={isSubmitting || skills.length === 0} className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50">
         {isSubmitting ? "Menyimpan..." : initialData ? "Update Assessment" : "Simpan Assessment"}
       </button> : null}
     </form>

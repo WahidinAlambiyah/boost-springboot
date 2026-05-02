@@ -47,6 +47,7 @@ export default function EditAssessmentPage({ params }: { params: { id: string } 
       <AppShell>
         <h1 className="text-2xl font-semibold text-zinc-900">Edit Assessment</h1>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-4">
+          {mutation.isError ? <ErrorMessage message="Gagal mengupdate assessment. Coba lagi." /> : null}
           <AssessmentForm
             initialData={detailQuery.data}
             skills={skillsQuery.data ?? []}
