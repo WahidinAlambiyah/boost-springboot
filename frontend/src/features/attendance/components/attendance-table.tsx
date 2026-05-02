@@ -1,108 +1,121 @@
 "use client";
 
-import { AttendanceStatus } from "@/features/attendance/attendance.service";
+import { AttendanceStatus, SessionAttendanceStudent } from "@/features/attendance/attendance.service";
 
-const statusOptions: AttendanceStatus[] = ["PRESENT", "ABSENT", "PERMIT", "SICK", "LATE"];
+const ATTENDANCE_STATUS_OPTIONS: AttendanceStatus[] = ["PRESENT", "ABSENT", "PERMIT", "SICK", "LATE"];
 
-interface AttendanceTableRow {
-  studentId: string;
-  studentName: string;
-  attendanceStatus?: AttendanceStatus;
-  remarks?: string;
-}
-
-interface AttendanceTableProps {
-  rows: AttendanceTableRow[];
-  isSubmitting?: boolean;
-  submitMessage?: string | null;
-  onStatusChange: (studentId: string, status?: AttendanceStatus) => void;
-  onRemarksChange: (studentId: string, remarks: string) => void;
-  onMarkAllPresent: () => void;
-  onSubmitBulk: () => void;
-}
+type AttendanceTableProps = {
+  rows: SessionAttendanceStudent[];
+  disabled?: boolean;
+  onUpdateRow: (studentId: string, patch: Partial<SessionAttendanceStudent>) => void;
+  onMarkAllPresent?: () => void;
+  showMarkAllPresent?: boolean;
+  onSubmitStudent?: (studentId: string) => void;
+  pendingStudentId?: string | null;
+};
 
 export default function AttendanceTable({
   rows,
-  isSubmitting = false,
-  submitMessage,
-  onStatusChange,
-  onRemarksChange,
+  disabled = false,
+  onUpdateRow,
   onMarkAllPresent,
-  onSubmitBulk,
+  showMarkAllPresent = false,
+  onSubmitStudent,
+  pendingStudentId = null,
 }: AttendanceTableProps) {
+  const summary = rows.reduce(
+    (acc, row) => {
+      acc[row.attendanceStatus] += 1;
+      return acc;
+    },
+    { PRESENT: 0, ABSENT: 0, PERMIT: 0, SICK: 0, LATE: 0 } as Record<AttendanceStatus, number>,
+  );
+
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-3 sm:p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-zinc-900 sm:text-lg">Absensi murid per sesi</h2>
-        <button
-          type="button"
-          className="min-h-11 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-          onClick={onMarkAllPresent}
-        >
-          Hadir semua (yang belum diisi)
-        </button>
+    <>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-600">
+        <span className="rounded bg-zinc-100 px-2 py-1">Present: {summary.PRESENT}</span>
+        <span className="rounded bg-zinc-100 px-2 py-1">Absent: {summary.ABSENT}</span>
+        <span className="rounded bg-zinc-100 px-2 py-1">Permit: {summary.PERMIT}</span>
+        <span className="rounded bg-zinc-100 px-2 py-1">Sick: {summary.SICK}</span>
+        <span className="rounded bg-zinc-100 px-2 py-1">Late: {summary.LATE}</span>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
-          <thead className="bg-zinc-100 text-zinc-700">
-            <tr>
-              <th className="px-2 py-2 sm:px-3">Murid</th>
-              <th className="px-2 py-2 sm:px-3">Status</th>
-              <th className="px-2 py-2 sm:px-3">Remarks</th>
+      {showMarkAllPresent && onMarkAllPresent ? (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={onMarkAllPresent}
+            disabled={disabled || rows.length === 0}
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Tandai Hadir Semua
+          </button>
+        </div>
+      ) : null}
+
+      <div className="mt-4 overflow-x-auto">
+        <table className="min-w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-zinc-200 text-left text-zinc-700">
+              <th className="px-3 py-2">Murid</th>
+              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Remarks</th>
+              {onSubmitStudent ? <th className="px-3 py-2">Aksi</th> : null}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.studentId} className="border-t border-zinc-200 align-top">
-                <td className="px-2 py-2 text-zinc-800 sm:px-3">{row.studentName}</td>
-                <td className="px-2 py-2 sm:px-3">
+              <tr key={row.studentId} className="border-b border-zinc-100 align-top">
+                <td className="px-3 py-2">
+                  <p className="font-medium text-zinc-900">{row.studentName || row.studentId}</p>
+                  <p className="text-xs text-zinc-500">{row.studentId}</p>
+                </td>
+                <td className="px-3 py-2">
                   <select
-                    value={row.attendanceStatus ?? ""}
+                    value={row.attendanceStatus}
                     onChange={(event) =>
-                      onStatusChange(row.studentId, (event.target.value || undefined) as AttendanceStatus | undefined)
+                      onUpdateRow(row.studentId, {
+                        attendanceStatus: event.target.value as AttendanceStatus,
+                      })
                     }
-                    className="min-h-12 w-full rounded-md border border-zinc-300 px-3 py-2 text-base"
+                    className="w-full rounded-md border border-zinc-300 px-2 py-1"
+                    disabled={disabled}
                   >
-                    <option value="">Pilih status</option>
-                    {statusOptions.map((statusOption) => (
-                      <option key={statusOption} value={statusOption}>
-                        {statusOption}
+                    {ATTENDANCE_STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
                       </option>
                     ))}
                   </select>
                 </td>
-                <td className="px-2 py-2 sm:px-3">
-                  <input
-                    value={row.remarks ?? ""}
-                    onChange={(event) => onRemarksChange(row.studentId, event.target.value)}
-                    placeholder="Catatan"
-                    className="min-h-12 w-full rounded-md border border-zinc-300 px-3 py-2 text-base"
+                <td className="px-3 py-2">
+                  <textarea
+                    value={row.remarks || ""}
+                    onChange={(event) => onUpdateRow(row.studentId, { remarks: event.target.value })}
+                    className="min-h-20 w-full rounded-md border border-zinc-300 px-2 py-1"
+                    placeholder="Tambahkan catatan jika perlu"
+                    disabled={disabled}
                   />
                 </td>
+                {onSubmitStudent ? (
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => onSubmitStudent(row.studentId)}
+                      className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={disabled || pendingStudentId === row.studentId}
+                    >
+                      {pendingStudentId === row.studentId ? "Menyimpan..." : "Update Murid"}
+                    </button>
+                  </td>
+                ) : null}
+
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <button
-          type="button"
-          className="min-h-12 rounded-md bg-zinc-900 px-5 py-2 text-base font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
-          onClick={onSubmitBulk}
-          disabled={isSubmitting || rows.length === 0}
-        >
-          {isSubmitting ? "Mengirim..." : "Submit bulk attendance"}
-        </button>
-        {submitMessage ? (
-          <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-            {submitMessage}
-          </p>
-        ) : null}
-      </div>
-    </section>
+    </>
   );
 }
-
-export type { AttendanceTableProps, AttendanceTableRow };
