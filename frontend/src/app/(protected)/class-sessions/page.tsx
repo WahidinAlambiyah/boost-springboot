@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
+import { ConfirmDialog } from "@/app/components/confirm-dialog";
+import EmptyState from "@/app/components/empty-state";
+import { ErrorMessage } from "@/app/components/error-message";
+import LoadingSkeleton from "@/app/components/loading-skeleton";
 import RequirePermission from "@/app/components/require-permission";
 import { academyService } from "@/features/academies/academy.service";
 import { academyLocationService } from "@/features/academy-locations/academy-location.service";
@@ -95,11 +99,18 @@ export default function ClassSessionsPage() {
           <label className="text-sm"><span className="mb-1 block font-medium text-zinc-700">Tanggal</span><input type="date" className="w-full rounded-md border border-zinc-300 px-3 py-2" value={sessionDate} onChange={(event) => setSessionDate(event.target.value)} /></label>
         </section>
 
-        <div className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-100 text-zinc-700"><tr><th className="px-4 py-2">Tanggal/Jam</th><th className="px-4 py-2">Lokasi</th><th className="px-4 py-2">Coach Assigned</th><th className="px-4 py-2">Status</th><th className="px-4 py-2">Aksi</th></tr></thead>
-            <tbody>{(sessionsQuery.data ?? []).map((session) => <tr key={session.id} className="border-t border-zinc-200"><td className="px-4 py-2">{session.sessionDate} {session.startTime} - {session.endTime}</td><td className="px-4 py-2">{session.locationId ? locationMap.get(session.locationId) ?? session.locationId : "-"}</td><td className="px-4 py-2">{session.coaches?.length ? session.coaches.slice(0, 2).map((coach) => coach.coachId).join(", ") : session.coachIds.join(", ") || "-"}</td><td className="px-4 py-2">{session.status}</td><td className="px-4 py-2"><RequirePermission permissions="SCHEDULE_WRITE"><div className="flex gap-2"><button className="rounded border border-zinc-300 px-2 py-1" onClick={() => setEditingSession(session)}>Edit</button><button className="rounded border border-red-300 px-2 py-1 text-red-700" onClick={() => deleteMutation.mutate(session.id)}>Cancel/Delete</button></div></RequirePermission></td></tr>)}</tbody>
-          </table>
+        <div className="mt-6">
+          {sessionsQuery.isLoading ? <LoadingSkeleton rows={6} /> : null}
+          {sessionsQuery.isError ? <ErrorMessage message="Gagal memuat class sessions." /> : null}
+          {sessionsQuery.data && sessionsQuery.data.length === 0 ? <EmptyState title="Belum ada class session" description="Coba ubah filter atau tambah session baru." /> : null}
+          {sessionsQuery.data && sessionsQuery.data.length > 0 ? (
+            <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-100 text-zinc-700"><tr><th className="px-4 py-2">Tanggal/Jam</th><th className="px-4 py-2">Lokasi</th><th className="px-4 py-2">Coach Assigned</th><th className="px-4 py-2">Status</th><th className="px-4 py-2">Aksi</th></tr></thead>
+                <tbody>{sessionsQuery.data.map((session) => <tr key={session.id} className="border-t border-zinc-200"><td className="px-4 py-2">{session.sessionDate} {session.startTime} - {session.endTime}</td><td className="px-4 py-2">{session.locationId ? locationMap.get(session.locationId) ?? session.locationId : "-"}</td><td className="px-4 py-2">{session.coaches?.length ? session.coaches.slice(0, 2).map((coach) => coach.coachId).join(", ") : session.coachIds.join(", ") || "-"}</td><td className="px-4 py-2">{session.status}</td><td className="px-4 py-2"><RequirePermission permissions="SCHEDULE_WRITE"><div className="flex gap-2"><button className="rounded border border-zinc-300 px-2 py-1" onClick={() => setEditingSession(session)}>Edit</button><ConfirmDialog options={{ title: "Hapus/Cancel session?", description: "Session yang dihapus tidak bisa dikembalikan.", confirmText: "Hapus Session" }} onConfirm={async () => deleteMutation.mutateAsync(session.id)}>{(open) => <button className="rounded border border-red-300 px-2 py-1 text-red-700 disabled:opacity-50" onClick={open} disabled={deleteMutation.isPending}>{deleteMutation.isPending ? "Memproses..." : "Cancel/Delete"}</button>}</ConfirmDialog></div></RequirePermission></td></tr>)}</tbody>
+              </table>
+            </div>
+          ) : null}
         </div>
 
         <RequirePermission permissions="SCHEDULE_WRITE">
@@ -108,7 +119,7 @@ export default function ClassSessionsPage() {
             <label className="mt-3 block text-sm"><span className="mb-1 block font-medium text-zinc-700">Class Group ID</span><input className="w-full rounded-md border border-zinc-300 px-3 py-2" value={classGroupId} onChange={(event) => setClassGroupId(event.target.value)} disabled={Boolean(editingSession)} /></label>
             <div className="mt-3"><ClassSessionForm classGroupId={editingSession?.classGroupId ?? classGroupId} locations={locationsQuery.data ?? []} canWrite initialData={editingSession} isSubmitting={createMutation.isPending || updateMutation.isPending} onConflictCheck={(values) => conflictMutation.mutate({ ...values, excludeSessionId: editingSession?.id })} onSubmit={(values) => { setSubmitError(null); const payload = { classGroupId: values.classGroupId, sessionDate: values.sessionDate, startTime: values.startTime, endTime: values.endTime, locationId: values.locationId, status: values.status }; if (editingSession) { updateMutation.mutate({ id: editingSession.id, payload }); return; } createMutation.mutate(payload); }} /></div>
             <div className="mt-3"><SessionConflictAlert conflicts={conflicts} isLoading={conflictMutation.isPending} /></div>
-            {submitError ? <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{submitError}</p> : null}
+            {submitError ? <ErrorMessage className="mt-3" message={submitError} /> : null}
           </section>
         </RequirePermission>
       </AppShell>
