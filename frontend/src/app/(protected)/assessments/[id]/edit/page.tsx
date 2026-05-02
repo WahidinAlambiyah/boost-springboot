@@ -16,37 +16,39 @@ import { coachProfileService } from "@/features/coach-profiles/coach-profile.ser
 import { studentService } from "@/features/students/student.service";
 import { QUERY_KEYS } from "@/lib/query-keys";
 
-export default function NewAssessmentPage() {
+export default function EditAssessmentPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const detailQuery = useQuery({ queryKey: QUERY_KEYS.assessments.detail(params.id), queryFn: () => assessmentService.getAssessmentById(params.id) });
   const skillsQuery = useQuery({ queryKey: QUERY_KEYS.assessmentSkills.list(), queryFn: () => assessmentSkillService.list() });
   const sessionsQuery = useQuery({ queryKey: QUERY_KEYS.classSessions.list(), queryFn: () => classSessionService.getClassSessions() });
   const studentsQuery = useQuery({ queryKey: QUERY_KEYS.students.list(), queryFn: () => studentService.list(), retry: false });
   const coachesQuery = useQuery({ queryKey: QUERY_KEYS.coachProfiles.list(), queryFn: () => coachProfileService.list() });
 
   const mutation = useMutation({
-    mutationFn: (values: AssessmentFormValues) => assessmentService.createAssessment(values),
+    mutationFn: (values: AssessmentFormValues) => assessmentService.updateAssessment(params.id, values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.assessments.all });
       router.push("/assessments");
     },
   });
 
-  if (skillsQuery.isLoading || sessionsQuery.isLoading || studentsQuery.isLoading || coachesQuery.isLoading) {
+  if (skillsQuery.isLoading || sessionsQuery.isLoading || studentsQuery.isLoading || coachesQuery.isLoading || detailQuery.isLoading) {
     return <AppShell><LoadingSkeleton rows={8} /></AppShell>;
   }
 
-  if (skillsQuery.isError || sessionsQuery.isError || studentsQuery.isError || coachesQuery.isError) {
+  if (skillsQuery.isError || sessionsQuery.isError || studentsQuery.isError || coachesQuery.isError || detailQuery.isError || !detailQuery.data) {
     return <AppShell><ErrorMessage message="Gagal memuat data form assessment." /></AppShell>;
   }
 
   return (
     <RequirePermission permissions="ASSESSMENT_WRITE">
       <AppShell>
-        <h1 className="text-2xl font-semibold text-zinc-900">Assessment Baru</h1>
+        <h1 className="text-2xl font-semibold text-zinc-900">Edit Assessment</h1>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-4">
           <AssessmentForm
+            initialData={detailQuery.data}
             skills={skillsQuery.data ?? []}
             classSessions={sessionsQuery.data ?? []}
             students={studentsQuery.data ?? []}
