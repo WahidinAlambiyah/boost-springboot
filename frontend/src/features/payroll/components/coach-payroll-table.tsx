@@ -7,10 +7,11 @@ interface CoachPayrollTableProps {
   periods: CoachPayrollPeriod[];
   selectedPeriodId?: string | null;
   onSelectPeriod: (period: CoachPayrollPeriod) => void;
+  canWrite?: boolean;
   onEditItem: (item: CoachPayrollItem, payload: { bonusAmount: number; deductionAmount: number; notes?: string }) => void;
 }
 
-export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectPeriod, onEditItem }: CoachPayrollTableProps) {
+export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectPeriod, canWrite = false, onEditItem }: CoachPayrollTableProps) {
   const selectedPeriod = periods.find((period) => period.id === selectedPeriodId) ?? periods[0];
 
   return (
@@ -56,7 +57,7 @@ export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectP
                   <th className="px-3 py-2">Deduction</th>
                   <th className="px-3 py-2">Total</th>
                   <th className="px-3 py-2">Notes</th>
-                  <th className="px-3 py-2">Aksi</th>
+                  {canWrite ? <th className="px-3 py-2">Aksi</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -71,7 +72,7 @@ export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectP
                       <td className="px-3 py-2">{formatCurrencyIDR(item.deductionAmount)}</td>
                       <td className="px-3 py-2">{formatCurrencyIDR(item.totalAmount)}</td>
                       <td className="px-3 py-2">{item.notes ?? "-"}</td>
-                      <td className="px-3 py-2">
+                      {canWrite ? <td className="px-3 py-2">
                         <button
                           type="button"
                           disabled={disableEdit}
@@ -80,7 +81,7 @@ export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectP
                         >
                           Edit
                         </button>
-                      </td>
+                      </td> : null}
                     </tr>
                   );
                 })}

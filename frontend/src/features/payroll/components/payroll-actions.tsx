@@ -1,12 +1,15 @@
 "use client";
 
 interface PayrollActionsProps {
+  canWrite?: boolean;
   disabled?: boolean;
   onApprove: () => void;
   onMarkPaid: () => void;
 }
 
-export default function PayrollActions({ disabled, onApprove, onMarkPaid }: PayrollActionsProps) {
+export default function PayrollActions({ canWrite = false, disabled, onApprove, onMarkPaid }: PayrollActionsProps) {
+  if (!canWrite) return null;
+
   return (
     <div className="flex gap-2">
       <button

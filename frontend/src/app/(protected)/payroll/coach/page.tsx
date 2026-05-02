@@ -9,9 +9,13 @@ import CoachPayrollTable from "@/features/payroll/components/coach-payroll-table
 import PayrollActions from "@/features/payroll/components/payroll-actions";
 import PayrollPeriodFilter from "@/features/payroll/components/payroll-period-filter";
 import { coachPayrollService } from "@/features/payroll/coach-payroll.service";
+import { can } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
+import { useAuthStore } from "@/store/auth";
 
 export default function CoachPayrollPage() {
+  const authorities = useAuthStore((state) => state.authorities);
+  const canWrite = useMemo(() => can(authorities, "PAYROLL_WRITE"), [authorities]);
   const now = useMemo(() => new Date(), []);
   const [month, setMonth] = useState(now.getUTCMonth() + 1);
   const [year, setYear] = useState(now.getUTCFullYear());
@@ -58,6 +62,7 @@ export default function CoachPayrollPage() {
             initialMonth={month}
             initialYear={year}
             loading={generateMutation.isPending}
+            canWrite={canWrite}
             onApply={(nextMonth, nextYear) => {
               setMonth(nextMonth);
               setYear(nextYear);
@@ -76,6 +81,7 @@ export default function CoachPayrollPage() {
               onSelectPeriod={(period) => {
                 setSelectedPeriodId(period.id);
               }}
+              canWrite={canWrite}
               onEditItem={() => undefined}
             />
           ) : null}
@@ -83,6 +89,7 @@ export default function CoachPayrollPage() {
 
         <div className="mt-4">
           <PayrollActions
+            canWrite={canWrite}
             disabled={!selectedPeriodId || approveMutation.isPending || markPaidMutation.isPending}
             onApprove={() => {
               if (selectedPeriodId && window.confirm("Approve period payroll ini?")) {
