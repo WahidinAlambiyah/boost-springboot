@@ -68,9 +68,16 @@ export const QUERY_KEYS = {
       ["attendanceSessions", "byClassSession", classSessionId] as const,
   },
   assessmentSkills: createEntityKeys<{ academyId?: string | number }>("assessmentSkills"),
-  assessments: createEntityKeys<{ academyId?: string | number; studentId?: string | number }>(
-    "assessments",
-  ),
+  assessments: {
+    ...createEntityKeys<{
+      academyId?: string | number;
+      studentId?: string | number;
+      classSessionId?: string | number;
+    } & DateRange>("assessments"),
+    byStudent: (studentId: string | number) => ["assessments", "byStudent", studentId] as const,
+    byClassSession: (classSessionId: string | number) =>
+      ["assessments", "byClassSession", classSessionId] as const,
+  },
   studentProgressReport: createEntityKeys<{
     academyId?: string | number;
     studentId?: string | number;
