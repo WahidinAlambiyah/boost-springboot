@@ -5,6 +5,9 @@ import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
+import EmptyState from "@/app/components/empty-state";
+import { ErrorMessage } from "@/app/components/error-message";
+import LoadingSkeleton from "@/app/components/loading-skeleton";
 import RequirePermission from "@/app/components/require-permission";
 import { academyLocationService } from "@/features/academy-locations/academy-location.service";
 import SessionCoachManager from "@/features/class-sessions/components/session-coach-manager";
@@ -73,8 +76,9 @@ export default function ClassSessionDetailPage() {
       <AppShell>
         <h1 className="text-2xl font-semibold text-zinc-900">Class Session Detail</h1>
 
-        {sessionQuery.isLoading ? <p className="mt-4 text-sm text-zinc-600">Loading session...</p> : null}
-        {sessionQuery.isError ? <p className="mt-4 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{parseErrorMessage(sessionQuery.error)}</p> : null}
+        {sessionQuery.isLoading ? <LoadingSkeleton className="mt-4" rows={4} /> : null}
+        {sessionQuery.isError ? <ErrorMessage className="mt-4" message={parseErrorMessage(sessionQuery.error)} /> : null}
+        {!sessionQuery.isLoading && !sessionQuery.isError && !sessionQuery.data ? <EmptyState title="Session tidak ditemukan" description="Periksa kembali ID session atau filter halaman sebelumnya." /> : null}
 
         {sessionQuery.data ? (
           <section className="mt-4 space-y-4">
@@ -96,10 +100,11 @@ export default function ClassSessionDetailPage() {
                 onRemove={(sessionCoachId) => deleteCoachMutation.mutate(sessionCoachId)}
               />
 
-              {coachesQuery.isError ? <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{parseErrorMessage(coachesQuery.error)}</p> : null}
-              {addCoachMutation.isError ? <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{parseErrorMessage(addCoachMutation.error)}</p> : null}
-              {updateCoachMutation.isError ? <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{parseErrorMessage(updateCoachMutation.error)}</p> : null}
-              {deleteCoachMutation.isError ? <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{parseErrorMessage(deleteCoachMutation.error)}</p> : null}
+              {coachesQuery.isError ? <ErrorMessage className="mt-3" message={parseErrorMessage(coachesQuery.error)} /> : null}
+              {!coachesQuery.isLoading && !coachesQuery.isError && (coachesQuery.data ?? []).length === 0 ? <EmptyState title="Belum ada coach" description="Tambahkan coach untuk session ini." /> : null}
+              {addCoachMutation.isError ? <ErrorMessage className="mt-3" message={parseErrorMessage(addCoachMutation.error)} /> : null}
+              {updateCoachMutation.isError ? <ErrorMessage className="mt-3" message={parseErrorMessage(updateCoachMutation.error)} /> : null}
+              {deleteCoachMutation.isError ? <ErrorMessage className="mt-3" message={parseErrorMessage(deleteCoachMutation.error)} /> : null}
             </div>
           </section>
         ) : null}
