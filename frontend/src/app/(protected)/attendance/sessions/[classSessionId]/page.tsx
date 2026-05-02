@@ -8,6 +8,7 @@ import RequirePermission from "@/app/components/require-permission";
 import AttendanceTable from "@/features/attendance/components/attendance-table";
 import { attendanceService, SessionAttendanceStudent } from "@/features/attendance/attendance.service";
 import { parseErrorMessage, useStandardErrorRedirect } from "@/lib/error-handler";
+import { AttendanceRecordRequest } from "@/lib/api-types";
 import { can } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { useAuthStore } from "@/store/auth";
@@ -24,7 +25,7 @@ export default function AttendanceSessionDetailPage({ params }: { params: { clas
   const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
 
   const attendanceDetailQuery = useQuery({
-    queryKey: QUERY_KEYS.attendanceSessions.detail(classSessionId),
+    queryKey: QUERY_KEYS.attendanceSessions.byClassSession(classSessionId),
     queryFn: () => attendanceService.getAttendanceBySession(classSessionId),
     enabled: Boolean(classSessionId),
   });
@@ -58,7 +59,7 @@ export default function AttendanceSessionDetailPage({ params }: { params: { clas
             remarks: row.remarks || undefined,
           },
         })),
-      }),
+      } satisfies AttendanceRecordRequest),
     onSuccess: async (response) => {
       setSubmitMessage(response.message || "Attendance berhasil disimpan.");
       await Promise.all([

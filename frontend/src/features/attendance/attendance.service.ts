@@ -1,32 +1,18 @@
-import { AttendanceSubmitPayload, AttendanceSummary } from "@/lib/api-types";
+import {
+  AttendanceRecordRequest,
+  AttendanceRecordUpdateRequest,
+  AttendanceSubmitPayload,
+  AttendanceSummary,
+} from "@/lib/api-types";
 import { api } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
 
-export type AttendanceStatus = "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
-
 export interface SessionAttendanceStudent {
   studentId: string;
-  attendanceStatus: AttendanceStatus;
+  attendanceStatus: "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
   checkInAt?: string | null;
   remarks?: string;
   studentName?: string;
-}
-
-export interface SubmitAttendanceBulkPayload {
-  records: Array<{
-    studentId: string;
-    attendance: {
-      attendanceStatus: AttendanceStatus;
-      checkInAt?: string | null;
-      remarks?: string;
-    };
-  }>;
-}
-
-export interface UpdateAttendanceByStudentPayload {
-  attendanceStatus: AttendanceStatus;
-  checkInAt?: string | null;
-  remarks?: string;
 }
 
 export const attendanceService = {
@@ -51,7 +37,7 @@ export const attendanceService = {
 
   async submitAttendanceBulk(
     classSessionId: string,
-    payload: SubmitAttendanceBulkPayload,
+    payload: AttendanceRecordRequest,
   ): Promise<ApiResponse<unknown>> {
     const response = await api.post<ApiResponse<unknown>>(
       `/api/attendance/sessions/${classSessionId}/batch-upsert`,
@@ -63,7 +49,7 @@ export const attendanceService = {
   async updateAttendanceByStudent(
     classSessionId: string,
     studentId: string,
-    payload: UpdateAttendanceByStudentPayload,
+    payload: AttendanceRecordUpdateRequest,
   ): Promise<ApiResponse<string>> {
     const response = await api.put<ApiResponse<string>>(
       `/api/attendance/sessions/${classSessionId}/students/${studentId}`,

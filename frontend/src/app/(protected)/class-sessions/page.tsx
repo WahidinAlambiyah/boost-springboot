@@ -34,7 +34,17 @@ export default function ClassSessionsPage() {
   const conflictMutation = useMutation({
     mutationFn: (payload: { academyId: string; locationId: string; sessionDate: string; startTime: string; endTime: string; excludeSessionId?: string }) =>
       classSessionService.getSessionConflicts(payload),
-    onSuccess: (data) => setConflicts(data),
+    onSuccess: async (data, payload) => {
+      setConflicts(data);
+      await queryClient.setQueryData(
+        QUERY_KEYS.classSessions.conflicts({
+          academyId: payload.academyId,
+          from: payload.sessionDate,
+          to: payload.sessionDate,
+        }),
+        data,
+      );
+    },
   });
 
   const invalidateSessions = async () => {
