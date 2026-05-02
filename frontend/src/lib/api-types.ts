@@ -202,6 +202,7 @@ export interface ClassSession {
   endTime: string;
   locationId?: string;
   status: string;
+  notes?: string;
   coachIds: string[];
   coaches?: ClassSessionCoach[];
   createdAt: string;
@@ -258,12 +259,21 @@ export type ClassSessionCoachUpdateRequest = ClassSessionCoachCreateRequest;
 
 export interface AttendanceRecord {
   studentId: string;
-  status: string;
-  note?: string;
+  attendance: {
+    attendanceStatus: "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
+    checkInAt?: string | null;
+    remarks?: string;
+  };
 }
 
 export interface AttendanceRecordRequest {
   records: AttendanceRecord[];
+}
+
+export interface AttendanceRecordUpdateRequest {
+  attendanceStatus: "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
+  checkInAt?: string | null;
+  remarks?: string;
 }
 
 export interface AssessmentSkill {

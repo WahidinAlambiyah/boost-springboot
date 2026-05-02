@@ -46,16 +46,27 @@ export const QUERY_KEYS = {
         : (["coachProfiles", "byAcademy", "all"] as const),
   },
   students: createEntityKeys<{ academyId?: string | number }>("students"),
-  classSessions: createEntityKeys<{ academyId?: string | number } & DateRange>("classSessions"),
-  classSessionCoaches: createEntityKeys<{
-    academyId?: string | number;
-    sessionId?: string | number;
-  }>("classSessionCoaches"),
-  attendanceSessions: createEntityKeys<{
-    academyId?: string | number;
-    studentId?: string | number;
-    sessionId?: string | number;
-  }>("attendanceSessions"),
+  classSessions: {
+    ...createEntityKeys<{ academyId?: string | number } & DateRange>("classSessions"),
+    conflicts: (filter?: { academyId?: string | number } & DateRange) =>
+      ["classSessions", "conflicts", normalizeFilter(filter ?? {})] as const,
+  },
+  classSessionCoaches: {
+    ...createEntityKeys<{
+      academyId?: string | number;
+      sessionId?: string | number;
+    }>("classSessionCoaches"),
+    bySession: (sessionId: string | number) => ["classSessionCoaches", "bySession", sessionId] as const,
+  },
+  attendanceSessions: {
+    ...createEntityKeys<{
+      academyId?: string | number;
+      studentId?: string | number;
+      sessionId?: string | number;
+    }>("attendanceSessions"),
+    byClassSession: (classSessionId: string | number) =>
+      ["attendanceSessions", "byClassSession", classSessionId] as const,
+  },
   assessmentSkills: createEntityKeys<{ academyId?: string | number }>("assessmentSkills"),
   assessments: createEntityKeys<{ academyId?: string | number; studentId?: string | number }>(
     "assessments",

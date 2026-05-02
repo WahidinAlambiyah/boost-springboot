@@ -28,7 +28,7 @@ export default function ClassSessionDetailPage() {
   });
 
   const coachesQuery = useQuery({
-    queryKey: QUERY_KEYS.classSessionCoaches.filter({ sessionId }),
+    queryKey: QUERY_KEYS.classSessionCoaches.bySession(sessionId),
     queryFn: () => classSessionService.getSessionCoaches(sessionId),
     enabled: Boolean(sessionId),
   });
@@ -47,7 +47,7 @@ export default function ClassSessionDetailPage() {
   const invalidate = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.classSessions.detail(sessionId) }),
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.classSessionCoaches.filter({ sessionId }) }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.classSessionCoaches.bySession(sessionId) }),
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.classSessions.all }),
     ]);
   };
@@ -84,7 +84,7 @@ export default function ClassSessionDetailPage() {
               <DetailItem label="Tanggal" value={sessionQuery.data.sessionDate} />
               <DetailItem label="Jam" value={`${sessionQuery.data.startTime} - ${sessionQuery.data.endTime}`} />
               <DetailItem label="Status" value={sessionQuery.data.status} />
-              <DetailItem label="Notes" value={(sessionQuery.data as { notes?: string }).notes ?? "-"} />
+              <DetailItem label="Notes" value={sessionQuery.data.notes ?? "-"} />
             </div>
 
             <div className="rounded-lg border border-zinc-200 bg-white p-4">
