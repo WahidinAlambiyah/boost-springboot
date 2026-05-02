@@ -289,7 +289,7 @@ export interface AssessmentSkill {
   updatedAt: string;
 }
 
-export interface AssessmentSkillCreateRequest {
+export interface AssessmentSkillRequestDto {
   academyId?: string;
   code: string;
   name: string;
@@ -299,9 +299,12 @@ export interface AssessmentSkillCreateRequest {
   maxScore?: number;
 }
 
+export type AssessmentSkillCreateRequest = AssessmentSkillRequestDto;
+
 export interface AssessmentSkillUpdateRequest {
   academyId?: string;
-  name: string;
+  code?: string;
+  name?: string;
   description?: string;
   orderNo?: number;
   active?: boolean;
@@ -324,7 +327,7 @@ export interface StudentAssessment {
   scores: StudentAssessmentSkillScore[];
 }
 
-export interface StudentAssessmentCreateRequest {
+export interface StudentAssessmentRequestDto {
   classSessionId: string;
   studentId: string;
   coachId: string;
@@ -333,7 +336,33 @@ export interface StudentAssessmentCreateRequest {
   scores: StudentAssessmentSkillScore[];
 }
 
-export type StudentAssessmentUpdateRequest = StudentAssessmentCreateRequest;
+export type StudentAssessmentCreateRequest = StudentAssessmentRequestDto;
+
+export type StudentAssessmentUpdateRequest = Partial<StudentAssessmentRequestDto>;
+
+export interface StudentProgressAttendance {
+  totalSessions: number;
+  present: number;
+  permit: number;
+  absent: number;
+}
+
+export interface StudentProgressSkillProgress {
+  skillCode?: string;
+  skillName?: string;
+  latestScore?: number;
+  averageScore?: number;
+  previousScore?: number;
+  trend: "UP" | "DOWN" | "FLAT";
+}
+
+export interface StudentProgressCoachNote {
+  sessionId?: string;
+  sessionDate: string;
+  coachId?: string;
+  coachName?: string;
+  note?: string;
+}
 
 export interface StudentProgressReport {
   student: {
@@ -347,22 +376,9 @@ export interface StudentProgressReport {
     from: string;
     to: string;
   };
-  attendance: {
-    totalSessions: number;
-    present: number;
-    permit: number;
-    absent: number;
-  };
-  skillProgress: {
-    latestScore?: number;
-    averageScore?: number;
-    previousScore?: number;
-    trend: "UP" | "DOWN" | "FLAT";
-  };
-  coachNotes: Array<{
-    sessionDate: string;
-    note?: string;
-  }>;
+  attendance: StudentProgressAttendance;
+  skillProgress: StudentProgressSkillProgress[];
+  coachNotes: StudentProgressCoachNote[];
 }
 
 export interface TrainingPackage {

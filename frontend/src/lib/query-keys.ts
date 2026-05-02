@@ -8,6 +8,23 @@ type MonthYear = {
   year?: number;
 };
 
+type AssessmentSkillFilter = {
+  academyId?: string | number;
+  active?: boolean;
+  search?: string;
+};
+
+type AssessmentFilter = {
+  academyId?: string | number;
+  studentId?: string | number;
+  classSessionId?: string | number;
+} & DateRange;
+
+type StudentProgressReportFilter = {
+  academyId?: string | number;
+  studentId?: string | number;
+} & DateRange;
+
 const normalizeFilter = <T extends Record<string, unknown>>(filter: T) => {
   const entries = Object.entries(filter).filter(([, value]) => value !== undefined);
   entries.sort(([a], [b]) => a.localeCompare(b));
@@ -67,21 +84,22 @@ export const QUERY_KEYS = {
     byClassSession: (classSessionId: string | number) =>
       ["attendanceSessions", "byClassSession", classSessionId] as const,
   },
-  assessmentSkills: createEntityKeys<{ academyId?: string | number }>("assessmentSkills"),
+  assessmentSkills: {
+    ...createEntityKeys<AssessmentSkillFilter>("assessmentSkills"),
+    byAcademy: (academyId: string | number) => ["assessmentSkills", "byAcademy", academyId] as const,
+  },
   assessments: {
-    ...createEntityKeys<{
-      academyId?: string | number;
-      studentId?: string | number;
-      classSessionId?: string | number;
-    } & DateRange>("assessments"),
+    ...createEntityKeys<AssessmentFilter>("assessments"),
     byStudent: (studentId: string | number) => ["assessments", "byStudent", studentId] as const,
     byClassSession: (classSessionId: string | number) =>
       ["assessments", "byClassSession", classSessionId] as const,
+    byAcademy: (academyId: string | number) => ["assessments", "byAcademy", academyId] as const,
   },
-  studentProgressReport: createEntityKeys<{
-    academyId?: string | number;
-    studentId?: string | number;
-  } & DateRange>("studentProgressReport"),
+  studentProgressReport: {
+    ...createEntityKeys<StudentProgressReportFilter>("studentProgressReport"),
+    byStudent: (studentId: string | number, filter?: Omit<StudentProgressReportFilter, "studentId">) =>
+      ["studentProgressReport", "byStudent", studentId, normalizeFilter(filter ?? {})] as const,
+  },
   trainingPackages: createEntityKeys<{ academyId?: string | number }>("trainingPackages"),
   studentPackages: createEntityKeys<{
     academyId?: string | number;
