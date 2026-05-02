@@ -5,14 +5,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
 import RequirePermission from "@/app/components/require-permission";
-import { attendanceService, AttendanceStatus, SessionAttendanceStudent } from "@/features/attendance/attendance.service";
+import AttendanceTable from "@/features/attendance/components/attendance-table";
+import { attendanceService, SessionAttendanceStudent } from "@/features/attendance/attendance.service";
 import { classSessionService } from "@/features/class-sessions/class-session.service";
 import { parseErrorMessage, useStandardErrorRedirect } from "@/lib/error-handler";
 import { can } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { useAuthStore } from "@/store/auth";
 
-const ATTENDANCE_STATUS_OPTIONS: AttendanceStatus[] = ["PRESENT", "ABSENT", "PERMIT", "SICK", "LATE"];
 
 export default function AttendancePage() {
   const queryClient = useQueryClient();
@@ -135,54 +135,11 @@ export default function AttendancePage() {
             ) : null}
 
             {rows.length > 0 ? (
-              <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 text-left text-zinc-700">
-                      <th className="px-3 py-2">Murid</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th className="px-3 py-2">Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.studentId} className="border-b border-zinc-100 align-top">
-                        <td className="px-3 py-2">
-                          <p className="font-medium text-zinc-900">{row.studentName || row.studentId}</p>
-                          <p className="text-xs text-zinc-500">{row.studentId}</p>
-                        </td>
-                        <td className="px-3 py-2">
-                          <select
-                            value={row.attendanceStatus}
-                            onChange={(event) =>
-                              updateRow(row.studentId, {
-                                attendanceStatus: event.target.value as AttendanceStatus,
-                              })
-                            }
-                            className="w-full rounded-md border border-zinc-300 px-2 py-1"
-                            disabled={!canMarkAttendance || submitBulkMutation.isPending}
-                          >
-                            {ATTENDANCE_STATUS_OPTIONS.map((status) => (
-                              <option key={status} value={status}>
-                                {status}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="px-3 py-2">
-                          <textarea
-                            value={row.remarks || ""}
-                            onChange={(event) => updateRow(row.studentId, { remarks: event.target.value })}
-                            className="min-h-20 w-full rounded-md border border-zinc-300 px-2 py-1"
-                            placeholder="Tambahkan catatan jika perlu"
-                            disabled={!canMarkAttendance || submitBulkMutation.isPending}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <AttendanceTable
+                rows={rows}
+                onUpdateRow={updateRow}
+                disabled={!canMarkAttendance || submitBulkMutation.isPending}
+              />
             ) : null}
 
             {!attendanceDetailQuery.isLoading && !attendanceDetailQuery.isError && rows.length === 0 ? (
