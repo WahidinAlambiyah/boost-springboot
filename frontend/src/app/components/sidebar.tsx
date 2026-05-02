@@ -11,6 +11,7 @@ const LOCAL_FALLBACK_MENU: MenuItemResponse[] = [
   { id: "local-academy-locations", label: "Academy Locations", path: "/academy-locations", visible: true, children: [] },
   { id: "local-coach-profiles", label: "Coach Profiles", path: "/coach-profiles", visible: true, children: [] },
   { id: "local-students", label: "Students", path: "/students", visible: true, children: [] },
+  { id: "local-fe-4", label: "Assessment Skills", path: "/assessment-skills", visible: true, children: [] },
 ];
 
 const hasVisibleChildren = (item: MenuItemResponse): boolean =>
