@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 030-add-fe4-assessment-skills-menu
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.menus (code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              values
+                ('ASSESSMENT_SKILLS', 'Assessment Skills', '/assessment-skills', 'list-checks', 85, true, true, now(), now())
+              on conflict (code) do update
+                set name = excluded.name,
+                    path = excluded.path,
+                    icon = excluded.icon,
+                    order_no = excluded.order_no,
+                    is_active = true,
+                    is_visible = true,
+                    updated_at = now();
+
+              insert into fastworks_springboot.menu_permissions (menu_id, permission_id, match_mode, created_at)
+              select m.id, p.id, 'ANY', now()
+              from fastworks_springboot.menus m
+              join fastworks_springboot.permissions p on p.code = 'ASSESSMENT_READ'
+              where m.code = 'ASSESSMENT_SKILLS'
+              on conflict (menu_id, permission_id) do nothing;
