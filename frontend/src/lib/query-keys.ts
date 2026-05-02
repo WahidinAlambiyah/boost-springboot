@@ -101,12 +101,20 @@ export const QUERY_KEYS = {
       ["studentProgressReport", "byStudent", studentId, normalizeFilter(filter ?? {})] as const,
   },
   trainingPackages: createEntityKeys<{ academyId?: string | number }>("trainingPackages"),
-  studentPackages: createEntityKeys<{
-    academyId?: string | number;
-    studentId?: string | number;
-  }>("studentPackages"),
-  coachPayroll: createEntityKeys<{
-    academyId?: string | number;
-    coachId?: string | number;
-  } & MonthYear>("coachPayroll"),
+  studentPackages: {
+    ...createEntityKeys<{
+      academyId?: string | number;
+      studentId?: string | number;
+    }>("studentPackages"),
+    byStudent: (studentId: string | number) => ["studentPackages", "byStudent", studentId] as const,
+  },
+  coachPayroll: {
+    ...createEntityKeys<{
+      academyId?: string | number;
+      coachId?: string | number;
+    } & MonthYear>("coachPayroll"),
+    periodList: (filter?: { academyId?: string | number } & MonthYear) =>
+      ["coachPayroll", "periodList", normalizeFilter(filter ?? {})] as const,
+    periodDetail: (periodId: string | number) => ["coachPayroll", "periodDetail", periodId] as const,
+  },
 };
