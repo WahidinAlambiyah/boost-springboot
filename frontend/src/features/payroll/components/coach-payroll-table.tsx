@@ -1,7 +1,15 @@
 "use client";
 
+import { StatusBadge, type StatusBadgeTone } from "@/app/components/status-badge";
 import { CoachPayrollItem, CoachPayrollPeriod } from "@/lib/api-types";
 import { formatCurrencyIDR } from "@/lib/formatters";
+
+
+const STATUS_TONE: Record<string, StatusBadgeTone> = {
+  DRAFT: "neutral",
+  APPROVED: "success",
+  PAID: "info",
+};
 
 interface CoachPayrollTableProps {
   periods: CoachPayrollPeriod[];
@@ -30,7 +38,7 @@ export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectP
             {periods.map((period) => (
               <tr key={period.id} className="border-t border-zinc-200 text-zinc-800">
                 <td className="px-4 py-2">{`${period.periodMonth}/${period.periodYear}`}</td>
-                <td className="px-4 py-2">{period.status}</td>
+                <td className="px-4 py-2"><StatusBadge label={period.status} tone={STATUS_TONE[period.status] ?? "warning"} /></td>
                 <td className="px-4 py-2">{period.items.length}</td>
                 <td className="px-4 py-2">
                   <button type="button" className="rounded border border-zinc-300 px-2 py-1" onClick={() => onSelectPeriod(period)}>
@@ -45,7 +53,7 @@ export default function CoachPayrollTable({ periods, selectedPeriodId, onSelectP
 
       {selectedPeriod ? (
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <div className="mb-3 text-sm font-medium text-zinc-800">Status payroll period: {selectedPeriod.status}</div>
+          <div className="mb-3 text-sm font-medium text-zinc-800">Status payroll period: <StatusBadge label={selectedPeriod.status} tone={STATUS_TONE[selectedPeriod.status] ?? "warning"} className="ml-2" /></div>
           <div className="overflow-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-zinc-100 text-zinc-700">

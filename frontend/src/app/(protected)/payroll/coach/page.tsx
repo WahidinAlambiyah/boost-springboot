@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
+import { ErrorMessage } from "@/app/components/error-message";
+import LoadingSkeleton from "@/app/components/loading-skeleton";
+import { PageHeader } from "@/app/components/page-header";
 import RequirePermission from "@/app/components/require-permission";
 import CoachPayrollTable from "@/features/payroll/components/coach-payroll-table";
 import PayrollActions from "@/features/payroll/components/payroll-actions";
@@ -54,8 +57,22 @@ export default function CoachPayrollPage() {
   return (
     <RequirePermission permissions={["PAYROLL_READ", "PAYROLL_WRITE"]} mode="any">
       <AppShell>
-        <h1 className="text-2xl font-semibold text-zinc-900">Coach Payroll</h1>
-        <p className="mt-2 text-zinc-600">Kelola payroll coach per periode bulan.</p>
+        <PageHeader title="Coach Payroll" description="Kelola payroll coach per periode bulan." />
+
+        <ErrorMessage
+          message={
+            periodsQuery.error instanceof Error
+              ? `Gagal memuat payroll periode terpilih. ${periodsQuery.error.message}`
+              : generateMutation.error instanceof Error
+                ? `Gagal generate payroll. ${generateMutation.error.message}`
+                : approveMutation.error instanceof Error
+                  ? `Gagal approve payroll period. ${approveMutation.error.message}`
+                  : markPaidMutation.error instanceof Error
+                    ? `Gagal menandai payroll sebagai PAID. ${markPaidMutation.error.message}`
+                    : undefined
+          }
+          className="mb-4"
+        />
 
         <div className="mt-4">
           <PayrollPeriodFilter
@@ -74,7 +91,15 @@ export default function CoachPayrollPage() {
         </div>
 
         <div className="mt-6">
-          {periodsQuery.data ? (
+          {periodsQuery.isLoading ? <LoadingSkeleton rows={5} className="mt-0" /> : null}
+
+          {periodsQuery.data && periodsQuery.data.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-6 text-sm text-zinc-600">
+              Belum ada data payroll untuk periode ini. Gunakan tombol <span className="font-medium">Generate</span> untuk membuat data.
+            </div>
+          ) : null}
+
+          {periodsQuery.data && periodsQuery.data.length > 0 ? (
             <CoachPayrollTable
               periods={periodsQuery.data}
               selectedPeriodId={selectedPeriodId}
@@ -92,17 +117,18 @@ export default function CoachPayrollPage() {
             canWrite={canWrite}
             disabled={!selectedPeriodId || approveMutation.isPending || markPaidMutation.isPending}
             onApprove={() => {
-              if (selectedPeriodId && window.confirm("Approve period payroll ini?")) {
+              if (selectedPeriodId) {
                 approveMutation.mutate(selectedPeriodId);
               }
             }}
             onMarkPaid={() => {
-              if (selectedPeriodId && window.confirm("Mark payroll period ini sebagai PAID?")) {
+              if (selectedPeriodId) {
                 markPaidMutation.mutate(selectedPeriodId);
               }
             }}
           />
         </div>
+
       </AppShell>
     </RequirePermission>
   );
