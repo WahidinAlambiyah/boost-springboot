@@ -46,6 +46,7 @@ export default function NewAssessmentPage() {
       <AppShell>
         <h1 className="text-2xl font-semibold text-zinc-900">Assessment Baru</h1>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-4">
+          {mutation.isError ? <ErrorMessage message="Gagal menyimpan assessment. Coba lagi." /> : null}
           <AssessmentForm
             skills={skillsQuery.data ?? []}
             classSessions={sessionsQuery.data ?? []}

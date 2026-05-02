@@ -82,6 +82,7 @@ export default function StudentProgressReport() {
         </label>
       </div>
 
+      {studentsQuery.isLoading ? <LoadingSkeleton rows={3} /> : null}
       {studentsQuery.isError ? <ErrorMessage message="Gagal memuat daftar student." /> : null}
 
       {!studentId ? (
