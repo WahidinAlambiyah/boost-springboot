@@ -23,17 +23,27 @@ export default function CoachPayrollPage() {
     queryFn: () => coachPayrollService.getCoachPayrollByPeriod(month, year),
   });
 
-  const approveMutation = useMutation({
-    mutationFn: (payrollPeriodId: string) => coachPayrollService.approveCoachPayroll(payrollPeriodId),
+  const generateMutation = useMutation({
+    mutationFn: (payload: { periodMonth: number; periodYear: number }) =>
+      coachPayrollService.generateCoachPayroll({ academyId: "", ...payload }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachPayroll.all });
     },
   });
 
+  const approveMutation = useMutation({
+    mutationFn: (payrollPeriodId: string) => coachPayrollService.approveCoachPayroll(payrollPeriodId),
+    onSuccess: async (_, payrollPeriodId) => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachPayroll.all });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachPayroll.detail(payrollPeriodId) });
+    },
+  });
+
   const markPaidMutation = useMutation({
     mutationFn: (payrollPeriodId: string) => coachPayrollService.markCoachPayrollPaid(payrollPeriodId),
-    onSuccess: async () => {
+    onSuccess: async (_, payrollPeriodId) => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachPayroll.all });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.coachPayroll.detail(payrollPeriodId) });
     },
   });
 
@@ -47,9 +57,13 @@ export default function CoachPayrollPage() {
           <PayrollPeriodFilter
             initialMonth={month}
             initialYear={year}
+            loading={generateMutation.isPending}
             onApply={(nextMonth, nextYear) => {
               setMonth(nextMonth);
               setYear(nextYear);
+            }}
+            onGenerate={(nextMonth, nextYear) => {
+              generateMutation.mutate({ periodMonth: nextMonth, periodYear: nextYear });
             }}
           />
         </div>
@@ -58,9 +72,11 @@ export default function CoachPayrollPage() {
           {periodsQuery.data ? (
             <CoachPayrollTable
               periods={periodsQuery.data}
+              selectedPeriodId={selectedPeriodId}
               onSelectPeriod={(period) => {
                 setSelectedPeriodId(period.id);
               }}
+              onEditItem={() => undefined}
             />
           ) : null}
         </div>
@@ -69,12 +85,12 @@ export default function CoachPayrollPage() {
           <PayrollActions
             disabled={!selectedPeriodId || approveMutation.isPending || markPaidMutation.isPending}
             onApprove={() => {
-              if (selectedPeriodId) {
+              if (selectedPeriodId && window.confirm("Approve period payroll ini?")) {
                 approveMutation.mutate(selectedPeriodId);
               }
             }}
             onMarkPaid={() => {
-              if (selectedPeriodId) {
+              if (selectedPeriodId && window.confirm("Mark payroll period ini sebagai PAID?")) {
                 markPaidMutation.mutate(selectedPeriodId);
               }
             }}

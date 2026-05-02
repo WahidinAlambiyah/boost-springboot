@@ -439,10 +439,15 @@ export interface StudentPackageSubscriptionCreateRequest {
 export interface CoachPayrollItem {
   id: string;
   coachId: string;
+  coachName?: string;
+  totalSessions?: number;
+  presentSessions?: number;
+  absentSessions?: number;
   baseAmount: number;
   bonusAmount: number;
   deductionAmount: number;
   totalAmount: number;
+  notes?: string;
 }
 
 export interface CoachPayrollPeriod {

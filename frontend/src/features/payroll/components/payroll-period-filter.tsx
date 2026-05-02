@@ -5,16 +5,21 @@ import { FormEvent, useState } from "react";
 interface PayrollPeriodFilterProps {
   initialMonth: number;
   initialYear: number;
+  loading?: boolean;
   onApply: (month: number, year: number) => void;
+  onGenerate: (month: number, year: number) => void;
 }
 
-export default function PayrollPeriodFilter({ initialMonth, initialYear, onApply }: PayrollPeriodFilterProps) {
+export default function PayrollPeriodFilter({ initialMonth, initialYear, loading, onApply, onGenerate }: PayrollPeriodFilterProps) {
   const [month, setMonth] = useState(String(initialMonth));
   const [year, setYear] = useState(String(initialYear));
 
+  const selectedMonth = Number(month);
+  const selectedYear = Number(year);
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onApply(Number(month), Number(year));
+    onApply(selectedMonth, selectedYear);
   };
 
   return (
@@ -42,7 +47,15 @@ export default function PayrollPeriodFilter({ initialMonth, initialYear, onApply
         />
       </label>
       <button type="submit" className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700">
-        Terapkan
+        Filter
+      </button>
+      <button
+        type="button"
+        onClick={() => onGenerate(selectedMonth, selectedYear)}
+        disabled={loading}
+        className="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500 disabled:opacity-50"
+      >
+        Generate
       </button>
     </form>
   );
