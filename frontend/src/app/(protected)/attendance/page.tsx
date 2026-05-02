@@ -1,190 +1,213 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import RequirePermission from "@/app/components/require-permission";
 import AppShell from "@/app/components/app-shell";
-import { AttendanceSubmitPayload } from "@/lib/api-types";
-import {
-  parseErrorMessage,
-  parseValidationErrors,
-  useStandardErrorRedirect,
-} from "@/lib/error-handler";
+import RequirePermission from "@/app/components/require-permission";
+import { attendanceService, AttendanceStatus, SessionAttendanceStudent } from "@/features/attendance/attendance.service";
+import { classSessionService } from "@/features/class-sessions/class-session.service";
+import { parseErrorMessage, useStandardErrorRedirect } from "@/lib/error-handler";
+import { can } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
-import { attendanceService } from "@/features/attendance/attendance.service";
+import { useAuthStore } from "@/store/auth";
 
-const toIsoDate = (value: string) => new Date(value).toISOString();
+const ATTENDANCE_STATUS_OPTIONS: AttendanceStatus[] = ["PRESENT", "ABSENT", "PERMIT", "SICK", "LATE"];
 
 export default function AttendancePage() {
   const queryClient = useQueryClient();
   const handleErrorRedirect = useStandardErrorRedirect();
+  const authorities = useAuthStore((state) => state.authorities);
+  const canMarkAttendance = can(authorities, "ATTENDANCE_MARK");
 
-  const [enrollmentId, setEnrollmentId] = useState("");
-  const [sessionDate, setSessionDate] = useState("");
-  const [status, setStatus] = useState("PRESENT");
-  const [note, setNote] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [rows, setRows] = useState<SessionAttendanceStudent[]>([]);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const attendanceQuery = useQuery({
-    queryKey: QUERY_KEYS.attendance,
-    queryFn: attendanceService.getSummaries,
+  const sessionsQuery = useQuery({
+    queryKey: QUERY_KEYS.classSessions.list(),
+    queryFn: () => classSessionService.getClassSessions(),
   });
 
-  const submitMutation = useMutation({
-    mutationFn: (payload: AttendanceSubmitPayload) => attendanceService.submit(payload),
-    onSuccess: async (data) => {
-      setSubmitMessage(data.message);
-      setValidationErrors({});
-      setEnrollmentId("");
-      setSessionDate("");
-      setStatus("PRESENT");
-      setNote("");
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.attendance });
+  const attendanceDetailQuery = useQuery({
+    queryKey: QUERY_KEYS.attendanceSessions.detail(selectedSessionId),
+    queryFn: () => attendanceService.getAttendanceBySession(selectedSessionId),
+    enabled: Boolean(selectedSessionId),
+  });
+
+  useEffect(() => {
+    if (attendanceDetailQuery.data) {
+      setRows(attendanceDetailQuery.data);
+    }
+  }, [attendanceDetailQuery.data]);
+
+  if (sessionsQuery.error) {
+    handleErrorRedirect(sessionsQuery.error);
+  }
+
+  if (attendanceDetailQuery.error) {
+    handleErrorRedirect(attendanceDetailQuery.error);
+  }
+
+  const updateRow = (studentId: string, patch: Partial<SessionAttendanceStudent>) => {
+    setRows((currentRows) =>
+      currentRows.map((row) => (row.studentId === studentId ? { ...row, ...patch } : row)),
+    );
+  };
+
+  const submitBulkMutation = useMutation({
+    mutationFn: () =>
+      attendanceService.submitAttendanceBulk(selectedSessionId, {
+        records: rows.map((row) => ({
+          studentId: row.studentId,
+          attendance: {
+            attendanceStatus: row.attendanceStatus,
+            remarks: row.remarks || undefined,
+          },
+        })),
+      }),
+    onSuccess: async (response) => {
+      setSubmitMessage(response.message || "Attendance berhasil disimpan.");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.attendanceSessions.detail(selectedSessionId) }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.attendanceSessions.all }),
+      ]);
     },
     onError: (error) => {
       handleErrorRedirect(error);
       setSubmitMessage(parseErrorMessage(error));
-      setValidationErrors(parseValidationErrors(error));
     },
   });
 
-  if (attendanceQuery.error) {
-    handleErrorRedirect(attendanceQuery.error);
-  }
+  const selectedSessionLabel = useMemo(() => {
+    const session = sessionsQuery.data?.find((item) => item.id === selectedSessionId);
+    if (!session) {
+      return null;
+    }
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitMessage(null);
-    setValidationErrors({});
-
-    submitMutation.mutate({
-      enrollmentId,
-      sessionDate: toIsoDate(sessionDate),
-      status,
-      note,
-    });
-  };
+    return `${session.sessionDate} • ${session.startTime}-${session.endTime} • ${session.classGroupId}`;
+  }, [selectedSessionId, sessionsQuery.data]);
 
   return (
-    <RequirePermission permissions={["ATTENDANCE_READ", "ATTENDANCE_MARK"]} mode="any">
+    <RequirePermission permissions="ATTENDANCE_READ">
       <AppShell>
-        <h1 className="text-2xl font-semibold text-zinc-900">Attendance Module</h1>
-        <p className="mt-2 text-zinc-600">Data attendance + aksi submit attendance.</p>
+        <h1 className="text-2xl font-semibold text-zinc-900">Attendance per Class Session</h1>
+        <p className="mt-2 text-zinc-600">Pilih sesi kelas, ubah status/remarks murid, lalu submit attendance secara bulk.</p>
 
-        {attendanceQuery.isLoading ? (
-          <p className="mt-4 text-sm text-zinc-600">Memuat attendance...</p>
-        ) : null}
-
-        {attendanceQuery.isError ? (
-          <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            Gagal mengambil data attendance.
-          </p>
-        ) : null}
-
-        {attendanceQuery.data ? (
-          <div className="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-100 text-zinc-700">
-                <tr>
-                  <th className="px-4 py-2">ID</th>
-                  <th className="px-4 py-2">Enrollment ID</th>
-                  <th className="px-4 py-2">Session Date</th>
-                  <th className="px-4 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attendanceQuery.data.map((item) => (
-                  <tr key={item.id} className="border-t border-zinc-200 text-zinc-800">
-                    <td className="px-4 py-2">{item.id}</td>
-                    <td className="px-4 py-2">{item.enrollmentId}</td>
-                    <td className="px-4 py-2">{item.sessionDate}</td>
-                    <td className="px-4 py-2">{item.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        <section className="mt-8 max-w-xl rounded-lg border border-zinc-200 bg-white p-4">
-          <h2 className="text-lg font-semibold text-zinc-900">Submit Attendance</h2>
-          <form className="mt-4 space-y-4" onSubmit={onSubmit}>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-700">Enrollment ID</span>
-              <input
-                value={enrollmentId}
-                onChange={(event) => setEnrollmentId(event.target.value)}
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                placeholder="UUID enrollmentId"
-                required
-              />
-              {validationErrors.enrollmentId ? (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.enrollmentId}</p>
-              ) : null}
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-700">Session Date</span>
-              <input
-                type="date"
-                value={sessionDate}
-                onChange={(event) => setSessionDate(event.target.value)}
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                required
-              />
-              {validationErrors.sessionDate ? (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.sessionDate}</p>
-              ) : null}
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-700">Status</span>
-              <select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                required
-              >
-                <option value="PRESENT">PRESENT</option>
-                <option value="ABSENT">ABSENT</option>
-                <option value="SICK">SICK</option>
-                <option value="EXCUSED">EXCUSED</option>
-              </select>
-              {validationErrors.status ? (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.status}</p>
-              ) : null}
-            </label>
-
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-zinc-700">Note (optional)</span>
-              <textarea
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
-                rows={3}
-              />
-              {validationErrors.note ? (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.note}</p>
-              ) : null}
-            </label>
-
-            <button
-              type="submit"
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700 disabled:opacity-50"
-              disabled={submitMutation.isPending}
+        <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-zinc-700">Class Session</span>
+            <select
+              value={selectedSessionId}
+              onChange={(event) => {
+                setSelectedSessionId(event.target.value);
+                setSubmitMessage(null);
+              }}
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
             >
-              {submitMutation.isPending ? "Memproses..." : "Submit Attendance"}
-            </button>
-          </form>
+              <option value="">Pilih class session</option>
+              {(sessionsQuery.data ?? []).map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.sessionDate} • {session.startTime}-{session.endTime} • {session.classGroupId}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          {submitMessage ? (
-            <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-2 text-sm text-zinc-700">
-              {submitMessage}
+          {sessionsQuery.isLoading ? <p className="mt-3 text-sm text-zinc-600">Memuat daftar class session...</p> : null}
+          {sessionsQuery.isError ? (
+            <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+              {parseErrorMessage(sessionsQuery.error)}
             </p>
           ) : null}
         </section>
+
+        {selectedSessionId ? (
+          <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
+            <h2 className="text-lg font-semibold text-zinc-900">Daftar Murid & Attendance</h2>
+            {selectedSessionLabel ? <p className="mt-1 text-sm text-zinc-600">{selectedSessionLabel}</p> : null}
+
+            {attendanceDetailQuery.isLoading ? <p className="mt-3 text-sm text-zinc-600">Memuat daftar murid...</p> : null}
+            {attendanceDetailQuery.isError ? (
+              <p className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                {parseErrorMessage(attendanceDetailQuery.error)}
+              </p>
+            ) : null}
+
+            {rows.length > 0 ? (
+              <div className="mt-4 overflow-x-auto">
+                <table className="min-w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-left text-zinc-700">
+                      <th className="px-3 py-2">Murid</th>
+                      <th className="px-3 py-2">Status</th>
+                      <th className="px-3 py-2">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <tr key={row.studentId} className="border-b border-zinc-100 align-top">
+                        <td className="px-3 py-2">
+                          <p className="font-medium text-zinc-900">{row.studentName || row.studentId}</p>
+                          <p className="text-xs text-zinc-500">{row.studentId}</p>
+                        </td>
+                        <td className="px-3 py-2">
+                          <select
+                            value={row.attendanceStatus}
+                            onChange={(event) =>
+                              updateRow(row.studentId, {
+                                attendanceStatus: event.target.value as AttendanceStatus,
+                              })
+                            }
+                            className="w-full rounded-md border border-zinc-300 px-2 py-1"
+                            disabled={!canMarkAttendance || submitBulkMutation.isPending}
+                          >
+                            {ATTENDANCE_STATUS_OPTIONS.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">
+                          <textarea
+                            value={row.remarks || ""}
+                            onChange={(event) => updateRow(row.studentId, { remarks: event.target.value })}
+                            className="min-h-20 w-full rounded-md border border-zinc-300 px-2 py-1"
+                            placeholder="Tambahkan catatan jika perlu"
+                            disabled={!canMarkAttendance || submitBulkMutation.isPending}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+
+            {!attendanceDetailQuery.isLoading && !attendanceDetailQuery.isError && rows.length === 0 ? (
+              <p className="mt-3 text-sm text-zinc-600">Belum ada murid pada sesi ini.</p>
+            ) : null}
+
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => submitBulkMutation.mutate()}
+                className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!canMarkAttendance || submitBulkMutation.isPending || rows.length === 0}
+              >
+                {submitBulkMutation.isPending ? "Menyimpan..." : "Submit Bulk Attendance"}
+              </button>
+              {!canMarkAttendance ? <p className="text-xs text-amber-700">Anda tidak punya permission ATTENDANCE_MARK.</p> : null}
+            </div>
+
+            {submitMessage ? (
+              <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-2 text-sm text-zinc-700">
+                Status tersimpan: {submitMessage}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
       </AppShell>
     </RequirePermission>
   );
