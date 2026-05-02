@@ -436,6 +436,13 @@ export interface StudentPackageSubscriptionCreateRequest {
   endDate?: string;
 }
 
+export interface StudentPackageSubscriptionUpdateRequest {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  remainingSessions?: number;
+}
+
 export interface CoachPayrollItem {
   id: string;
   coachId: string;
