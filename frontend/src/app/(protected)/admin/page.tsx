@@ -1,15 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { ErrorMessage } from "@/app/components/error-message";
 import { FormField } from "@/app/components/form-field";
 import { PageHeader } from "@/app/components/page-header";
 import { StatusBadge, type StatusBadgeTone } from "@/app/components/status-badge";
-import { ADMIN_PERMISSION_BUNDLE, hasAdminAccess } from "@/lib/admin-guard";
-import { useAuthStore } from "@/store/auth";
+import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { ADMIN_PERMISSION_BUNDLE } from "@/lib/admin-guard";
 
 interface ComponentChecklistRow {
   component: string;
@@ -45,28 +43,9 @@ const checklistColumns: DataTableColumn<ComponentChecklistRow>[] = [
 ];
 
 export default function AdminPage() {
-  const router = useRouter();
-  const status = useAuthStore((state) => state.status);
-  const authorities = useAuthStore((state) => state.authorities);
-
-  const isAllowed = hasAdminAccess(authorities);
-
-  useEffect(() => {
-    if (status !== "authenticated") {
-      return;
-    }
-
-    if (!isAllowed) {
-      router.replace("/forbidden");
-    }
-  }, [isAllowed, router, status]);
-
-  if (status !== "authenticated" || !isAllowed) {
-    return null;
-  }
-
   return (
-    <main className="flex-1 space-y-6 p-6">
+    <RequirePermission permissions={ADMIN_PERMISSION_BUNDLE} mode="any">
+      <AppShell>
       <PageHeader
         title="UI Component Verification"
         description="Halaman utilitas internal untuk validasi compile-time dan pola reuse komponen inti tanpa implementasi CRUD penuh."
@@ -90,6 +69,7 @@ export default function AdminPage() {
       <p className="text-sm text-zinc-600">
         Akses admin tetap berlaku. Bundle permission admin saat ini: <span className="font-medium">{ADMIN_PERMISSION_BUNDLE.join(", ")}</span>.
       </p>
-    </main>
+      </AppShell>
+    </RequirePermission>
   );
 }
