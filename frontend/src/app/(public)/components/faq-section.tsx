@@ -15,13 +15,13 @@ const faqs = [
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="mx-auto w-full max-w-6xl px-6 py-16">
+    <section id="faq" className="layout-container section-space">
       <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Pertanyaan Umum</h2>
       <div className="mt-8 space-y-4">
         {faqs.map((item) => (
-          <article key={item.q} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <article key={item.q} className="surface-card p-6">
             <h3 className="text-sm font-semibold text-zinc-900">{item.q}</h3>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">{item.a}</p>
+            <p className="text-body mt-2">{item.a}</p>
           </article>
         ))}
       </div>

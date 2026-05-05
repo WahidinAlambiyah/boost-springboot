@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function CtaSection() {
   return (
-    <section className="container mx-auto w-full px-6 py-16">
-      <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-r from-slate-900 via-zinc-900 to-emerald-900 p-8 sm:p-10">
+    <section className="layout-container section-space">
+      <div className="overflow-hidden rounded-3xl border border-zinc-700/40 bg-gradient-to-r from-slate-900 via-zinc-900 to-emerald-900 p-7 sm:p-10">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           Siap mulai aktivitas anak yang aman, terarah, dan menyenangkan?
         </h2>

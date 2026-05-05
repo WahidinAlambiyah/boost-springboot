@@ -13,7 +13,7 @@ const navItems = [
 export default function PublicNavbar() {
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+      <div className="layout-container flex items-center justify-between py-4">
         <Link href="/" className="text-lg font-semibold tracking-tight text-zinc-900">
           Boost Academy
         </Link>

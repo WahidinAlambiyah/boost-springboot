@@ -6,12 +6,12 @@ export default function FeaturesSection() {
   ];
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-14">
+    <section className="layout-container section-space">
       <h2 className="text-2xl font-semibold text-zinc-900">Fitur Utama</h2>
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {features.map((feature) => (
-          <article key={feature} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <p className="text-sm leading-6 text-zinc-700">{feature}</p>
+          <article key={feature} className="surface-card rounded-xl p-5">
+            <p className="text-body text-zinc-700">{feature}</p>
           </article>
         ))}
       </div>

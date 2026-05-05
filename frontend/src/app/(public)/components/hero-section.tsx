@@ -2,15 +2,15 @@ import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <section className="container mx-auto grid w-full gap-10 px-6 pt-16 pb-14 md:grid-cols-2 md:items-center">
+    <section className="layout-container section-space grid gap-10 md:grid-cols-2 md:items-center">
       <div>
         <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
           Program Aktivitas Anak
         </p>
-        <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-5xl">
+        <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl lg:text-5xl">
           Kelas Pushbike & Aktivitas Anak yang Aman, Terarah, dan Menyenangkan
         </h1>
-        <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 font-light">
+        <p className="text-body mt-5 max-w-xl font-normal">
           Bantu anak melatih keseimbangan, keberanian, fokus, dan kepercayaan diri melalui latihan pushbike, kegiatan belajar, dan event anak yang dipantau langsung oleh coach.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -25,7 +25,7 @@ export default function HeroSection() {
           </a>
         </div>
       </div>
-      <div className="relative overflow-hidden rounded-3xl border border-zinc-200/80 bg-gradient-to-br from-zinc-100 via-slate-100 to-emerald-100/80 p-8 shadow-sm">
+      <div className="surface-card relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-100 via-slate-100 to-emerald-100/80 p-7 sm:p-8">
         <div className="space-y-4">
           <div className="h-24 rounded-2xl bg-gradient-to-r from-emerald-200 to-emerald-100" />
           <div className="grid grid-cols-2 gap-4">

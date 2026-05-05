@@ -1,10 +1,10 @@
 export default function PublicFooter() {
   return (
     <footer className="border-t border-zinc-200 bg-white">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2">
+      <div className="layout-container grid gap-10 py-12 sm:grid-cols-2">
         <div>
           <p className="text-lg font-semibold text-zinc-900">Boost Academy</p>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-zinc-600">
+          <p className="text-body mt-3 max-w-sm">
             Platform operasional akademi yang ringan, rapi, dan membantu tim fokus ke perkembangan siswa.
           </p>
         </div>
