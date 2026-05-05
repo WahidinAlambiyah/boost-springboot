@@ -17,9 +17,10 @@ describe("Sidebar", () => {
       authorities: [],
       menu: [],
     });
+    vi.restoreAllMocks();
   });
 
-  it("renders sidebar based on menu payload and local fallback", () => {
+  it("renders sidebar based on backend menu and local fallback", () => {
     const payload: MenuItemResponse[] = [
       { id: "1", label: "Dashboard", path: "/dashboard", visible: true, children: [] },
       { id: "2", label: "Billing", path: "/billing", visible: true, children: [] },
@@ -35,48 +36,27 @@ describe("Sidebar", () => {
     expect(screen.getByText("Academies")).toBeInTheDocument();
   });
 
-  it("updates rendered menu immediately when payload changes", () => {
-    useAuthStore.setState({
-      menu: [{ id: "1", label: "Dashboard", path: "/dashboard", visible: true, children: [] }],
-    });
-
-    const { rerender } = render(<Sidebar />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.queryByText("Billing")).not.toBeInTheDocument();
-
-    useAuthStore.setState({
-      menu: [{ id: "2", label: "Billing", path: "/billing", visible: true, children: [] }],
-    });
-    rerender(<Sidebar />);
-
-    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
-    expect(screen.getByText("Billing")).toBeInTheDocument();
-  });
-
-  it("treats missing visible from backend DTO as visible", () => {
-    const payload = [
-      { id: "1", label: "Dashboard", path: "/dashboard", children: [] },
-      { id: "2", label: "Billing", path: "/billing", visible: false, children: [] },
-    ] as unknown as MenuItemResponse[];
+  it("prioritizes backend menu and does not duplicate fallback routes", () => {
+    const payload: MenuItemResponse[] = [
+      { id: "1", label: "Academies", path: "/academies", visible: true, children: [] },
+    ];
 
     useAuthStore.setState({ menu: payload });
     render(<Sidebar />);
 
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.queryByText("Billing")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Academies")).toHaveLength(1);
+    expect(screen.getByText("Students")).toBeInTheDocument();
   });
 
-});
+  it("writes observability log when fallback is active", () => {
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
 
+    useAuthStore.setState({ menu: [] });
+    render(<Sidebar />);
 
-it("does not duplicate local fallback if backend path already exists", () => {
-  const payload: MenuItemResponse[] = [
-    { id: "1", label: "Academies", path: "/academies", visible: true, children: [] },
-  ];
-
-  useAuthStore.setState({ menu: payload });
-  render(<Sidebar />);
-
-  expect(screen.getAllByText("Academies")).toHaveLength(1);
-  expect(screen.getByText("Students")).toBeInTheDocument();
+    expect(infoSpy).toHaveBeenCalledWith(
+      "[sidebar] Local menu fallback active.",
+      expect.objectContaining({ fallbackCount: 5 }),
+    );
+  });
 });

@@ -6,6 +6,12 @@ import { usePathname } from "next/navigation";
 import { MenuItemResponse } from "@/types/api";
 import { useAuthStore } from "@/store/auth";
 
+type FallbackMode = "disabled" | "dev-only" | "safety";
+
+const FALLBACK_MODE = (process.env.NEXT_PUBLIC_MENU_FALLBACK_MODE ?? "dev-only") as FallbackMode;
+const ENABLE_MENU_FALLBACK = FALLBACK_MODE === "safety" || (FALLBACK_MODE === "dev-only" && process.env.NODE_ENV !== "production");
+const ENABLED_FALLBACK_ROUTES = new Set(["/academies", "/academy-locations", "/coach-profiles", "/students", "/assessment-skills"]);
+
 const LOCAL_FALLBACK_MENU: MenuItemResponse[] = [
   { id: "local-academies", label: "Academies", path: "/academies", visible: true, children: [] },
   { id: "local-academy-locations", label: "Academy Locations", path: "/academy-locations", visible: true, children: [] },
@@ -38,8 +44,24 @@ const filterVisibleMenu = (items: MenuItemResponse[]): MenuItemResponse[] =>
     }));
 
 const mergeMenuWithLocalFallback = (items: MenuItemResponse[]): MenuItemResponse[] => {
+  if (!ENABLE_MENU_FALLBACK) {
+    return items;
+  }
+
   const knownPaths = new Set(items.flatMap((item) => flattenMenu(item).map((node) => node.path)).filter(Boolean));
-  const fallbackItems = LOCAL_FALLBACK_MENU.filter((item) => item.path && !knownPaths.has(item.path));
+  const fallbackItems = LOCAL_FALLBACK_MENU.filter(
+    (item) => item.path && ENABLED_FALLBACK_ROUTES.has(item.path) && !knownPaths.has(item.path),
+  );
+
+  if (fallbackItems.length > 0) {
+    console.info("[sidebar] Local menu fallback active.", {
+      mode: FALLBACK_MODE,
+      backendCount: items.length,
+      fallbackCount: fallbackItems.length,
+      fallbackPaths: fallbackItems.map((item) => item.path),
+    });
+  }
+
   return [...items, ...fallbackItems];
 };
 
