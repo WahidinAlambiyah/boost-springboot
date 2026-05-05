@@ -1,25 +1,40 @@
 type ProgressPreviewCardProps = {
   studentName: string;
-  consistency: string;
-  milestone: string;
+  level: string;
+  balance: string;
+  braking: string;
+  confidence: string;
+  coachNote: string;
 };
 
 export default function ProgressPreviewCard({
   studentName,
-  consistency,
-  milestone,
+  level,
+  balance,
+  braking,
+  confidence,
+  coachNote,
 }: ProgressPreviewCardProps) {
   return (
     <article className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <p className="text-sm font-semibold text-zinc-900">{studentName}</p>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-100">
-        <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-emerald-400 to-amber-300" />
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-zinc-900">{studentName}</p>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Level {level}</span>
       </div>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        <span className="text-zinc-500">Konsistensi</span>
-        <span className="font-semibold text-zinc-800">{consistency}</span>
+      <div className="mt-4 space-y-2 text-sm text-zinc-700">
+        <p>
+          <span className="font-semibold">Balance:</span> {balance}
+        </p>
+        <p>
+          <span className="font-semibold">Braking:</span> {braking}
+        </p>
+        <p>
+          <span className="font-semibold">Confidence:</span> {confidence}
+        </p>
       </div>
-      <p className="mt-2 text-sm text-zinc-600">Milestone: {milestone}</p>
+      <p className="mt-4 text-sm leading-6 text-zinc-600">
+        <span className="font-semibold text-zinc-800">Catatan coach:</span> {coachNote}
+      </p>
     </article>
   );
 }

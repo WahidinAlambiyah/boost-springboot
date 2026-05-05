@@ -7,7 +7,7 @@ import PublicFooter from "@/app/(public)/components/public-footer";
 import PublicNavbar from "@/app/(public)/components/public-navbar";
 import TestimonialCard from "@/app/(public)/components/testimonial-card";
 
-const trustBadges = ["1200+ siswa aktif", "35+ coach bersertifikat", "4.9/5 rating orang tua"];
+const trustBadges = ["Untuk usia 2–7 tahun", "Didampingi coach", "Progress anak tercatat", "Laporan untuk orang tua"];
 
 const reasons = [
   "Kurikulum terstruktur sesuai usia dan level anak",
@@ -17,26 +17,31 @@ const reasons = [
 
 const programs = [
   {
-    title: "Balance Starter",
-    level: "Usia 3-5 tahun",
-    description: "Fokus koordinasi dasar, keseimbangan, dan fun games untuk membangun rasa percaya diri.",
+    title: "Pushbike Class",
+    level: "Program utama",
+    description: "Latihan keseimbangan, kontrol arah, dan teknik dasar pushbike dengan pendekatan fun learning.",
   },
   {
-    title: "Skill Builder",
-    level: "Usia 6-8 tahun",
-    description: "Latihan teknik tikungan, pengereman, dan start dengan metode belajar bertahap.",
+    title: "Kegiatan Belajar Anak",
+    level: "Program utama",
+    description: "Aktivitas belajar terarah untuk melatih fokus, motorik, dan kerja sama anak dalam suasana yang menyenangkan.",
   },
   {
-    title: "Race Preparation",
-    level: "Usia 9+ tahun",
-    description: "Pendampingan intensif untuk target kompetisi dengan evaluasi performa tiap sesi.",
+    title: "Event & Race",
+    level: "Program utama",
+    description: "Sesi event dan race ramah anak untuk membangun keberanian, sportivitas, dan pengalaman kompetisi positif.",
   },
 ];
 
 const progressPreviews = [
-  { studentName: "Aira (6)", consistency: "88%", milestone: "Stabil cornering level 2" },
-  { studentName: "Raka (7)", consistency: "91%", milestone: "Start gate reaction meningkat" },
-  { studentName: "Nala (5)", consistency: "84%", milestone: "Berani track mini tanpa bantuan" },
+  {
+    studentName: "Rafa",
+    level: "Beginner",
+    balance: "4/5",
+    braking: "3/5",
+    confidence: "4/5",
+    coachNote: "Rafa menunjukkan progres baik di lintasan lurus dan mulai berani mengambil tikungan. Lanjutkan latihan braking bertahap agar kontrol kecepatan makin stabil.",
+  },
 ];
 
 const pushbikeActivities = ["Drill start gate", "Mini obstacle run", "Cornering challenge"];
@@ -83,7 +88,7 @@ export default function HomePage() {
       <HeroSection />
 
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {trustBadges.map((badge) => (
             <p
               key={badge}
