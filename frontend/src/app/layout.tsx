@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BalanceTrack Kids Academy",
+  title: "Boost Academy | Trial Kelas Pushbike Anak",
   description:
-    "Kelas pushbike, kegiatan belajar anak, event race, dan laporan perkembangan anak.",
+    "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
   openGraph: {
     title: "Boost Academy",
     description:
