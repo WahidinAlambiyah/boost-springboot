@@ -24,6 +24,7 @@ Variabel yang umum dipakai:
 
 - `NEXT_PUBLIC_APP_ENV` → `development | staging | production`.
 - `NEXT_PUBLIC_RUNTIME_LOG_ENDPOINT` → opsional untuk runtime error logging.
+- `NEXT_PUBLIC_MENU_FALLBACK_MODE` → `disabled | dev-only | safety` (default `dev-only`).
 
 ## 3) Scripts utama
 
@@ -77,6 +78,23 @@ Jika endpoint utama students gagal (misalnya `404/5xx` karena perbedaan versi AP
 4. Lampirkan payload + status code saat pelaporan bug agar tim BE/FE bisa mapping issue kompatibilitas endpoint.
 
 > Rekomendasi QA: selalu uji skenario sukses + fallback minimal sekali di tiap environment (local/dev/staging) sebelum sign-off UAT.
+
+## 6b) Prioritas menu sidebar: backend > fallback lokal
+
+Frontend sidebar mengikuti prioritas berikut:
+
+1. **Menu dari backend adalah sumber utama**.
+2. **Fallback lokal hanya pelengkap** untuk route FE yang sudah siap/diaktifkan.
+3. Jika path yang sama sudah ada dari backend, fallback lokal **tidak boleh duplikat**.
+
+Mode fallback sidebar dikontrol oleh `NEXT_PUBLIC_MENU_FALLBACK_MODE`:
+
+- `disabled`: fallback lokal dimatikan total.
+- `dev-only` (default): fallback aktif hanya di non-production (`NODE_ENV !== "production"`).
+- `safety`: fallback aktif di semua environment (termasuk production), sebagai safety mode.
+
+Observability:
+- Saat fallback aktif dan dipakai, frontend menulis log `console.info` dengan mode fallback, jumlah menu backend, jumlah fallback, dan daftar path fallback. Log ini memudahkan diagnosis saat incident produksi.
 
 ## 7) Auth flow singkat
 
