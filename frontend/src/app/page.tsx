@@ -68,12 +68,12 @@ const testimonials = [
 
 function SimpleCardSection({ id, title, items }: { id: string; title: string; items: string[] }) {
   return (
-    <section id={id} className="mx-auto w-full max-w-6xl px-6 py-14">
+    <section id={id} className="container mx-auto w-full px-6 py-14">
       <h2 className="text-2xl font-semibold text-zinc-900">{title}</h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <article key={item} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <p className="text-sm leading-6 text-zinc-700">{item}</p>
+          <article key={item} className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+            <p className="text-sm leading-6 font-light text-zinc-700">{item}</p>
           </article>
         ))}
       </div>
@@ -87,7 +87,7 @@ export default function HomePage() {
       <PublicNavbar />
       <HeroSection />
 
-      <section className="mx-auto w-full max-w-6xl px-6 py-10">
+      <section className="container mx-auto w-full px-6 py-10">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {trustBadges.map((badge) => (
             <p
@@ -102,7 +102,7 @@ export default function HomePage() {
 
       <SimpleCardSection id="kenapa-kami" title="Kenapa Memilih Kami" items={reasons} />
 
-      <section id="program" className="mx-auto w-full max-w-6xl px-6 py-14">
+      <section id="program" className="container mx-auto w-full px-6 py-14">
         <h2 className="text-2xl font-semibold text-zinc-900">Program Utama</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {programs.map((program) => (
@@ -111,7 +111,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="progres" className="mx-auto w-full max-w-6xl px-6 py-14">
+      <section id="progres" className="container mx-auto w-full px-6 py-14">
         <h2 className="text-2xl font-semibold text-zinc-900">Preview Progress Anak</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {progressPreviews.map((preview) => (
@@ -124,7 +124,7 @@ export default function HomePage() {
       <SimpleCardSection id="kegiatan-belajar" title="Kegiatan Belajar Anak" items={learningActivities} />
       <SimpleCardSection id="event-balapan" title="Event Balapan" items={raceEvents} />
 
-      <section id="testimoni" className="mx-auto w-full max-w-6xl px-6 py-14">
+      <section id="testimoni" className="container mx-auto w-full px-6 py-14">
         <h2 className="text-2xl font-semibold text-zinc-900">Testimoni</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((item) => (
