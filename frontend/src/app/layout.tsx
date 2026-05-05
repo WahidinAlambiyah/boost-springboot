@@ -15,12 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Boost Academy",
-    template: "%s | Boost Academy",
-  },
+  title: "BalanceTrack Kids Academy",
   description:
-    "Platform manajemen operasional akademi untuk administrasi, pembelajaran, dan pelaporan.",
+    "Kelas pushbike, kegiatan belajar anak, event race, dan laporan perkembangan anak.",
   openGraph: {
     title: "Boost Academy",
     description:
