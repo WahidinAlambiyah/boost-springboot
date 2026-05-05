@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ["protofeone.alambiyah.com", "*.alambiyah.com"],
 };
 
 export default nextConfig;
