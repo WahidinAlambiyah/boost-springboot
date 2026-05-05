@@ -90,3 +90,24 @@ export const programDetails: Record<ProgramSlug, ProgramDetail> = {
     ],
   },
 };
+
+
+export type ProgramHighlight = {
+  title: string;
+  description: string;
+};
+
+export const programHighlights: ProgramHighlight[] = [
+  {
+    title: "Pushbike Class",
+    description: "Latihan keseimbangan, teknik dasar, dan keberanian anak di lintasan lewat sesi fun learning.",
+  },
+  {
+    title: "Kegiatan Belajar Anak",
+    description: "Aktivitas fokus, motorik, dan kolaborasi untuk membentuk kebiasaan belajar yang menyenangkan.",
+  },
+  {
+    title: "Event & Race",
+    description: "Kesempatan anak mencoba mini race dan event ramah keluarga untuk menumbuhkan percaya diri.",
+  },
+];
