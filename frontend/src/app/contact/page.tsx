@@ -1,3 +1,4 @@
+import ContactForm from "@/app/(public)/components/contact-form";
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 
 export default function ContactPage() {
@@ -59,60 +60,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 p-6">
-            <h2 className="text-xl font-semibold text-zinc-900">Form Kontak</h2>
-            <p className="mt-2 text-zinc-700">
-              Form ini bersifat dummy untuk tampilan UI. Data tidak dikirim ke backend.
-            </p>
-
-            <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
-              <div>
-                <label htmlFor="name" className="mb-1 block text-sm font-medium text-zinc-800">
-                  Nama
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Nama lengkap"
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-zinc-800">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="nama@email.com"
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="mb-1 block text-sm font-medium text-zinc-800">
-                  Pesan
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  placeholder="Tulis pertanyaan Anda"
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white transition hover:bg-zinc-800"
-              >
-                Kirim (Dummy)
-              </button>
-            </form>
-          </div>
+          <ContactForm />
         </div>
       </section>
     </PublicPageLayout>
