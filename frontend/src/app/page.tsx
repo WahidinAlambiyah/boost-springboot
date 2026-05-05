@@ -3,9 +3,8 @@ import FaqSection from "@/app/(public)/components/faq-section";
 import HeroSection from "@/app/(public)/components/hero-section";
 import ProgramCard from "@/app/(public)/components/program-card";
 import ProgressPreviewCard from "@/app/(public)/components/progress-preview-card";
-import PublicFooter from "@/app/(public)/components/public-footer";
-import PublicNavbar from "@/app/(public)/components/public-navbar";
 import TestimonialCard from "@/app/(public)/components/testimonial-card";
+import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 
 const trustBadges = ["Untuk usia 2–7 tahun", "Didampingi coach", "Progress anak tercatat", "Laporan untuk orang tua"];
 
@@ -83,8 +82,7 @@ function SimpleCardSection({ id, title, items }: { id: string; title: string; it
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-zinc-50">
-      <PublicNavbar />
+    <PublicPageLayout>
       <HeroSection />
 
       <section className="container mx-auto w-full px-6 py-10">
@@ -135,7 +133,6 @@ export default function HomePage() {
 
       <FaqSection />
       <CtaSection />
-      <PublicFooter />
-    </main>
+    </PublicPageLayout>
   );
 }
