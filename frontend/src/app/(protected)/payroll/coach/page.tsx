@@ -54,25 +54,22 @@ export default function CoachPayrollPage() {
     },
   });
 
+  const errorMessage = periodsQuery.error instanceof Error
+    ? `Gagal memuat payroll periode terpilih. ${periodsQuery.error.message}`
+    : generateMutation.error instanceof Error
+      ? `Gagal generate payroll. ${generateMutation.error.message}`
+      : approveMutation.error instanceof Error
+        ? `Gagal approve payroll period. ${approveMutation.error.message}`
+        : markPaidMutation.error instanceof Error
+          ? `Gagal menandai payroll sebagai PAID. ${markPaidMutation.error.message}`
+          : undefined;
+
   return (
     <RequirePermission permissions={["PAYROLL_READ", "PAYROLL_WRITE"]} mode="any">
       <AppShell>
         <PageHeader title="Coach Payroll" description="Kelola payroll coach per periode bulan." />
 
-        <ErrorMessage
-          message={
-            periodsQuery.error instanceof Error
-              ? `Gagal memuat payroll periode terpilih. ${periodsQuery.error.message}`
-              : generateMutation.error instanceof Error
-                ? `Gagal generate payroll. ${generateMutation.error.message}`
-                : approveMutation.error instanceof Error
-                  ? `Gagal approve payroll period. ${approveMutation.error.message}`
-                  : markPaidMutation.error instanceof Error
-                    ? `Gagal menandai payroll sebagai PAID. ${markPaidMutation.error.message}`
-                    : undefined
-          }
-          className="mb-4"
-        />
+        {errorMessage ? <ErrorMessage message={errorMessage} className="mb-4" /> : null}
 
         <div className="mt-4">
           <PayrollPeriodFilter
