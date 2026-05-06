@@ -12,7 +12,6 @@ import RequirePermission from "@/app/components/require-permission";
 import { SectionCard } from "@/app/components/section-card";
 import { StatCard } from "@/app/components/stat-card";
 import { StatusBadge } from "@/app/components/status-badge";
-import { DEV_TOOLS_READ_PERMISSIONS } from "@/features/dev-crud/dev-crud.types";
 
 interface ComponentDemoRow {
   name: string;
@@ -107,11 +106,13 @@ const columns: DataTableColumn<ComponentDemoRow>[] = [
   },
 ];
 
+// TODO: replace dummy create/update/delete checks with DEV_TOOLS_WRITE when dev tools write permission is available.
 const noopConfirm = () => undefined;
 
 export default function DevComponentsPage() {
   return (
-    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+    // TODO: replace USER_READ with DEV_TOOLS_READ when dev tools permission is available.
+    <RequirePermission permissions="USER_READ">
       <AppShell>
         <PageHeader
           title="Dev Components"

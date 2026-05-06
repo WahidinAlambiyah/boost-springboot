@@ -12,7 +12,7 @@ import { FormField } from "@/app/components/form-field";
 import { PageHeader } from "@/app/components/page-header";
 import RequirePermission from "@/app/components/require-permission";
 import { SectionCard } from "@/app/components/section-card";
-import { DEV_TOOLS_READ_PERMISSIONS, DEV_TOOLS_WRITE_PERMISSIONS, TRAINING_CENTER_DEMO_STATUSES } from "@/features/dev-crud/dev-crud.types";
+import { DEV_TOOLS_WRITE_PERMISSIONS, TRAINING_CENTER_DEMO_STATUSES } from "@/features/dev-crud/dev-crud.types";
 import { canAny } from "@/lib/permissions";
 import { useAuthStore } from "@/store/auth";
 
@@ -45,6 +45,7 @@ const inputClassName = "w-full rounded-md border border-zinc-300 px-3 py-2 text-
 
 export default function DevFormDemoPage() {
   const authorities = useAuthStore((state) => state.authorities);
+  // TODO: replace dummy create/update/delete checks with DEV_TOOLS_WRITE when dev tools write permission is available.
   const canWrite = useMemo(() => canAny(authorities, [...DEV_TOOLS_WRITE_PERMISSIONS]), [authorities]);
   const [lastSubmit, setLastSubmit] = useState<FormDemoValues | null>(null);
   const [submitFeedback, setSubmitFeedback] = useState<string | null>(null);
@@ -66,7 +67,8 @@ export default function DevFormDemoPage() {
   };
 
   return (
-    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+    // TODO: replace USER_READ with DEV_TOOLS_READ when dev tools permission is available.
+    <RequirePermission permissions="USER_READ">
       <AppShell>
         <PageHeader
           title="Dev Form Demo"
