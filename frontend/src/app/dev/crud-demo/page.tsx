@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/auth";
 
 export default function DevCrudDemoPage() {
   const authorities = useAuthStore((state) => state.authorities);
+  // TODO: replace fallback write checks with DEV_TOOLS_WRITE when write dev tools permission is available.
   const canWrite = useMemo(() => canAny(authorities, [...DEV_TOOLS_WRITE_PERMISSIONS]), [authorities]);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -93,7 +94,7 @@ export default function DevCrudDemoPage() {
   const queryError = trainingCentersQuery.isError ? "Gagal memuat data training center demo." : undefined;
 
   return (
-    // TODO: Replace USER_READ fallback with DEV_TOOLS_READ once the backend authority is available.
+    // TODO: replace USER_READ with DEV_TOOLS_READ when dev tools permission is available.
     <RequirePermission permissions="USER_READ">
       <AppShell>
         <PageHeader
