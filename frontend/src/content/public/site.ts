@@ -14,6 +14,9 @@ export const siteMetadata = {
 
 export const siteBrand = {
   name: "Boost Academy",
+  tagline: "Trial Kelas Pushbike Anak",
+  description:
+    "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
   footerDescription:
     "Kelas pushbike dan aktivitas anak yang dirancang untuk membantu orang tua memantau keberanian, fokus, dan perkembangan anak bersama coach melalui progress report yang mudah dipahami.",
 } as const;
@@ -44,12 +47,15 @@ export const footerLinks = [
 ] as const;
 
 export const aboutContent = {
-  title: "Tentang Academy",
+  title: `Tentang ${siteBrand.name}`,
   intro:
-    "Boost Academy adalah ruang belajar dan aktivitas anak yang menggabungkan olahraga, pembelajaran, serta pendampingan coach berpengalaman agar setiap anak berkembang secara menyeluruh.",
+    `${siteBrand.name} adalah ruang belajar dan aktivitas anak yang menggabungkan olahraga, pembelajaran, serta pendampingan coach berpengalaman agar setiap anak berkembang secara menyeluruh.`,
+  missionTitle: "Misi",
   mission:
     "Membantu anak bertumbuh jadi pribadi yang sehat, percaya diri, dan punya semangat belajar lewat proses yang terarah, menyenangkan, dan aman.",
+  valuesTitle: "Nilai Utama",
   values: ["Aman", "Fun", "Progress", "Komunitas positif"],
+  progressTitle: "Kenapa progress anak dicatat?",
   progressReason:
     "Pencatatan progress membantu coach dan orang tua memahami perkembangan anak dari waktu ke waktu, melihat kekuatan yang perlu terus didorong, serta area yang perlu pendampingan tambahan supaya tujuan belajar anak lebih jelas dan terukur.",
 } as const;

@@ -11,12 +11,12 @@ export default function AboutPage() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-900">Misi</h2>
+          <h2 className="text-2xl font-semibold text-zinc-900">{aboutContent.missionTitle}</h2>
           <p className="mt-3 max-w-3xl text-zinc-700">{aboutContent.mission}</p>
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-900">Nilai Utama</h2>
+          <h2 className="text-2xl font-semibold text-zinc-900">{aboutContent.valuesTitle}</h2>
           <ul className="mt-3 list-disc space-y-2 pl-6 text-zinc-700">
             {aboutContent.values.map((value) => (
               <li key={value}>{value}</li>
@@ -25,7 +25,7 @@ export default function AboutPage() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold text-zinc-900">Kenapa progress anak dicatat?</h2>
+          <h2 className="text-2xl font-semibold text-zinc-900">{aboutContent.progressTitle}</h2>
           <p className="mt-3 max-w-3xl text-zinc-700">{aboutContent.progressReason}</p>
         </div>
       </section>

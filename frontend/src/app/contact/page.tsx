@@ -23,17 +23,17 @@ export default function ContactPage() {
                 rel="noreferrer"
                 className="mt-4 inline-flex rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition hover:bg-emerald-700"
               >
-                Chat via WhatsApp
+                {contactPageContent.whatsappLabel}
               </a>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900">Lokasi</h3>
+              <h3 className="text-lg font-semibold text-zinc-900">{contactPageContent.locationTitle}</h3>
               <p className="mt-2 text-zinc-700">{siteContact.location}</p>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900">Jam Operasional</h3>
+              <h3 className="text-lg font-semibold text-zinc-900">{contactPageContent.operationalHoursTitle}</h3>
               <ul className="mt-2 space-y-1 text-zinc-700">
                 {siteContact.operationalHours.map((hour) => (
                   <li key={hour}>{hour}</li>
@@ -42,7 +42,7 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900">Sosial Media</h3>
+              <h3 className="text-lg font-semibold text-zinc-900">{contactPageContent.socialMediaTitle}</h3>
               <ul className="mt-2 space-y-1 text-zinc-700">
                 {siteContact.socialMedia.map((item) => (
                   <li key={item.label}>

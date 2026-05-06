@@ -7,6 +7,7 @@ import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 import {
   categoryTabs,
   galleryItems,
+  galleryPageContent,
   type GalleryCategory,
   type GalleryItem,
 } from "@/content/public/gallery";
@@ -19,7 +20,7 @@ function GalleryCard({ item }: { item: GalleryItem }) {
     <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
       {showPlaceholder ? (
         <div className="flex h-48 items-center justify-center bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 text-sm font-medium text-zinc-600">
-          Foto akan segera tersedia
+          {galleryPageContent.unavailableImageLabel}
         </div>
       ) : (
         <Image
@@ -52,10 +53,8 @@ export default function GalleryPage() {
   return (
     <PublicPageLayout>
       <section className="container mx-auto w-full px-6 py-16">
-        <h1 className="text-3xl font-semibold text-zinc-900">Gallery</h1>
-        <p className="mt-4 max-w-2xl text-zinc-700">
-          Dokumentasi kegiatan kelas, latihan pushbike, dan momen terbaik event akademi.
-        </p>
+        <h1 className="text-3xl font-semibold text-zinc-900">{galleryPageContent.title}</h1>
+        <p className="mt-4 max-w-2xl text-zinc-700">{galleryPageContent.description}</p>
 
         <div className="mt-8 flex flex-wrap gap-2">
           {categoryTabs.map((tab) => {
