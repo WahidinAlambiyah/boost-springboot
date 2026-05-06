@@ -1,3 +1,16 @@
+export const eventsPageContent = {
+  title: "Events",
+  description:
+    "Lihat jadwal event dan race yang dirancang ramah anak untuk menumbuhkan sportivitas dan pengalaman kompetisi positif.",
+  upcomingTitle: "Event Mendatang",
+  pastTitle: "Event Selesai",
+  ctaTitle: "Siap ikut event berikutnya?",
+  ctaDescription:
+    "Daftarkan si kecil sekarang dan dapatkan pengalaman seru bareng komunitas pushbike di kotamu.",
+  ctaLabel: "Daftar Event",
+  ctaHref: "/register",
+} as const;
+
 export type EventStatus = "mendatang" | "selesai";
 
 export type EventItem = {

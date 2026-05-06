@@ -1,3 +1,19 @@
+import { siteBrand } from "@/content/public/site";
+
+export const testimonialsPageContent = {
+  title: "Testimonials",
+  description: `Cerita orang tua, coach, dan peserta tentang pengalaman mereka bersama program ${siteBrand.name}.`,
+  parentSectionTitle: "Section Testimoni Orang Tua",
+  parentSectionDescription:
+    "Orang tua melihat perubahan positif pada anak setelah mengikuti program: komunikasi lebih terbuka, semangat belajar meningkat, dan kebiasaan baik mulai terbentuk secara konsisten.",
+  coachSectionTitle: "Section Testimoni Coach",
+  coachSectionDescription:
+    "Coach menyoroti peningkatan disiplin latihan, kemampuan memahami arahan, serta keberanian anak untuk mencoba tantangan baru di setiap sesi.",
+  progressSectionTitle: "Cerita Perkembangan Anak",
+  progressSectionDescription:
+    "Setiap anak berkembang dengan ritme masing-masing. Dengan pendampingan terstruktur, orang tua dapat memahami progres dari waktu ke waktu dan memberi dukungan yang tepat di rumah.",
+} as const;
+
 export type TestimonialCategory = "orang-tua" | "coach" | "progress-story";
 
 export type Testimonial = {

@@ -1,3 +1,9 @@
+export const galleryPageContent = {
+  title: "Gallery",
+  description: "Dokumentasi kegiatan kelas, latihan pushbike, dan momen terbaik event akademi.",
+  unavailableImageLabel: "Foto akan segera tersedia",
+} as const;
+
 export type GalleryCategory = "pushbike" | "learning" | "race" | "community";
 
 export type GalleryItem = {

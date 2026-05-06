@@ -35,6 +35,14 @@ export const audience = [
 
 export const coachNotes = ["Kehadiran", "Skill pushbike", "Fokus dan disiplin", "Keberanian", "Rekomendasi latihan berikutnya"] as const;
 
+export const programPageContent = {
+  title: "Overview Program",
+  description:
+    "Pilih program yang dirancang untuk mendukung perkembangan keterampilan, fokus belajar, dan pengalaman seru anak.",
+  ctaLabel: "Daftar Trial",
+  ctaHref: "/contact",
+} as const;
+
 export const programOverviews: ProgramOverview[] = [
   {
     slug: "pushbike",
@@ -122,6 +130,31 @@ export const programHighlights: ProgramHighlight[] = [
     description: "Kesempatan anak mencoba mini race dan event ramah keluarga untuk menumbuhkan percaya diri.",
   },
 ];
+
+export const programDetailPageContent = {
+  pushbike: {
+    title: "Program Pushbike",
+    description:
+      "Program pushbike adalah latihan sepeda tanpa pedal untuk anak usia dini yang berfokus pada koordinasi gerak dan kontrol tubuh. Melalui sesi fun-drill dan game, anak belajar teknik dasar berkendara secara bertahap, aman, dan menyenangkan.",
+    benefitsTitle: "Manfaat Program",
+    levelsTitle: "Level Kelas",
+    skillsTitle: "Skill yang Dinilai",
+    scheduleTitle: "Jadwal Trial (Dummy)",
+    faqTitle: "FAQ Pushbike",
+    ctaLabel: "Daftar Trial",
+    ctaHref: "/contact",
+  },
+  learning: {
+    title: "Kelas Belajar",
+    classesTitle: "Pilihan Kelas",
+    benefitsTitle: "Manfaat untuk Anak",
+    benefitsDescription:
+      "Program dirancang untuk membantu anak lebih percaya diri, fokus saat belajar, terbiasa berinteraksi, dan berkembang secara kreatif melalui aktivitas yang menyenangkan.",
+    scheduleTitle: "Jadwal Dummy",
+    ctaLabel: "Daftar Trial Gratis",
+    ctaHref: "/kontak",
+  },
+} as const;
 
 export const pushbikeProgramContent = {
   levels: ["Beginner", "Intermediate", "Race Prep"],
