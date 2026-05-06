@@ -9,15 +9,30 @@ export interface FormFieldProps {
   className?: string;
 }
 
-export function FormField({ label, error, required = false, children, htmlFor, className }: FormFieldProps) {
+export function FormField({
+  label,
+  error,
+  required = false,
+  children,
+  htmlFor,
+  className,
+}: FormFieldProps) {
   return (
     <div className={["space-y-1", className].filter(Boolean).join(" ")}>
       <label htmlFor={htmlFor} className="block text-sm font-medium text-zinc-800">
         {label}
-        {required ? <span className="ml-1 text-red-600" aria-hidden="true">*</span> : null}
+        {required ? (
+          <span className="ml-1 text-red-600" aria-hidden="true">
+            *
+          </span>
+        ) : null}
       </label>
       {children}
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {error ? (
+        <p className="text-xs text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
