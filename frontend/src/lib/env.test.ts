@@ -33,25 +33,25 @@ describe("getApiBaseUrl", () => {
     expect(getApiBaseUrl()).toBe("http://localhost:8123");
   });
 
-  it("uses configured non-local API URL on deployed frontend", () => {
+  it("uses configured non-local API URL on unknown deployed frontend hosts", () => {
     process.env.NEXT_PUBLIC_API_URL = "https://api.example.com";
-    setLocation("https://protofeone.alambiyah.com/login");
+    setLocation("https://preview.example.com/login");
 
     expect(getApiBaseUrl()).toBe("https://api.example.com");
   });
 
-  it("routes protofeone deployment away from a baked localhost API URL", () => {
+  it("uses the same-origin API proxy on protofeone deployment even when a localhost API URL was baked into the bundle", () => {
     process.env.NEXT_PUBLIC_API_URL = "http://localhost:8123";
     setLocation("https://protofeone.alambiyah.com/login");
 
-    expect(getApiBaseUrl()).toBe("https://protobeone.alambiyah.com");
+    expect(getApiBaseUrl()).toBe("");
   });
 
-  it("uses the protofeone backend fallback when public API env is missing", () => {
+  it("uses the same-origin API proxy on protofeone deployment when public API env is missing", () => {
     delete process.env.NEXT_PUBLIC_API_URL;
     delete process.env.NEXT_PUBLIC_API_BASE_URL;
     setLocation("https://protofeone.alambiyah.com/login");
 
-    expect(getApiBaseUrl()).toBe("https://protobeone.alambiyah.com");
+    expect(getApiBaseUrl()).toBe("");
   });
 });

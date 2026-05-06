@@ -33,10 +33,6 @@ const sendPayload = (payload: ObservabilityPayload) => {
   const endpoint = getRuntimeLogEndpoint();
 
   if (!endpoint) {
-    if (process.env.NEXT_PUBLIC_HTTP_DEBUG === "true" && process.env.NODE_ENV !== "production") {
-      console.debug("[runtime-log] endpoint is not configured", payload);
-    }
-
     return;
   }
 
