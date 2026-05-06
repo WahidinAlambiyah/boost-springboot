@@ -1,3 +1,5 @@
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
 const normalizeEnvValue = (value: string | undefined): string | null => {
   if (!value) {
     return null;
@@ -14,8 +16,56 @@ const resolveApiBaseUrlFromPublicEnv = (): string | null => {
   );
 };
 
+const isLoopbackHostname = (hostname: string) => {
+  const normalizedHostname = hostname.toLowerCase();
+  return LOOPBACK_HOSTNAMES.has(normalizedHostname) || normalizedHostname.endsWith(".localhost");
+};
+
+const getBrowserHostname = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.location.hostname;
+};
+
+const getAlambiyahApiBaseUrl = (frontendHostname: string) => {
+  if (frontendHostname === "protofeone.alambiyah.com") {
+    return "https://protobeone.alambiyah.com";
+  }
+
+  return null;
+};
+
+const resolveRuntimeApiBaseUrl = (configuredApiBaseUrl: string | null) => {
+  const browserHostname = getBrowserHostname();
+  if (!browserHostname || isLoopbackHostname(browserHostname)) {
+    return configuredApiBaseUrl;
+  }
+
+  const alambiyahApiBaseUrl = getAlambiyahApiBaseUrl(browserHostname);
+  if (!alambiyahApiBaseUrl) {
+    return configuredApiBaseUrl;
+  }
+
+  if (!configuredApiBaseUrl) {
+    return alambiyahApiBaseUrl;
+  }
+
+  try {
+    const configuredUrl = new URL(configuredApiBaseUrl);
+    if (isLoopbackHostname(configuredUrl.hostname)) {
+      return alambiyahApiBaseUrl;
+    }
+  } catch {
+    return alambiyahApiBaseUrl;
+  }
+
+  return configuredApiBaseUrl;
+};
+
 export const getApiBaseUrl = (): string => {
-  const resolvedApiBaseUrl = resolveApiBaseUrlFromPublicEnv();
+  const resolvedApiBaseUrl = resolveRuntimeApiBaseUrl(resolveApiBaseUrlFromPublicEnv());
   if (resolvedApiBaseUrl) {
     return resolvedApiBaseUrl;
   }
