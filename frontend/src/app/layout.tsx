@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   description:
     "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
   openGraph: {
-    title: "Boost Academy",
+    title: "Boost Academy | Trial Kelas Pushbike Anak",
     description:
-      "Platform manajemen operasional akademi untuk administrasi, pembelajaran, dan pelaporan.",
+      "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
     type: "website",
     locale: "id_ID",
     siteName: "Boost Academy",
