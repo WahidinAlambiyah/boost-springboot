@@ -6,7 +6,8 @@ function sanitizePhoneNumber(value: string) {
 }
 
 export function createWhatsAppLink(message = DEFAULT_WHATSAPP_MESSAGE) {
-  const phone = sanitizePhoneNumber(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? DEFAULT_WHATSAPP_NUMBER);
+  const sanitizedPhone = sanitizePhoneNumber(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "");
+  const phone = sanitizedPhone || DEFAULT_WHATSAPP_NUMBER;
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${phone}?text=${encodedMessage}`;
 }
