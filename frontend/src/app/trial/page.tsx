@@ -1,13 +1,8 @@
 import Link from "next/link";
 
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
+import { trialPageSteps } from "@/content/public/hero";
 import { createWhatsAppLink } from "@/lib/whatsapp";
-
-const trialSteps = [
-  "Isi data singkat anak dan pilihan jadwal yang paling nyaman untuk keluarga.",
-  "Tim kami mengonfirmasi slot trial, lokasi, dan perlengkapan yang perlu dibawa.",
-  "Anak mencoba kelas bersama coach, lalu orang tua mendapat ringkasan observasi awal.",
-];
 
 export default function TrialPage() {
   return (
@@ -43,7 +38,7 @@ export default function TrialPage() {
             <div className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-zinc-900">Apa yang terjadi setelah daftar?</h2>
               <ol className="mt-5 space-y-4 text-sm leading-6 text-zinc-700">
-                {trialSteps.map((step, index) => (
+                {trialPageSteps.map((step, index) => (
                   <li key={step} className="flex gap-3">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
                       {index + 1}

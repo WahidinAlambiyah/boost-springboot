@@ -1,11 +1,5 @@
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
-
-const highlightPoints = [
-  "Lebih percaya diri",
-  "Lebih fokus",
-  "Lebih berani",
-  "Progress lebih mudah dipantau",
-];
+import { testimonialHighlightPoints } from "@/content/public/testimonials";
 
 export default function TestimonialsPage() {
   return (
@@ -42,7 +36,7 @@ export default function TestimonialsPage() {
           </p>
 
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {highlightPoints.map((point) => (
+            {testimonialHighlightPoints.map((point) => (
               <li
                 key={point}
                 className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"

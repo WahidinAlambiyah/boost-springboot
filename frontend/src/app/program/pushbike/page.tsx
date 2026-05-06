@@ -1,24 +1,6 @@
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
-import { pushbikeFaqs } from "@/app/(public)/data/faqs";
-
-const levels = ["Beginner", "Intermediate", "Race Prep"];
-
-const assessedSkills = [
-  "Balance",
-  "Start Position",
-  "Steering Control",
-  "Braking",
-  "Cornering",
-  "Confidence",
-  "Focus",
-  "Sportsmanship",
-];
-
-const dummySchedules = [
-  { day: "Senin", time: "16:00 - 17:00", level: "Beginner", location: "Track Mini A" },
-  { day: "Rabu", time: "16:30 - 17:30", level: "Intermediate", location: "Track Mini B" },
-  { day: "Sabtu", time: "08:00 - 09:30", level: "Race Prep", location: "Main Track" },
-];
+import { pushbikeFaqs } from "@/content/public/faqs";
+import { pushbikeProgramContent } from "@/content/public/programs";
 
 export default function PushbikeProgramPage() {
   return (
@@ -32,19 +14,17 @@ export default function PushbikeProgramPage() {
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {["Melatih keseimbangan tubuh", "Meningkatkan fokus & keberanian", "Membangun disiplin dan sportivitas"].map(
-            (benefit) => (
-              <article key={benefit} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-                <p className="text-sm font-medium text-zinc-700">{benefit}</p>
-              </article>
-            ),
-          )}
+          {pushbikeProgramContent.benefits.map((benefit) => (
+            <article key={benefit} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <p className="text-sm font-medium text-zinc-700">{benefit}</p>
+            </article>
+          ))}
         </div>
 
         <section className="mt-12">
           <h2 className="text-2xl font-semibold text-zinc-900">Level Kelas</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            {levels.map((level) => (
+            {pushbikeProgramContent.levels.map((level) => (
               <article key={level} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
                 <h3 className="text-base font-semibold text-zinc-900">{level}</h3>
               </article>
@@ -55,7 +35,7 @@ export default function PushbikeProgramPage() {
         <section className="mt-12">
           <h2 className="text-2xl font-semibold text-zinc-900">Skill yang Dinilai</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {assessedSkills.map((skill) => (
+            {pushbikeProgramContent.assessedSkills.map((skill) => (
               <div key={skill} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
                 {skill}
               </div>
@@ -76,7 +56,7 @@ export default function PushbikeProgramPage() {
                 </tr>
               </thead>
               <tbody>
-                {dummySchedules.map((row) => (
+                {pushbikeProgramContent.schedules.map((row) => (
                   <tr key={`${row.day}-${row.level}`} className="border-t border-zinc-100 text-zinc-700">
                     <td className="px-4 py-3">{row.day}</td>
                     <td className="px-4 py-3">{row.time}</td>
@@ -89,7 +69,7 @@ export default function PushbikeProgramPage() {
           </div>
 
           <div className="mt-5 grid gap-3 md:hidden">
-            {dummySchedules.map((row) => (
+            {pushbikeProgramContent.schedules.map((row) => (
               <article key={`${row.day}-${row.level}-card`} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
                 <p className="text-sm font-semibold text-zinc-900">{row.day}</p>
                 <p className="mt-1 text-sm text-zinc-700">{row.time}</p>

@@ -1,20 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 import {
+  categoryTabs,
   galleryItems,
   type GalleryCategory,
   type GalleryItem,
-} from "@/app/(public)/data/gallery";
-
-const categoryTabs: Array<{ label: string; value: GalleryCategory }> = [
-  { label: "Pushbike", value: "pushbike" },
-  { label: "Learning", value: "learning" },
-  { label: "Race", value: "race" },
-  { label: "Community", value: "community" },
-];
+} from "@/content/public/gallery";
 
 function GalleryCard({ item }: { item: GalleryItem }) {
   const [hasImageError, setHasImageError] = useState(false);
@@ -27,11 +22,12 @@ function GalleryCard({ item }: { item: GalleryItem }) {
           Foto akan segera tersedia
         </div>
       ) : (
-        <img
+        <Image
           src={item.imageUrl}
           alt={item.title}
+          width={640}
+          height={360}
           className="h-48 w-full object-cover"
-          loading="lazy"
           onError={() => setHasImageError(true)}
         />
       )}

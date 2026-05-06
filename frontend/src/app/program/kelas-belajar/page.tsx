@@ -1,14 +1,7 @@
 import Link from "next/link";
 
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
-
-const kelasList = [
-  "Fun English",
-  "Basic Math",
-  "Storytelling",
-  "Focus Activity",
-  "Creative Learning",
-];
+import { learningProgramContent } from "@/content/public/programs";
 
 export default function KelasBelajarPage() {
   return (
@@ -20,7 +13,7 @@ export default function KelasBelajarPage() {
           <div>
             <h2 className="text-xl font-semibold text-zinc-900">Pilihan Kelas</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-zinc-700">
-              {kelasList.map((kelas) => (
+              {learningProgramContent.classes.map((kelas) => (
                 <li key={kelas}>{kelas}</li>
               ))}
             </ul>
@@ -38,9 +31,9 @@ export default function KelasBelajarPage() {
         <div className="mt-10 rounded-xl border border-zinc-200 bg-zinc-50 p-6">
           <h2 className="text-xl font-semibold text-zinc-900">Jadwal Dummy</h2>
           <ul className="mt-4 space-y-2 text-zinc-700">
-            <li>Senin & Rabu - 16.00 - 17.00 (Fun English & Storytelling)</li>
-            <li>Selasa & Kamis - 16.00 - 17.00 (Basic Math & Focus Activity)</li>
-            <li>Jumat - 15.30 - 16.30 (Creative Learning)</li>
+            {learningProgramContent.schedules.map((schedule) => (
+              <li key={schedule}>{schedule}</li>
+            ))}
           </ul>
         </div>
 

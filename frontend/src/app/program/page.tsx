@@ -1,5 +1,5 @@
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
-import { programHighlights } from "@/app/(public)/data/programs";
+import { programHighlights } from "@/content/public/programs";
 
 type ProgramOverviewCardProps = {
   title: string;
