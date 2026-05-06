@@ -47,6 +47,8 @@ export const QUERY_KEYS = {
   billing: ["billing"] as const,
   notification: ["notification"] as const,
 
+  devCrudTrainingCenters: createEntityKeys<{ search?: string; status?: string }>("devCrudTrainingCenters"),
+
   academies: createEntityKeys<{ academyId?: string | number; search?: string }>("academies"),
   academyLocations: {
     ...createEntityKeys<{ academyId?: string | number }>("academyLocations"),

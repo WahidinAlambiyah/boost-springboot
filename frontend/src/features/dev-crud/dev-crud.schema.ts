@@ -1,13 +1,21 @@
 import { z } from "zod";
 
-import { DEV_CRUD_PRIORITIES, DEV_CRUD_STATUSES } from "./dev-crud.types";
+import { TRAINING_CENTER_DEMO_STATUSES } from "./dev-crud.types";
 
 export const devCrudFormSchema = z.object({
-  title: z.string().trim().min(3, "Judul minimal 3 karakter"),
-  owner: z.string().trim().min(2, "Owner minimal 2 karakter"),
-  status: z.enum(DEV_CRUD_STATUSES, { message: "Status wajib dipilih" }),
-  priority: z.enum(DEV_CRUD_PRIORITIES, { message: "Prioritas wajib dipilih" }),
-  dueDate: z.string().trim().min(1, "Tanggal jatuh tempo wajib diisi"),
+  code: z.string().trim().min(2, "Kode minimal 2 karakter").max(16, "Kode maksimal 16 karakter"),
+  name: z.string().trim().min(3, "Nama training center minimal 3 karakter"),
+  location: z.string().trim().min(3, "Lokasi minimal 3 karakter"),
+  activeStudents: z.coerce
+    .number({ message: "Jumlah murid aktif wajib diisi" })
+    .int("Jumlah murid aktif harus bilangan bulat")
+    .min(0, "Jumlah murid aktif tidak boleh negatif"),
+  coachCount: z.coerce
+    .number({ message: "Jumlah coach wajib diisi" })
+    .int("Jumlah coach harus bilangan bulat")
+    .min(0, "Jumlah coach tidak boleh negatif"),
+  status: z.enum(TRAINING_CENTER_DEMO_STATUSES, { message: "Status wajib dipilih" }),
 });
 
-export type DevCrudFormValues = z.input<typeof devCrudFormSchema>;
+export type DevCrudFormInputValues = z.input<typeof devCrudFormSchema>;
+export type DevCrudFormValues = z.output<typeof devCrudFormSchema>;

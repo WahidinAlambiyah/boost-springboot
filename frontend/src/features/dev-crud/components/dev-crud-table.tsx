@@ -2,27 +2,20 @@
 
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { StatusBadge } from "@/app/components/status-badge";
-import type { DevCrudItem, DevCrudPriority, DevCrudStatus } from "@/features/dev-crud/dev-crud.types";
+import type { TrainingCenterDemo, TrainingCenterDemoStatus } from "@/features/dev-crud/dev-crud.types";
 
 interface DevCrudTableProps {
-  items: DevCrudItem[];
+  items: TrainingCenterDemo[];
   canWrite?: boolean;
   isLoading?: boolean;
   error?: string;
-  onEdit?: (item: DevCrudItem) => void;
-  onDelete?: (item: DevCrudItem) => void;
+  onEdit?: (item: TrainingCenterDemo) => void;
+  onDelete?: (item: TrainingCenterDemo) => void;
 }
 
-const statusTone: Record<DevCrudStatus, "default" | "success" | "warning" | "danger"> = {
-  DRAFT: "warning",
+const statusTone: Record<TrainingCenterDemoStatus, "default" | "success"> = {
   ACTIVE: "success",
-  ARCHIVED: "default",
-};
-
-const priorityLabel: Record<DevCrudPriority, string> = {
-  LOW: "Low",
-  MEDIUM: "Medium",
-  HIGH: "High",
+  INACTIVE: "default",
 };
 
 export default function DevCrudTable({
@@ -33,31 +26,36 @@ export default function DevCrudTable({
   onEdit,
   onDelete,
 }: DevCrudTableProps) {
-  const columns: DataTableColumn<DevCrudItem>[] = [
+  const columns: DataTableColumn<TrainingCenterDemo>[] = [
     {
-      key: "title",
-      header: "Judul",
-      render: (item) => <span className="font-medium text-zinc-900">{item.title}</span>,
+      key: "code",
+      header: "Kode",
+      render: (item) => <span className="font-medium text-zinc-900">{item.code}</span>,
     },
     {
-      key: "owner",
-      header: "Owner",
-      render: (item) => item.owner,
+      key: "name",
+      header: "Nama",
+      render: (item) => item.name,
+    },
+    {
+      key: "location",
+      header: "Lokasi",
+      render: (item) => item.location,
+    },
+    {
+      key: "activeStudents",
+      header: "Murid Aktif",
+      render: (item) => item.activeStudents.toLocaleString("id-ID"),
+    },
+    {
+      key: "coachCount",
+      header: "Coach",
+      render: (item) => item.coachCount.toLocaleString("id-ID"),
     },
     {
       key: "status",
       header: "Status",
       render: (item) => <StatusBadge status={item.status} variant={statusTone[item.status]} />,
-    },
-    {
-      key: "priority",
-      header: "Prioritas",
-      render: (item) => priorityLabel[item.priority],
-    },
-    {
-      key: "dueDate",
-      header: "Jatuh Tempo",
-      render: (item) => item.dueDate,
     },
   ];
 
@@ -93,8 +91,8 @@ export default function DevCrudTable({
       error={error}
       getRowKey={(item) => item.id}
       isLoading={isLoading}
-      emptyTitle="Belum ada data dev CRUD"
-      emptyDescription="Gunakan form demo untuk menambahkan data mock."
+      emptyTitle="Belum ada training center"
+      emptyDescription="Gunakan form demo untuk menambahkan data training center lokal."
     />
   );
 }
