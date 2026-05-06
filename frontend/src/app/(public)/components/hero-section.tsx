@@ -20,7 +20,7 @@ export default function HeroSection() {
           <Link href={heroContent.primaryCta.href} className="rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-500">
             {heroContent.primaryCta.label}
           </Link>
-          <a href={createWhatsAppLink()} className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-center text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100">
+          <a href={createWhatsAppLink(heroContent.primaryCta.whatsappMessage)} className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-center text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100">
             {heroContent.secondaryCta.label}
           </a>
           <a href={heroContent.trialFlowCta.href} className="rounded-full bg-zinc-800 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-zinc-700">

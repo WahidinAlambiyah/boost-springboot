@@ -1,3 +1,5 @@
+import { trialCtaCopy } from "@/content/public/hero";
+
 export const navItems = [
   { label: "Program", href: "/program" },
   { label: "Events", href: "/events" },
@@ -10,5 +12,5 @@ export const navItems = [
 
 export const navigationCtas = {
   contact: { label: "Contact", href: "/contact" },
-  trial: { label: "Free Trial", href: "/trial" },
+  trial: { label: trialCtaCopy.navbarLabel, href: trialCtaCopy.href },
 } as const;
