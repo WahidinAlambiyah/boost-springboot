@@ -10,5 +10,5 @@ export const studentPackageFormSchema = z.object({
   status: z.enum(studentPackageStatusOptions),
 });
 
-export type StudentPackageFormValues = z.infer<typeof studentPackageFormSchema>;
-export type StudentPackageFormSubmitValues = StudentPackageFormValues;
+export type StudentPackageFormValues = z.input<typeof studentPackageFormSchema>;
+export type StudentPackageFormSubmitValues = z.output<typeof studentPackageFormSchema>;

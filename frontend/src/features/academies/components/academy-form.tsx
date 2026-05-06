@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { Academy } from "@/lib/api-types";
-import { AcademyFormValues, academyFormSchema } from "@/features/academies/academy.schema";
+import { AcademyFormInputValues, AcademyFormValues, academyFormSchema } from "@/features/academies/academy.schema";
 
 interface AcademyFormProps {
   initialData?: Academy | null;
@@ -22,7 +22,7 @@ export default function AcademyForm({
   onSubmit,
   onCancelEdit,
 }: AcademyFormProps) {
-  const form = useForm<AcademyFormValues>({
+  const form = useForm<AcademyFormInputValues, unknown, AcademyFormValues>({
     resolver: zodResolver(academyFormSchema),
     defaultValues: {
       code: "",

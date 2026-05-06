@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
@@ -20,7 +20,7 @@ export default function AttendanceSessionDetailPage({ params }: { params: { clas
   const canMarkAttendance = can(authorities, "ATTENDANCE_MARK");
 
   const classSessionId = params.classSessionId;
-  const [rows, setRows] = useState<SessionAttendanceStudent[]>([]);
+  const [rowPatches, setRowPatches] = useState<Record<string, Partial<SessionAttendanceStudent>>>({});
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
 
@@ -30,18 +30,20 @@ export default function AttendanceSessionDetailPage({ params }: { params: { clas
     enabled: Boolean(classSessionId),
   });
 
-  useEffect(() => {
-    if (attendanceDetailQuery.data) {
-      setRows(attendanceDetailQuery.data);
-    }
-  }, [attendanceDetailQuery.data]);
+  const rows = useMemo(
+    () => (attendanceDetailQuery.data ?? []).map((row) => ({ ...row, ...rowPatches[row.studentId] })),
+    [attendanceDetailQuery.data, rowPatches],
+  );
 
   if (attendanceDetailQuery.error) {
     handleErrorRedirect(attendanceDetailQuery.error);
   }
 
   const updateRow = (studentId: string, patch: Partial<SessionAttendanceStudent>) => {
-    setRows((currentRows) => currentRows.map((row) => (row.studentId === studentId ? { ...row, ...patch } : row)));
+    setRowPatches((currentPatches) => ({
+      ...currentPatches,
+      [studentId]: { ...currentPatches[studentId], ...patch },
+    }));
   };
 
   const hasAnyAttendanceRecord = useMemo(
@@ -112,7 +114,7 @@ export default function AttendanceSessionDetailPage({ params }: { params: { clas
               rows={rows}
               onUpdateRow={updateRow}
               onMarkAllPresent={() => {
-                setRows((currentRows) => currentRows.map((row) => ({ ...row, attendanceStatus: "PRESENT", remarks: "" })));
+                setRowPatches(Object.fromEntries(rows.map((row) => [row.studentId, { attendanceStatus: "PRESENT", remarks: "" }])));
                 setSubmitMessage("Semua murid ditandai hadir. Silakan submit untuk menyimpan.");
               }}
               showMarkAllPresent={!hasAnyAttendanceRecord}

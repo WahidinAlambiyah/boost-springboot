@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { AssessmentSkill } from "@/lib/api-types";
 import {
+  AssessmentSkillFormInputValues,
   AssessmentSkillFormValues,
   assessmentSkillFormSchema,
 } from "@/features/assessment-skills/assessment-skill.schema";
@@ -25,7 +26,7 @@ export default function AssessmentSkillForm({
   onSubmit,
   onCancelEdit,
 }: AssessmentSkillFormProps) {
-  const form = useForm<AssessmentSkillFormValues>({
+  const form = useForm<AssessmentSkillFormInputValues, unknown, AssessmentSkillFormValues>({
     resolver: zodResolver(assessmentSkillFormSchema),
     defaultValues: {
       code: "",

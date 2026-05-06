@@ -16,4 +16,5 @@ export const academyFormSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export type AcademyFormValues = z.infer<typeof academyFormSchema>;
+export type AcademyFormInputValues = z.input<typeof academyFormSchema>;
+export type AcademyFormValues = z.output<typeof academyFormSchema>;

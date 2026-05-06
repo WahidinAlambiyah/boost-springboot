@@ -13,4 +13,5 @@ export const studentFormSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export type StudentFormValues = z.infer<typeof studentFormSchema>;
+export type StudentFormInputValues = z.input<typeof studentFormSchema>;
+export type StudentFormValues = z.output<typeof studentFormSchema>;

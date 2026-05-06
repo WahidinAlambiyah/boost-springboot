@@ -17,7 +17,7 @@ interface TrainingPackageFormProps {
 }
 
 export default function TrainingPackageForm({ academies, initialData, canWrite, isSubmitting = false, onSubmit, onCancelEdit }: TrainingPackageFormProps) {
-  const form = useForm<TrainingPackageFormValues>({
+  const form = useForm<TrainingPackageFormValues, unknown, TrainingPackageFormSubmitValues>({
     resolver: zodResolver(trainingPackageFormSchema),
     defaultValues: { academyId: "", code: "", name: "", packageType: "TRIAL", price: 0, sessionQuota: null, validityDays: null, description: "", isActive: true },
   });

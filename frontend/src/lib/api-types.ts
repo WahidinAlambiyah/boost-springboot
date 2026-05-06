@@ -159,7 +159,7 @@ export interface CoachProfileCreateRequest {
   academyId: string;
   userId: string;
   coachNo?: string;
-  fullName: string;
+  fullName?: string;
   phone?: string;
   specialties?: string;
   bio?: string;
@@ -168,7 +168,7 @@ export interface CoachProfileCreateRequest {
 }
 
 export interface CoachProfileUpdateRequest {
-  fullName: string;
+  fullName?: string;
   phone?: string;
   specialties?: string;
   bio?: string;
@@ -255,7 +255,7 @@ export interface ClassSessionCoachCreateRequest {
   notes?: string;
 }
 
-export type ClassSessionCoachUpdateRequest = ClassSessionCoachCreateRequest;
+export type ClassSessionCoachUpdateRequest = Partial<ClassSessionCoachCreateRequest>;
 
 export interface AttendanceRecord {
   studentId: string;
@@ -389,6 +389,7 @@ export interface TrainingPackage {
   packageType: "TRIAL" | "PER_SESSION" | "MONTHLY" | "SESSION_BUNDLE";
   price: number;
   sessionQuota?: number;
+  validityDays?: number;
   description?: string;
   isActive?: boolean;
   createdAt: string;
@@ -402,6 +403,7 @@ export interface TrainingPackageCreateRequest {
   packageType: "TRIAL" | "PER_SESSION" | "MONTHLY" | "SESSION_BUNDLE";
   price: number;
   sessionQuota?: number;
+  validityDays?: number;
   description?: string;
   isActive?: boolean;
 }
@@ -412,6 +414,7 @@ export interface TrainingPackageUpdateRequest {
   packageType: "TRIAL" | "PER_SESSION" | "MONTHLY" | "SESSION_BUNDLE";
   price?: number;
   sessionQuota?: number;
+  validityDays?: number;
   description?: string;
   isActive?: boolean;
 }

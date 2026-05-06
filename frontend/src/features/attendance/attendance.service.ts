@@ -7,9 +7,11 @@ import {
 import { api } from "@/lib/api";
 import { ApiResponse } from "@/types/api";
 
+export type AttendanceStatus = "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
+
 export interface SessionAttendanceStudent {
   studentId: string;
-  attendanceStatus: "PRESENT" | "ABSENT" | "PERMIT" | "SICK" | "LATE";
+  attendanceStatus: AttendanceStatus;
   checkInAt?: string | null;
   remarks?: string;
   studentName?: string;
