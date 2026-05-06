@@ -1,3 +1,6 @@
+const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+const ALAMBIYAH_FRONTEND_HOSTNAME = "protofeone.alambiyah.com";
+
 const normalizeEnvValue = (value: string | undefined): string | null => {
   if (!value) {
     return null;
@@ -14,9 +17,37 @@ const resolveApiBaseUrlFromPublicEnv = (): string | null => {
   );
 };
 
+const isLoopbackHostname = (hostname: string) => {
+  const normalizedHostname = hostname.toLowerCase();
+  return LOOPBACK_HOSTNAMES.has(normalizedHostname) || normalizedHostname.endsWith(".localhost");
+};
+
+const getBrowserHostname = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.location.hostname;
+};
+
+const shouldUseSameOriginApiProxy = (frontendHostname: string) => frontendHostname === ALAMBIYAH_FRONTEND_HOSTNAME;
+
+const resolveRuntimeApiBaseUrl = (configuredApiBaseUrl: string | null) => {
+  const browserHostname = getBrowserHostname();
+  if (!browserHostname || isLoopbackHostname(browserHostname)) {
+    return configuredApiBaseUrl;
+  }
+
+  if (shouldUseSameOriginApiProxy(browserHostname)) {
+    return "";
+  }
+
+  return configuredApiBaseUrl;
+};
+
 export const getApiBaseUrl = (): string => {
-  const resolvedApiBaseUrl = resolveApiBaseUrlFromPublicEnv();
-  if (resolvedApiBaseUrl) {
+  const resolvedApiBaseUrl = resolveRuntimeApiBaseUrl(resolveApiBaseUrlFromPublicEnv());
+  if (resolvedApiBaseUrl !== null) {
     return resolvedApiBaseUrl;
   }
 
