@@ -3,13 +3,21 @@
 export interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
-  placeholder: string;
+  placeholder?: string;
+  label?: string;
+  className?: string;
 }
 
-export function SearchInput({ value, onChange, placeholder }: SearchInputProps) {
+export function SearchInput({
+  value,
+  onChange,
+  placeholder = "Search...",
+  label = "Search",
+  className,
+}: SearchInputProps) {
   return (
-    <label className="block">
-      <span className="sr-only">Search</span>
+    <label className={["block", className].filter(Boolean).join(" ")}>
+      <span className="sr-only">{label}</span>
       <input
         type="search"
         value={value}

@@ -5,13 +5,27 @@ export interface SectionCardProps {
   description?: string;
   children: ReactNode;
   actions?: ReactNode;
+  className?: string;
 }
 
-export function SectionCard({ title, description, children, actions }: SectionCardProps) {
+export function SectionCard({
+  title,
+  description,
+  children,
+  actions,
+  className,
+}: SectionCardProps) {
   const hasHeader = Boolean(title || description || actions);
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+    <section
+      className={[
+        "rounded-lg border border-zinc-200 bg-white p-5 shadow-sm",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {hasHeader ? (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>

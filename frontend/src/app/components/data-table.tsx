@@ -20,7 +20,8 @@ export interface DataTableProps<T> {
   error?: string;
   emptyTitle?: string;
   emptyDescription?: string;
-  getRowKey?: (row: T, index: number) => string;
+  getRowKey?: (row: T, index: number) => React.Key;
+  className?: string;
 }
 
 export function DataTable<T>({
@@ -31,9 +32,21 @@ export function DataTable<T>({
   emptyTitle = "No data available",
   emptyDescription = "Belum ada data untuk ditampilkan.",
   getRowKey,
+  className,
 }: DataTableProps<T>) {
+  const containerClassName = [
+    "w-full max-w-full overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   if (isLoading) {
-    return <LoadingSkeleton rows={5} />;
+    return (
+      <div className={containerClassName} aria-busy="true" aria-live="polite">
+        <LoadingSkeleton rows={5} className="m-4" />
+      </div>
+    );
   }
 
   if (error) {
@@ -45,8 +58,8 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-zinc-200 text-sm">
+    <div className={containerClassName}>
+      <table className="w-full min-w-max divide-y divide-zinc-200 text-sm">
         <thead className="bg-zinc-50">
           <tr>
             {columns.map((column) => (
@@ -58,6 +71,7 @@ export function DataTable<T>({
                 ]
                   .filter(Boolean)
                   .join(" ")}
+                scope="col"
               >
                 {column.header}
               </th>
@@ -73,7 +87,10 @@ export function DataTable<T>({
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className={["px-4 py-3 text-zinc-700", column.className]
+                  className={[
+                    "whitespace-nowrap px-4 py-3 text-zinc-700",
+                    column.className,
+                  ]
                     .filter(Boolean)
                     .join(" ")}
                 >

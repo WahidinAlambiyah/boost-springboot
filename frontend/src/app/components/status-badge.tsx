@@ -61,10 +61,19 @@ export function StatusBadge({ status, variant, label, tone, className }: StatusB
     return null;
   }
 
-  const resolvedVariant = variant ?? normalizeTone(tone) ?? getDefaultVariant(status ?? String(displayLabel));
+  const resolvedVariant =
+    variant ?? normalizeTone(tone) ?? getDefaultVariant(status ?? String(displayLabel));
 
   return (
-    <span className={["inline-flex rounded-full px-2.5 py-1 text-xs font-medium", STATUS_VARIANT_STYLES[resolvedVariant], className].filter(Boolean).join(" ")}>
+    <span
+      className={[
+        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+        STATUS_VARIANT_STYLES[resolvedVariant],
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {displayLabel}
     </span>
   );
