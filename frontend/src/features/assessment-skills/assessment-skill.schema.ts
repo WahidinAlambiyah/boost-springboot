@@ -9,4 +9,5 @@ export const assessmentSkillFormSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export type AssessmentSkillFormValues = z.infer<typeof assessmentSkillFormSchema>;
+export type AssessmentSkillFormInputValues = z.input<typeof assessmentSkillFormSchema>;
+export type AssessmentSkillFormValues = z.output<typeof assessmentSkillFormSchema>;

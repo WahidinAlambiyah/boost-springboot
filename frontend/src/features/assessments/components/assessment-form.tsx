@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { AssessmentSkill, ClassSession, CoachProfile, Student, StudentAssessment } from "@/lib/api-types";
-import { AssessmentFormValues, assessmentFormSchema } from "@/features/assessments/assessment.schema";
+import EmptyState from "@/app/components/empty-state";
+import { AssessmentFormInputValues, AssessmentFormValues, assessmentFormSchema } from "@/features/assessments/assessment.schema";
 import SkillScoreInput from "@/features/assessments/components/skill-score-input";
 
 interface AssessmentFormProps {
@@ -29,7 +30,7 @@ export default function AssessmentForm({
   canWrite = false,
   onSubmit,
 }: AssessmentFormProps) {
-  const form = useForm<AssessmentFormValues>({
+  const form = useForm<AssessmentFormInputValues, unknown, AssessmentFormValues>({
     resolver: zodResolver(assessmentFormSchema),
     defaultValues: {
       classSessionId: "",
@@ -58,6 +59,7 @@ export default function AssessmentForm({
   }, [form, initialData, skills]);
 
   const scores = form.watch("scores");
+  const getScoreValue = (value: unknown) => (typeof value === "number" ? value : Number(value) || 1);
 
   return (
     <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
@@ -78,7 +80,7 @@ export default function AssessmentForm({
               key={skill.id}
               label={`${skill.name} (${skill.code})`}
               maxScore={skill.maxScore}
-              value={scores?.[index]?.score ?? 1}
+              value={getScoreValue(scores?.[index]?.score)}
               notes={scores?.[index]?.notes ?? ""}
               disabled={!canWrite || isSubmitting}
               onChange={(score) => form.setValue(`scores.${index}.score`, score, { shouldValidate: true })}

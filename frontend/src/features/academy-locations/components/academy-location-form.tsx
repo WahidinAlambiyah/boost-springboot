@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { Academy, AcademyLocation } from "@/lib/api-types";
-import { AcademyLocationFormValues, academyLocationFormSchema } from "@/features/academy-locations/academy-location.schema";
+import { AcademyLocationFormInputValues, AcademyLocationFormValues, academyLocationFormSchema } from "@/features/academy-locations/academy-location.schema";
 
 interface AcademyLocationFormProps {
   academies: Academy[];
@@ -17,7 +17,7 @@ interface AcademyLocationFormProps {
 }
 
 export default function AcademyLocationForm({ academies, initialData, canWrite, isSubmitting = false, onSubmit, onCancelEdit }: AcademyLocationFormProps) {
-  const form = useForm<AcademyLocationFormValues>({
+  const form = useForm<AcademyLocationFormInputValues, unknown, AcademyLocationFormValues>({
     resolver: zodResolver(academyLocationFormSchema),
     defaultValues: { academyId: "", code: "", name: "", address: "", googleMapsUrl: "", isActive: true },
   });

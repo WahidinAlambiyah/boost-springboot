@@ -23,7 +23,7 @@ interface StudentPackageFormProps {
 }
 
 export default function StudentPackageForm({ packages, initialData, canWrite, isSubmitting = false, onSubmit, onCancelEdit }: StudentPackageFormProps) {
-  const form = useForm<StudentPackageFormValues>({
+  const form = useForm<StudentPackageFormValues, unknown, StudentPackageFormSubmitValues>({
     resolver: zodResolver(studentPackageFormSchema),
     defaultValues: { trainingPackageId: "", startDate: "", endDate: "", remainingSessions: 0, status: "ACTIVE" },
   });

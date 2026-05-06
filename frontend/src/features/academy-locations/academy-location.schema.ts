@@ -9,4 +9,5 @@ export const academyLocationFormSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export type AcademyLocationFormValues = z.infer<typeof academyLocationFormSchema>;
+export type AcademyLocationFormInputValues = z.input<typeof academyLocationFormSchema>;
+export type AcademyLocationFormValues = z.output<typeof academyLocationFormSchema>;

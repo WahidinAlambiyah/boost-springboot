@@ -3,12 +3,12 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Student } from "@/lib/api-types";
-import { StudentFormValues, studentFormSchema } from "@/features/students/student.schema";
+import { StudentFormInputValues, StudentFormValues, studentFormSchema } from "@/features/students/student.schema";
 
 interface StudentFormProps { initialData?: Student | null; canWrite: boolean; isSubmitting?: boolean; onSubmit: (values: StudentFormValues) => void; onCancelEdit?: () => void; }
 
 export default function StudentForm({ initialData, canWrite, isSubmitting = false, onSubmit, onCancelEdit }: StudentFormProps) {
-  const form = useForm<StudentFormValues>({ resolver: zodResolver(studentFormSchema), defaultValues: { studentNo: "", fullName: "", nickname: "", gender: "MALE", dateOfBirth: "", currentLevel: "", emergencyContactName: "", emergencyContactPhone: "", photoConsent: false, isActive: true } });
+  const form = useForm<StudentFormInputValues, unknown, StudentFormValues>({ resolver: zodResolver(studentFormSchema), defaultValues: { studentNo: "", fullName: "", nickname: "", gender: "MALE", dateOfBirth: "", currentLevel: "", emergencyContactName: "", emergencyContactPhone: "", photoConsent: false, isActive: true } });
   useEffect(() => { form.reset({ studentNo: initialData?.studentNo ?? "", fullName: initialData?.fullName ?? "", nickname: initialData?.nickname ?? "", gender: "MALE", dateOfBirth: "", currentLevel: "", emergencyContactName: "", emergencyContactPhone: "", photoConsent: false, isActive: initialData?.status !== "INACTIVE" }); }, [form, initialData]);
 
   return (<form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>

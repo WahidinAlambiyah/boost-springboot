@@ -103,7 +103,7 @@ export default function AssessmentSkillsPage() {
                         {canWrite ? (
                           <div className="flex gap-2">
                             <button type="button" className="rounded border border-zinc-300 px-2 py-1" onClick={() => setSelectedSkill(skill)}>Edit</button>
-                            <ConfirmDialog options={{ title: "Hapus skill?", description: `Skill ${skill.name} akan dihapus permanen.`, confirmText: "Hapus" }} onConfirm={() => deleteMutation.mutateAsync(skill.id)}>
+                            <ConfirmDialog options={{ title: "Hapus skill?", description: `Skill ${skill.name} akan dihapus permanen.`, confirmText: "Hapus" }} onConfirm={async () => { await deleteMutation.mutateAsync(skill.id); }}>
                               {(open) => (
                                 <button type="button" className="rounded border border-red-300 px-2 py-1 text-red-700" onClick={() => void open()}>
                                   Hapus

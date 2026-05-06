@@ -30,5 +30,7 @@ export const assessmentFormSchema = z
     });
   });
 
-export type AssessmentScoreFormValues = z.infer<typeof assessmentScoreSchema>;
-export type AssessmentFormValues = z.infer<typeof assessmentFormSchema>;
+export type AssessmentScoreFormInputValues = z.input<typeof assessmentScoreSchema>;
+export type AssessmentScoreFormValues = z.output<typeof assessmentScoreSchema>;
+export type AssessmentFormInputValues = z.input<typeof assessmentFormSchema>;
+export type AssessmentFormValues = z.output<typeof assessmentFormSchema>;

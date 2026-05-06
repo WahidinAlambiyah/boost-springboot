@@ -23,7 +23,7 @@ interface CoachProfileFormProps {
 }
 
 export default function CoachProfileForm({ academies, users, initialData, canWrite, isSubmitting = false, onSubmit, onCancelEdit }: CoachProfileFormProps) {
-  const form = useForm<CoachProfileFormValues>({
+  const form = useForm<CoachProfileFormValues, unknown, CoachProfileFormSubmitValues>({
     resolver: zodResolver(coachProfileFormSchema),
     defaultValues: { academyId: "", userId: "", phone: "", employmentType: "FULL_TIME", payType: "SALARY", monthlySalary: null, ratePerSession: null, ratePerStudent: null, isActive: true },
   });

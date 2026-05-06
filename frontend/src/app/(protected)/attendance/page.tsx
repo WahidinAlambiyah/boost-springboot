@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
@@ -21,7 +21,7 @@ export default function AttendancePage() {
   const canMarkAttendance = can(authorities, "ATTENDANCE_MARK");
 
   const [selectedSessionId, setSelectedSessionId] = useState("");
-  const [rows, setRows] = useState<SessionAttendanceStudent[]>([]);
+  const [rowPatches, setRowPatches] = useState<Record<string, Partial<SessionAttendanceStudent>>>({});
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   const sessionsQuery = useQuery({
@@ -35,11 +35,10 @@ export default function AttendancePage() {
     enabled: Boolean(selectedSessionId),
   });
 
-  useEffect(() => {
-    if (attendanceDetailQuery.data) {
-      setRows(attendanceDetailQuery.data);
-    }
-  }, [attendanceDetailQuery.data]);
+  const rows = useMemo(
+    () => (attendanceDetailQuery.data ?? []).map((row) => ({ ...row, ...rowPatches[row.studentId] })),
+    [attendanceDetailQuery.data, rowPatches],
+  );
 
   if (sessionsQuery.error) {
     handleErrorRedirect(sessionsQuery.error);
@@ -50,9 +49,10 @@ export default function AttendancePage() {
   }
 
   const updateRow = (studentId: string, patch: Partial<SessionAttendanceStudent>) => {
-    setRows((currentRows) =>
-      currentRows.map((row) => (row.studentId === studentId ? { ...row, ...patch } : row)),
-    );
+    setRowPatches((currentPatches) => ({
+      ...currentPatches,
+      [studentId]: { ...currentPatches[studentId], ...patch },
+    }));
   };
 
   const submitBulkMutation = useMutation({
@@ -102,6 +102,7 @@ export default function AttendancePage() {
               onChange={(event) => {
                 setSelectedSessionId(event.target.value);
                 setSubmitMessage(null);
+                setRowPatches({});
               }}
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
             >

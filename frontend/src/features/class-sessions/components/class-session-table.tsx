@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import ConfirmDialog from "@/app/components/confirm-dialog";
+import { ConfirmDialog } from "@/app/components/confirm-dialog";
 import { ClassSession } from "@/lib/api-types";
 
 interface ClassSessionTableProps {
