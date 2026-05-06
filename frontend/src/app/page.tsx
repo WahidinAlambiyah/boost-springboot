@@ -7,35 +7,17 @@ import ProgressPreviewCard from "@/app/(public)/components/progress-preview-card
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 import TestimonialCard from "@/app/(public)/components/testimonial-card";
 
-const trustBadges = ["Untuk usia 2–7 tahun", "Didampingi coach berpengalaman", "Progress anak tercatat", "Laporan untuk orang tua"];
-const reasons = [
-  "Kurikulum terstruktur sesuai usia dan level anak",
-  "Laporan progres mingguan dengan insight coach",
-  "Komunikasi orang tua dan coach lebih cepat",
-];
-const programs = [
-  { title: "Pushbike Class", level: "Program utama", description: "Latihan keseimbangan, kontrol arah, dan teknik dasar pushbike dengan pendekatan fun learning." },
-  { title: "Kegiatan Belajar Anak", level: "Program utama", description: "Aktivitas belajar terarah untuk melatih fokus, motorik, dan kerja sama anak." },
-  { title: "Event & Race", level: "Program utama", description: "Sesi event ramah anak untuk membangun keberanian, sportivitas, dan pengalaman kompetisi positif." },
-];
-const trialSteps = ["Pilih program", "Konsultasi via WhatsApp", "Ikut trial class", "Anak dinilai oleh coach", "Orang tua mendapat ringkasan progress"];
-const coachNotes = ["Kehadiran", "Skill pushbike", "Fokus dan disiplin", "Keberanian", "Rekomendasi latihan berikutnya"];
-const audience = [
-  "Anak usia 2–7 tahun",
-  "Anak yang aktif bergerak",
-  "Anak yang ingin lebih percaya diri",
-  "Orang tua yang ingin progress anak lebih terpantau",
-];
+import {
+  galleryPreviewItems,
+  progressPreviews,
+  reasons,
+  trialSteps,
+  trustBadges,
+} from "@/content/public/hero";
+import { audience, coachNotes, programs } from "@/content/public/programs";
+import { testimonials } from "@/content/public/testimonials";
 
-const progressPreviews = [{ studentName: "Rafa", level: "Beginner", balance: "4/5", braking: "3/5", confidence: "4/5", coachNote: "Rafa menunjukkan progres baik di lintasan lurus dan mulai berani mengambil tikungan. Lanjutkan latihan braking bertahap agar kontrol kecepatan makin stabil." }];
-
-const testimonials = [
-  { quote: "Anak jadi lebih disiplin latihan dan kami selalu update progresnya tiap minggu.", name: "Dina P.", role: "Orang Tua Siswa" },
-  { quote: "Manajemen kelas jauh lebih rapi, absensi dan evaluasi coach bisa langsung dipantau.", name: "Coach Ario", role: "Head Coach" },
-  { quote: "Event balapan terasa lebih tertata karena semua data peserta dan jadwal sudah terintegrasi.", name: "Nadya R.", role: "Event Coordinator" },
-];
-
-function ChecklistSection({ id, title, items }: { id: string; title: string; items: string[] }) {
+function ChecklistSection({ id, title, items }: { id: string; title: string; items: readonly string[] }) {
   return (
     <section id={id} className="container mx-auto w-full px-6 py-14">
       <h2 className="text-2xl font-semibold text-zinc-900">{title}</h2>
@@ -97,16 +79,16 @@ export default function HomePage() {
       <section id="galeri-preview" className="container mx-auto w-full px-6 py-14">
         <h2 className="text-2xl font-semibold text-zinc-900">Preview Aktivitas Anak</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <EmptyImagePlaceholder category="Pushbike" title="Drill start gate dan latihan tikungan" />
-          <EmptyImagePlaceholder category="Belajar" title="Aktivitas fokus, motorik, dan koordinasi" />
-          <EmptyImagePlaceholder category="Event" title="Fun race ramah anak bersama orang tua" />
+          {galleryPreviewItems.map((item) => (
+            <EmptyImagePlaceholder key={item.title} category={item.category} title={item.title} />
+          ))}
         </div>
       </section>
 
       <section id="testimoni" className="container mx-auto w-full px-6 py-14">
         <h2 className="text-2xl font-semibold text-zinc-900">Testimoni</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((item) => (<TestimonialCard key={item.name} {...item} />))}
+          {testimonials.map((item) => (<TestimonialCard key={item.id} {...item} />))}
         </div>
       </section>
 

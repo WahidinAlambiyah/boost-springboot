@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { heroContent } from "@/content/public/hero";
 import { createWhatsAppLink } from "@/lib/whatsapp";
 
 export default function HeroSection() {
@@ -7,23 +8,23 @@ export default function HeroSection() {
     <section className="layout-container section-space grid gap-10 py-12 md:grid-cols-2 md:items-center md:py-16 lg:py-20">
       <div>
         <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-          Pushbike & Aktivitas Anak
+          {heroContent.eyebrow}
         </p>
         <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl lg:text-5xl">
-          Tempat Anak Belajar Berani, Fokus, dan Percaya Diri Lewat Kelas Pushbike
+          {heroContent.headline}
         </h1>
         <p className="text-body mt-5 max-w-xl text-base">
-          Program terstruktur untuk usia 2–7 tahun dengan coach berpengalaman, suasana fun learning, dan ringkasan progress yang mudah dipahami orang tua.
+          {heroContent.subheadline}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <Link href="/trial" className="rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-500">
-            Daftar Trial Class
+          <Link href={heroContent.primaryCta.href} className="rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-500">
+            {heroContent.primaryCta.label}
           </Link>
           <a href={createWhatsAppLink()} className="rounded-full border border-zinc-300 bg-white px-5 py-3 text-center text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100">
-            Konsultasi via WhatsApp
+            {heroContent.secondaryCta.label}
           </a>
-          <a href="#alur-trial" className="rounded-full bg-zinc-800 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-zinc-700">
-            Lihat Alur Trial
+          <a href={heroContent.trialFlowCta.href} className="rounded-full bg-zinc-800 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-zinc-700">
+            {heroContent.trialFlowCta.label}
           </a>
         </div>
       </div>
@@ -36,8 +37,8 @@ export default function HeroSection() {
             <div className="h-20 rounded-2xl bg-gradient-to-r from-amber-200 to-amber-100" />
           </div>
           <div className="rounded-xl bg-white/90 p-4 text-sm text-zinc-700 shadow-sm">
-            <p className="font-semibold text-zinc-900">Ringkasan progress mingguan</p>
-            <p className="mt-1">Coach mencatat kehadiran, skill, fokus, dan rekomendasi latihan selanjutnya.</p>
+            <p className="font-semibold text-zinc-900">{heroContent.progressCardTitle}</p>
+            <p className="mt-1">{heroContent.progressCardDescription}</p>
           </div>
         </div>
       </div>

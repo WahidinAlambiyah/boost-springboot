@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppErrorBoundary from "@/app/components/app-error-boundary";
+import { siteMetadata } from "@/content/public/site";
 import QueryProvider from "@/lib/query-provider";
 
 const geistSans = Geist({
@@ -14,19 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Boost Academy | Trial Kelas Pushbike Anak",
-  description:
-    "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
-  openGraph: {
-    title: "Boost Academy | Trial Kelas Pushbike Anak",
-    description:
-      "Program pushbike anak usia 2–7 tahun dengan coach berpengalaman, trial class, dan ringkasan progress untuk orang tua.",
-    type: "website",
-    locale: "id_ID",
-    siteName: "Boost Academy",
-  },
-};
+export const metadata: Metadata = siteMetadata;
 
 export default function RootLayout({
   children,
