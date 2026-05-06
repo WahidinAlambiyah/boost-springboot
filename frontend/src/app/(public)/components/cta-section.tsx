@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { trialCtaCopy } from "@/content/public/hero";
 import { createWhatsAppLink } from "@/lib/whatsapp";
 
 export default function CtaSection() {
@@ -11,14 +12,14 @@ export default function CtaSection() {
           Pilih program yang cocok, konsultasi singkat via WhatsApp, lalu jadwalkan trial class bersama coach.
         </p>
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Link href="/trial" className="rounded-full bg-emerald-500 px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-emerald-400">
-            Jadwalkan Trial Class
+          <Link href={trialCtaCopy.href} className="rounded-full bg-emerald-500 px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-emerald-400">
+            {trialCtaCopy.sectionLabel}
           </Link>
-          <a href={createWhatsAppLink()} className="rounded-full border border-white/60 bg-transparent px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-white/10">
-            Chat WhatsApp Sekarang
+          <a href={createWhatsAppLink(trialCtaCopy.whatsappMessage)} className="rounded-full border border-white/60 bg-transparent px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-white/10">
+            {trialCtaCopy.whatsappLabel}
           </a>
-          <a href="#program" className="rounded-full bg-zinc-700 px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-zinc-600">
-            Lihat Program
+          <a href={trialCtaCopy.programHref} className="rounded-full bg-zinc-700 px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-zinc-600">
+            {trialCtaCopy.programLabel}
           </a>
         </div>
       </div>

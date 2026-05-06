@@ -4,6 +4,8 @@ import { navItems, navigationCtas } from "@/content/public/navigation";
 import { siteBrand } from "@/content/public/site";
 
 export default function PublicNavbar() {
+  const trialCta = navigationCtas.trial;
+
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/85 backdrop-blur">
       <div className="layout-container flex items-center justify-between py-4">
@@ -27,10 +29,10 @@ export default function PublicNavbar() {
             {navigationCtas.contact.label}
           </Link>
           <Link
-            href={navigationCtas.trial.href}
+            href={trialCta.href}
             className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
           >
-            {navigationCtas.trial.label}
+            {trialCta.label}
           </Link>
         </div>
 
@@ -57,10 +59,10 @@ export default function PublicNavbar() {
                 {navigationCtas.contact.label}
               </Link>
               <Link
-                href={navigationCtas.trial.href}
+                href={trialCta.href}
                 className="rounded-md bg-zinc-900 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-zinc-700"
               >
-                {navigationCtas.trial.label}
+                {trialCta.label}
               </Link>
             </nav>
           </div>

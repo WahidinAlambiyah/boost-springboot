@@ -1,3 +1,14 @@
+export const trialCtaCopy = {
+  href: "/trial",
+  label: "Daftar Trial Class",
+  navbarLabel: "Free Trial",
+  sectionLabel: "Jadwalkan Trial Class",
+  whatsappLabel: "Chat WhatsApp Sekarang",
+  whatsappMessage: "Halo Boost Academy, saya ingin menjadwalkan trial class untuk anak.",
+  programLabel: "Lihat Program",
+  programHref: "#program",
+} as const;
+
 export const heroContent = {
   eyebrow: "Pushbike & Aktivitas Anak",
   headline: "Tempat Anak Belajar Berani, Fokus, dan Percaya Diri Lewat Kelas Pushbike",
@@ -5,7 +16,7 @@ export const heroContent = {
     "Program terstruktur untuk usia 2–7 tahun dengan coach berpengalaman, suasana fun learning, dan ringkasan progress yang mudah dipahami orang tua.",
   progressCardTitle: "Ringkasan progress mingguan",
   progressCardDescription: "Coach mencatat kehadiran, skill, fokus, dan rekomendasi latihan selanjutnya.",
-  primaryCta: { label: "Daftar Trial Class", href: "/trial" },
+  primaryCta: trialCtaCopy,
   secondaryCta: { label: "Konsultasi via WhatsApp" },
   trialFlowCta: { label: "Lihat Alur Trial", href: "#alur-trial" },
 } as const;
