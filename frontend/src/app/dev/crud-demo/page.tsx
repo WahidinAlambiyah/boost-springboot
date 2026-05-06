@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
 import { ErrorMessage } from "@/app/components/error-message";
@@ -11,119 +12,97 @@ import DevCrudForm from "@/features/dev-crud/components/dev-crud-form";
 import DevCrudTable from "@/features/dev-crud/components/dev-crud-table";
 import type { DevCrudFormValues } from "@/features/dev-crud/dev-crud.schema";
 import { devCrudService } from "@/features/dev-crud/dev-crud.service";
-import { DEV_TOOLS_READ_PERMISSIONS, DEV_TOOLS_WRITE_PERMISSIONS, type DevCrudItem } from "@/features/dev-crud/dev-crud.types";
+import { DEV_TOOLS_READ_PERMISSIONS, DEV_TOOLS_WRITE_PERMISSIONS, type TrainingCenterDemo } from "@/features/dev-crud/dev-crud.types";
 import { canAny } from "@/lib/permissions";
+import { QUERY_KEYS } from "@/lib/query-keys";
 import { useAuthStore } from "@/store/auth";
 
 export default function DevCrudDemoPage() {
   const authorities = useAuthStore((state) => state.authorities);
   const canWrite = useMemo(() => canAny(authorities, [...DEV_TOOLS_WRITE_PERMISSIONS]), [authorities]);
-  const [items, setItems] = useState<DevCrudItem[]>([]);
-  const [selected, setSelected] = useState<DevCrudItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string>();
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<TrainingCenterDemo | null>(null);
+  const [mutationError, setMutationError] = useState<string>();
 
-  const loadItems = async () => {
-    setIsLoading(true);
-    setError(undefined);
+  const trainingCentersQuery = useQuery({
+    queryKey: QUERY_KEYS.devCrudTrainingCenters.list(),
+    queryFn: () => devCrudService.list(),
+  });
 
-    try {
-      setItems(await devCrudService.list());
-    } catch {
-      setError("Gagal memuat data dev CRUD.");
-    } finally {
-      setIsLoading(false);
-    }
+  const invalidateTrainingCenters = async () => {
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.devCrudTrainingCenters.all });
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  const createMutation = useMutation({
+    mutationFn: (payload: DevCrudFormValues) => devCrudService.create(payload),
+    onMutate: () => setMutationError(undefined),
+    onSuccess: async () => {
+      setSelected(null);
+      await invalidateTrainingCenters();
+    },
+    onError: () => setMutationError("Training center demo gagal ditambahkan."),
+  });
 
-    const loadInitialItems = async () => {
-      try {
-        const data = await devCrudService.list();
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: DevCrudFormValues }) => devCrudService.update(id, payload),
+    onMutate: () => setMutationError(undefined),
+    onSuccess: async () => {
+      setSelected(null);
+      await invalidateTrainingCenters();
+    },
+    onError: () => setMutationError("Training center demo gagal diperbarui."),
+  });
 
-        if (isMounted) {
-          setItems(data);
-        }
-      } catch {
-        if (isMounted) {
-          setError("Gagal memuat data dev CRUD.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadInitialItems();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleSubmit = async (values: DevCrudFormValues) => {
-    setIsSubmitting(true);
-    setError(undefined);
-
-    try {
-      if (selected) {
-        await devCrudService.update(selected.id, values);
-        setSelected(null);
-      } else {
-        await devCrudService.create(values);
-      }
-
-      await loadItems();
-    } catch {
-      setError("Aksi dev CRUD gagal diproses.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (item: DevCrudItem) => {
-    setIsSubmitting(true);
-    setError(undefined);
-
-    try {
-      await devCrudService.remove(item.id);
-      if (selected?.id === item.id) {
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => devCrudService.remove(id),
+    onMutate: () => setMutationError(undefined),
+    onSuccess: async (_data, deletedId) => {
+      if (selected?.id === deletedId) {
         setSelected(null);
       }
-      await loadItems();
-    } catch {
-      setError("Data dev CRUD gagal dihapus.");
-    } finally {
-      setIsSubmitting(false);
+      await invalidateTrainingCenters();
+    },
+    onError: () => setMutationError("Training center demo gagal dihapus."),
+  });
+
+  const handleSubmit = (values: DevCrudFormValues) => {
+    if (selected) {
+      updateMutation.mutate({ id: selected.id, payload: values });
+      return;
     }
+
+    createMutation.mutate(values);
   };
+
+  const handleDelete = (item: TrainingCenterDemo) => {
+    deleteMutation.mutate(item.id);
+  };
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const queryError = trainingCentersQuery.isError ? "Gagal memuat data training center demo." : undefined;
 
   return (
     <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
       <AppShell>
         <PageHeader
           title="Dev CRUD Demo"
-          description="Playground protected untuk mencoba pola create, read, update, dan delete berbasis data mock."
+          description="Playground protected untuk mencoba pola create, read, update, dan delete training center berbasis localStorage."
         />
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <SectionCard title="Data Mock" description="Tabel menggunakan service lokal agar aman untuk eksplorasi developer.">
+          <SectionCard title="Training Center Mock" description="Tabel memakai React Query dan service localStorage agar aman untuk eksplorasi developer.">
             <DevCrudTable
-              items={items}
+              items={trainingCentersQuery.data ?? []}
               canWrite={canWrite}
-              error={error}
-              isLoading={isLoading}
+              error={queryError}
+              isLoading={trainingCentersQuery.isLoading}
               onEdit={setSelected}
               onDelete={handleDelete}
             />
           </SectionCard>
 
-          <SectionCard title={selected ? "Edit Data" : "Tambah Data"} description="Form memakai react-hook-form dan zod schema.">
-            {error ? <ErrorMessage className="mb-4" message={error} /> : null}
+          <SectionCard title={selected ? "Edit Training Center" : "Tambah Training Center"} description="Form memakai react-hook-form dan zod schema.">
+            {mutationError ? <ErrorMessage className="mb-4" message={mutationError} /> : null}
             <DevCrudForm
               initialData={selected}
               canWrite={canWrite}

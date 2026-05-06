@@ -1,18 +1,32 @@
-export const DEV_CRUD_STATUSES = ["DRAFT", "ACTIVE", "ARCHIVED"] as const;
-export const DEV_CRUD_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
+export const TRAINING_CENTER_DEMO_STATUSES = ["ACTIVE", "INACTIVE"] as const;
 
-export type DevCrudStatus = (typeof DEV_CRUD_STATUSES)[number];
-export type DevCrudPriority = (typeof DEV_CRUD_PRIORITIES)[number];
+export type TrainingCenterDemoStatus = (typeof TRAINING_CENTER_DEMO_STATUSES)[number];
 
-export interface DevCrudItem {
+export interface TrainingCenterDemo {
   id: string;
-  title: string;
-  owner: string;
-  status: DevCrudStatus;
-  priority: DevCrudPriority;
-  dueDate: string;
+  code: string;
+  name: string;
+  location: string;
+  activeStudents: number;
+  coachCount: number;
+  status: TrainingCenterDemoStatus;
   createdAt: string;
+  updatedAt: string;
 }
+
+export type CreateTrainingCenterDemoPayload = Pick<
+  TrainingCenterDemo,
+  "code" | "name" | "location" | "activeStudents" | "coachCount" | "status"
+>;
+
+export type UpdateTrainingCenterDemoPayload = Partial<CreateTrainingCenterDemoPayload>;
+
+export interface TrainingCenterDemoListParams {
+  search?: string;
+  status?: TrainingCenterDemoStatus | "ALL";
+}
+
+export type TrainingCenterDemoSearchParams = TrainingCenterDemoListParams;
 
 // TODO: Replace USER_READ fallback with DEV_TOOLS_READ once the backend authority is available.
 export const DEV_TOOLS_READ_PERMISSIONS = ["USER_READ"] as const;

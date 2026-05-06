@@ -1,58 +1,139 @@
 import { devCrudMockItems } from "./dev-crud.mock";
-import type { DevCrudFormValues } from "./dev-crud.schema";
-import type { DevCrudItem } from "./dev-crud.types";
+import type {
+  CreateTrainingCenterDemoPayload,
+  TrainingCenterDemo,
+  TrainingCenterDemoListParams,
+  UpdateTrainingCenterDemoPayload,
+} from "./dev-crud.types";
 
-let devCrudItems: DevCrudItem[] = [...devCrudMockItems];
+const STORAGE_KEY = "boost.devCrud.trainingCenters";
+const MIN_DELAY_MS = 200;
+const MAX_DELAY_MS = 500;
 
-const waitForMockLatency = () => new Promise((resolve) => setTimeout(resolve, 150));
+let memoryItems: TrainingCenterDemo[] = devCrudMockItems.map((item) => ({ ...item }));
 
-const cloneItems = () => devCrudItems.map((item) => ({ ...item }));
+export const delay = () =>
+  new Promise((resolve) => {
+    const timeout = Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS + 1)) + MIN_DELAY_MS;
+    setTimeout(resolve, timeout);
+  });
+
+const cloneItems = (items: TrainingCenterDemo[]) => items.map((item) => ({ ...item }));
+const isBrowser = () => typeof window !== "undefined";
+
+const persistItems = (items: TrainingCenterDemo[]) => {
+  memoryItems = cloneItems(items);
+
+  if (isBrowser()) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+};
+
+const readItems = () => {
+  if (!isBrowser()) {
+    return cloneItems(memoryItems);
+  }
+
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+
+  if (!stored) {
+    persistItems(devCrudMockItems);
+    return cloneItems(devCrudMockItems);
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as TrainingCenterDemo[];
+    memoryItems = cloneItems(parsed);
+    return cloneItems(parsed);
+  } catch {
+    persistItems(devCrudMockItems);
+    return cloneItems(devCrudMockItems);
+  }
+};
+
+const normalizeSearch = (value?: string) => value?.trim().toLowerCase();
+
+const applyParams = (items: TrainingCenterDemo[], params?: TrainingCenterDemoListParams) => {
+  const search = normalizeSearch(params?.search);
+
+  return items.filter((item) => {
+    const matchesStatus = !params?.status || params.status === "ALL" || item.status === params.status;
+    const matchesSearch =
+      !search ||
+      [item.code, item.name, item.location].some((value) => value.toLowerCase().includes(search));
+
+    return matchesStatus && matchesSearch;
+  });
+};
 
 export const devCrudService = {
-  async list(): Promise<DevCrudItem[]> {
-    await waitForMockLatency();
-    return cloneItems();
+  async list(params?: TrainingCenterDemoListParams): Promise<TrainingCenterDemo[]> {
+    await delay();
+    return applyParams(readItems(), params);
   },
 
-  async create(values: DevCrudFormValues): Promise<DevCrudItem> {
-    await waitForMockLatency();
+  async getById(id: string): Promise<TrainingCenterDemo> {
+    await delay();
 
-    const item: DevCrudItem = {
-      id: `dev-crud-${Date.now()}`,
-      ...values,
-      createdAt: new Date().toISOString(),
-    };
+    const item = readItems().find((entry) => entry.id === id);
 
-    devCrudItems = [item, ...devCrudItems];
+    if (!item) {
+      throw new Error("Training center demo tidak ditemukan");
+    }
+
     return { ...item };
   },
 
-  async update(id: string, values: DevCrudFormValues): Promise<DevCrudItem> {
-    await waitForMockLatency();
+  async create(payload: CreateTrainingCenterDemoPayload): Promise<TrainingCenterDemo> {
+    await delay();
 
-    let updated: DevCrudItem | undefined;
-    devCrudItems = devCrudItems.map((item) => {
+    const now = new Date().toISOString();
+    const item: TrainingCenterDemo = {
+      id: `training-center-demo-${Date.now()}`,
+      ...payload,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    persistItems([item, ...readItems()]);
+    return { ...item };
+  },
+
+  async update(id: string, payload: UpdateTrainingCenterDemoPayload): Promise<TrainingCenterDemo> {
+    await delay();
+
+    let updated: TrainingCenterDemo | undefined;
+    const items = readItems().map((item) => {
       if (item.id !== id) {
         return item;
       }
 
-      updated = { ...item, ...values };
+      updated = { ...item, ...payload, updatedAt: new Date().toISOString() };
       return updated;
     });
 
     if (!updated) {
-      throw new Error("Dev CRUD item tidak ditemukan");
+      throw new Error("Training center demo tidak ditemukan");
     }
 
+    persistItems(items);
     return { ...updated };
   },
 
   async remove(id: string): Promise<void> {
-    await waitForMockLatency();
-    devCrudItems = devCrudItems.filter((item) => item.id !== id);
+    await delay();
+
+    const items = readItems();
+    const nextItems = items.filter((item) => item.id !== id);
+
+    if (nextItems.length === items.length) {
+      throw new Error("Training center demo tidak ditemukan");
+    }
+
+    persistItems(nextItems);
   },
 
   resetMockData(): void {
-    devCrudItems = [...devCrudMockItems];
+    persistItems(devCrudMockItems);
   },
 };

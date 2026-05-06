@@ -5,23 +5,24 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { FormField } from "@/app/components/form-field";
-import { devCrudFormSchema, type DevCrudFormValues } from "@/features/dev-crud/dev-crud.schema";
-import { DEV_CRUD_PRIORITIES, DEV_CRUD_STATUSES, type DevCrudItem } from "@/features/dev-crud/dev-crud.types";
+import { devCrudFormSchema, type DevCrudFormInputValues, type DevCrudFormValues } from "@/features/dev-crud/dev-crud.schema";
+import { TRAINING_CENTER_DEMO_STATUSES, type TrainingCenterDemo } from "@/features/dev-crud/dev-crud.types";
 
 interface DevCrudFormProps {
-  initialData?: DevCrudItem | null;
+  initialData?: TrainingCenterDemo | null;
   canWrite: boolean;
   isSubmitting?: boolean;
   onSubmit: (values: DevCrudFormValues) => void;
   onCancelEdit?: () => void;
 }
 
-const defaultValues: DevCrudFormValues = {
-  title: "",
-  owner: "",
-  status: "DRAFT",
-  priority: "MEDIUM",
-  dueDate: "",
+const defaultValues: DevCrudFormInputValues = {
+  code: "",
+  name: "",
+  location: "",
+  activeStudents: 0,
+  coachCount: 0,
+  status: "ACTIVE",
 };
 
 const inputClassName = "w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:text-zinc-500";
@@ -33,7 +34,7 @@ export default function DevCrudForm({
   onSubmit,
   onCancelEdit,
 }: DevCrudFormProps) {
-  const form = useForm<DevCrudFormValues>({
+  const form = useForm<DevCrudFormInputValues, unknown, DevCrudFormValues>({
     resolver: zodResolver(devCrudFormSchema),
     defaultValues,
   });
@@ -42,11 +43,12 @@ export default function DevCrudForm({
     form.reset(
       initialData
         ? {
-            title: initialData.title,
-            owner: initialData.owner,
+            code: initialData.code,
+            name: initialData.name,
+            location: initialData.location,
+            activeStudents: initialData.activeStudents,
+            coachCount: initialData.coachCount,
             status: initialData.status,
-            priority: initialData.priority,
-            dueDate: initialData.dueDate,
           }
         : defaultValues,
     );
@@ -55,57 +57,71 @@ export default function DevCrudForm({
   return (
     <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FormField label="Judul" required error={form.formState.errors.title?.message} htmlFor="dev-crud-title">
+        <FormField label="Kode" required error={form.formState.errors.code?.message} htmlFor="dev-crud-code">
           <input
-            id="dev-crud-title"
+            id="dev-crud-code"
             className={inputClassName}
             disabled={!canWrite || isSubmitting}
-            placeholder="Nama pekerjaan demo"
-            {...form.register("title")}
+            placeholder="BTC-JKT"
+            {...form.register("code")}
           />
         </FormField>
 
-        <FormField label="Owner" required error={form.formState.errors.owner?.message} htmlFor="dev-crud-owner">
+        <FormField label="Nama Training Center" required error={form.formState.errors.name?.message} htmlFor="dev-crud-name">
           <input
-            id="dev-crud-owner"
+            id="dev-crud-name"
             className={inputClassName}
             disabled={!canWrite || isSubmitting}
-            placeholder="Tim pemilik"
-            {...form.register("owner")}
+            placeholder="Boost Training Center Jakarta"
+            {...form.register("name")}
+          />
+        </FormField>
+
+        <FormField label="Lokasi" required error={form.formState.errors.location?.message} htmlFor="dev-crud-location">
+          <input
+            id="dev-crud-location"
+            className={inputClassName}
+            disabled={!canWrite || isSubmitting}
+            placeholder="Jakarta Selatan"
+            {...form.register("location")}
+          />
+        </FormField>
+
+        <FormField label="Murid Aktif" required error={form.formState.errors.activeStudents?.message} htmlFor="dev-crud-active-students">
+          <input
+            id="dev-crud-active-students"
+            type="number"
+            min={0}
+            className={inputClassName}
+            disabled={!canWrite || isSubmitting}
+            {...form.register("activeStudents", { valueAsNumber: true })}
+          />
+        </FormField>
+
+        <FormField label="Jumlah Coach" required error={form.formState.errors.coachCount?.message} htmlFor="dev-crud-coach-count">
+          <input
+            id="dev-crud-coach-count"
+            type="number"
+            min={0}
+            className={inputClassName}
+            disabled={!canWrite || isSubmitting}
+            {...form.register("coachCount", { valueAsNumber: true })}
           />
         </FormField>
 
         <FormField label="Status" required error={form.formState.errors.status?.message} htmlFor="dev-crud-status">
           <select id="dev-crud-status" className={inputClassName} disabled={!canWrite || isSubmitting} {...form.register("status")}>
-            {DEV_CRUD_STATUSES.map((status) => (
+            {TRAINING_CENTER_DEMO_STATUSES.map((status) => (
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-        </FormField>
-
-        <FormField label="Prioritas" required error={form.formState.errors.priority?.message} htmlFor="dev-crud-priority">
-          <select id="dev-crud-priority" className={inputClassName} disabled={!canWrite || isSubmitting} {...form.register("priority")}>
-            {DEV_CRUD_PRIORITIES.map((priority) => (
-              <option key={priority} value={priority}>{priority}</option>
-            ))}
-          </select>
-        </FormField>
-
-        <FormField label="Jatuh Tempo" required error={form.formState.errors.dueDate?.message} htmlFor="dev-crud-due-date">
-          <input
-            id="dev-crud-due-date"
-            type="date"
-            className={inputClassName}
-            disabled={!canWrite || isSubmitting}
-            {...form.register("dueDate")}
-          />
         </FormField>
       </div>
 
       {canWrite ? (
         <div className="flex flex-wrap gap-2">
           <button type="submit" className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60" disabled={isSubmitting}>
-            {initialData ? "Update data" : "Tambah data"}
+            {isSubmitting ? "Menyimpan..." : initialData ? "Update training center" : "Tambah training center"}
           </button>
           {initialData && onCancelEdit ? (
             <button type="button" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700" onClick={onCancelEdit} disabled={isSubmitting}>
