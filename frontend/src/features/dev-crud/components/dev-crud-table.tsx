@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { StatusBadge } from "@/app/components/status-badge";
 import type { TrainingCenterDemo, TrainingCenterDemoStatus } from "@/features/dev-crud/dev-crud.types";
@@ -72,13 +73,13 @@ export default function DevCrudTable({
           >
             Edit
           </button>
-          <button
-            type="button"
-            className="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
-            onClick={() => onDelete?.(item)}
-          >
-            Hapus
-          </button>
+          <ConfirmActionButton
+            className="px-3 py-1 text-xs"
+            confirmMessage={`Training center ${item.name} akan dihapus.`}
+            label="Hapus"
+            onConfirm={() => onDelete?.(item)}
+            variant="danger"
+          />
         </div>
       ),
     });
