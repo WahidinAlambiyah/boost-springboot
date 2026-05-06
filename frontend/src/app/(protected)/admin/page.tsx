@@ -28,23 +28,23 @@ const checklistColumns: DataTableColumn<ComponentChecklistRow>[] = [
   {
     key: "component",
     header: "Komponen",
-    cell: (row) => <span className="font-medium text-zinc-900">{row.component}</span>,
+    render: (row) => <span className="font-medium text-zinc-900">{row.component}</span>,
   },
   {
     key: "status",
     header: "Status",
-    cell: (row) => <StatusBadge status={row.statusLabel} variant={row.statusTone === "neutral" ? "default" : row.statusTone} />,
+    render: (row) => <StatusBadge status={row.statusLabel} variant={row.statusTone === "neutral" ? "default" : row.statusTone} />,
   },
   {
     key: "note",
     header: "Catatan Reuse",
-    cell: (row) => row.note,
+    render: (row) => row.note,
   },
 ];
 
 export default function AdminPage() {
   return (
-    <RequirePermission permissions={ADMIN_PERMISSION_BUNDLE} mode="any">
+    <RequirePermission permissions={[...ADMIN_PERMISSION_BUNDLE]} mode="any">
       <AppShell>
       <PageHeader
         title="UI Component Verification"
