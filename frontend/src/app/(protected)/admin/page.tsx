@@ -20,7 +20,7 @@ const COMPONENT_CHECKLIST: ComponentChecklistRow[] = [
   { component: "page-header", statusLabel: "Ready", statusTone: "success", note: "Header dan action slot bisa langsung dipakai." },
   { component: "status-badge", statusLabel: "Ready", statusTone: "success", note: "Tone standar untuk state modul berikutnya." },
   { component: "error-message", statusLabel: "Ready", statusTone: "success", note: "Menangani pesan validasi/error inline." },
-  { component: "data-table", statusLabel: "Ready", statusTone: "success", note: "Generic columns + rowKey untuk daftar data." },
+  { component: "data-table", statusLabel: "Ready", statusTone: "success", note: "Generic columns + getRowKey untuk daftar data." },
   { component: "form-field", statusLabel: "Ready", statusTone: "success", note: "Input dasar dengan hint/error bawaan." },
 ];
 
@@ -33,7 +33,7 @@ const checklistColumns: DataTableColumn<ComponentChecklistRow>[] = [
   {
     key: "status",
     header: "Status",
-    cell: (row) => <StatusBadge label={row.statusLabel} tone={row.statusTone} />,
+    cell: (row) => <StatusBadge status={row.statusLabel} variant={row.statusTone === "neutral" ? "default" : row.statusTone} />,
   },
   {
     key: "note",
@@ -49,21 +49,36 @@ export default function AdminPage() {
       <PageHeader
         title="UI Component Verification"
         description="Halaman utilitas internal untuk validasi compile-time dan pola reuse komponen inti tanpa implementasi CRUD penuh."
-        actions={<StatusBadge label="Internal Utility" tone="info" />}
+        actions={<StatusBadge status="Internal Utility" variant="info" />}
       />
 
       <section className="space-y-3 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Form Sample</h2>
         <div className="grid gap-3 md:grid-cols-2">
-          <FormField id="sample-name" label="Nama" placeholder="Contoh: Paket Bronze" hint="Gunakan untuk uji komposisi field." />
-          <FormField id="sample-capacity" label="Kapasitas" type="number" placeholder="0" error="Contoh error untuk verifikasi tampilan validasi." />
+          <FormField htmlFor="sample-name" label="Nama">
+            <input
+              id="sample-name"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              placeholder="Contoh: Paket Bronze"
+            />
+            <p className="text-xs text-zinc-500">Gunakan untuk uji komposisi field.</p>
+          </FormField>
+          <FormField htmlFor="sample-capacity" label="Kapasitas" error="Contoh error untuk verifikasi tampilan validasi.">
+            <input
+              id="sample-capacity"
+              type="number"
+              aria-invalid="true"
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+              placeholder="0"
+            />
+          </FormField>
         </div>
         <ErrorMessage message="Contoh general error: simpan data dinonaktifkan karena halaman ini hanya untuk verifikasi komponen." />
       </section>
 
       <section className="space-y-3 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Checklist Komponen</h2>
-        <DataTable columns={checklistColumns} data={COMPONENT_CHECKLIST} rowKey={(row) => row.component} />
+        <DataTable columns={checklistColumns} data={COMPONENT_CHECKLIST} getRowKey={(row) => row.component} />
       </section>
 
       <p className="text-sm text-zinc-600">
