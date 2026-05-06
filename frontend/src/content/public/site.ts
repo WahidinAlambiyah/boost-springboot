@@ -18,6 +18,10 @@ export const siteBrand = {
     "Kelas pushbike dan aktivitas anak yang dirancang untuk membantu orang tua memantau keberanian, fokus, dan perkembangan anak bersama coach melalui progress report yang mudah dipahami.",
 } as const;
 
+export const siteContent = {
+  whatsappNumber: "6200000000000",
+} as const;
+
 export const siteContact = {
   email: "hello@boostacademy.id",
   phone: "+62 812-3456-7890",
