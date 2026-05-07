@@ -20,37 +20,35 @@ Sidebar utama tidak meng-hardcode link Dev Tools karena daftar menu utama berasa
 
 Quick link atau entry point lain yang dibuat lokal di frontend harus tetap dicek dengan permission dan sebaiknya disembunyikan di production bila belum siap. Jangan mengandalkan hiding sebagai satu-satunya proteksi; route `/dev` tetap harus dijaga oleh `RequirePermission`.
 
-## Opsi Env Flag untuk Hiding di Production
+## Env Flag `NEXT_PUBLIC_ENABLE_DEV_TOOLS`
 
-Jika butuh memastikan link Dev Tools tidak tampil di production, gunakan env flag publik, misalnya:
+Dev Tools dikontrol oleh helper `ENABLE_DEV_TOOLS` di `src/lib/dev-tools.ts`:
+
+```ts
+export const ENABLE_DEV_TOOLS =
+  process.env.NEXT_PUBLIC_ENABLE_DEV_TOOLS === "true" || process.env.NODE_ENV !== "production";
+```
+
+Perilaku flag:
+
+- `NEXT_PUBLIC_ENABLE_DEV_TOOLS=true` mengaktifkan link dan route Dev Tools di semua environment.
+- Di non-production (`NODE_ENV !== "production"`), Dev Tools aktif secara default supaya demo internal tetap mudah dipakai saat development/test.
+- Di production, Dev Tools nonaktif kecuali `NEXT_PUBLIC_ENABLE_DEV_TOOLS` diset eksplisit ke `true`.
+
+Contoh konfigurasi production untuk menyembunyikan dan menutup route Dev Tools:
 
 ```env
 NEXT_PUBLIC_ENABLE_DEV_TOOLS=false
 ```
 
-Contoh pemakaian untuk entry point lokal seperti dashboard quick link:
+Entry point lokal seperti dashboard quick link harus memakai `ENABLE_DEV_TOOLS` sebelum menambahkan link `/dev`. Route `/dev` dan seluruh route nested `/dev/*` juga harus memanggil behavior not found saat `ENABLE_DEV_TOOLS` false agar halaman demo tidak dapat dibuka langsung ketika fitur dinonaktifkan.
 
-```ts
-const enableDevTools = process.env.NEXT_PUBLIC_ENABLE_DEV_TOOLS === "true";
-
-const moduleLinks = [
-  // module lain...
-  ...(enableDevTools
-    ? [
-        {
-          label: "Developer Tools",
-          href: "/dev",
-          permissions: ["DEV_TOOLS_READ", "ROLE_READ", "USER_READ"],
-        },
-      ]
-    : []),
-];
-```
+Env flag ini hanya feature gate untuk visibility/availability Dev Tools. Env flag bukan pengganti authorization: route Dev Tools tetap harus dibungkus `RequirePermission`, dan user tetap membutuhkan permission seperti `DEV_TOOLS_READ` atau fallback sementara yang masih berlaku.
 
 Rekomendasi default:
 
-- Development/demo internal: set `NEXT_PUBLIC_ENABLE_DEV_TOOLS=true` jika link lokal perlu ditampilkan.
-- Production: set `NEXT_PUBLIC_ENABLE_DEV_TOOLS=false` sampai halaman, permission backend, dan menu backend siap.
+- Development/demo internal: tidak perlu set flag karena non-production aktif otomatis; set `NEXT_PUBLIC_ENABLE_DEV_TOOLS=true` jika perlu menegaskan perilaku tersebut di environment tertentu.
+- Production: biarkan kosong atau set `NEXT_PUBLIC_ENABLE_DEV_TOOLS=false` sampai halaman, permission backend, dan menu backend siap.
 
 ## Checklist Dev Tools
 
