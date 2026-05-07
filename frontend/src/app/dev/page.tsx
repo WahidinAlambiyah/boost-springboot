@@ -1,9 +1,9 @@
-"use client";
-
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import AppShell from "@/app/components/app-shell";
 import { PageHeader } from "@/app/components/page-header";
+import { ENABLE_DEV_TOOLS } from "@/lib/dev-tools";
 
 interface DevToolLink {
   title: string;
@@ -35,6 +35,10 @@ const devToolLinks: DevToolLink[] = [
 ];
 
 export default function DevToolsPage() {
+  if (!ENABLE_DEV_TOOLS) {
+    notFound();
+  }
+
   return (
     <AppShell>
       <PageHeader
