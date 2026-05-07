@@ -1,3 +1,7 @@
+export const faqSectionContent = {
+  title: "Pertanyaan Umum Orang Tua",
+} as const;
+
 export type FaqCategory = "trial" | "pushbike" | "umum";
 
 export type FaqItem = {

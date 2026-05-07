@@ -39,6 +39,19 @@ export const siteContact = {
   ],
 } as const;
 
+export const footerContent = {
+  importantLinksTitle: "Link Penting",
+  contactTitle: "Kontak",
+  whatsappLabel: "Konsultasi WhatsApp",
+} as const;
+
+export const publicNavigationLabels = {
+  main: "Main navigation",
+  mobile: "Mobile navigation",
+  footer: "Footer navigation",
+  menu: "Menu",
+} as const;
+
 export const footerLinks = [
   { label: "Program", href: "/program" },
   { label: "Contact", href: "/contact" },

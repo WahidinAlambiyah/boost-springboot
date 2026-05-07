@@ -131,6 +131,22 @@ export const programHighlights: ProgramHighlight[] = [
   },
 ];
 
+export const featuresSectionContent = {
+  title: "Fitur Utama",
+  items: [
+    "Monitoring kelas dan sesi pembelajaran realtime",
+    "Manajemen siswa, pelatih, dan paket latihan",
+    "Laporan operasional dan progres belajar terpusat",
+  ],
+} as const;
+
+export const pushbikeScheduleTableHeaders = {
+  day: "Hari",
+  time: "Jam",
+  level: "Level",
+  location: "Lokasi",
+} as const;
+
 export const programDetailPageContent = {
   pushbike: {
     title: "Program Pushbike",

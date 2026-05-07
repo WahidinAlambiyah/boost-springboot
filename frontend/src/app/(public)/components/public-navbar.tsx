@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { navItems, navigationCtas } from "@/content/public/navigation";
-import { siteBrand } from "@/content/public/site";
+import { publicNavigationLabels, siteBrand } from "@/content/public/site";
 
 export default function PublicNavbar() {
   const trialCta = navigationCtas.trial;
@@ -13,7 +13,7 @@ export default function PublicNavbar() {
           {siteBrand.name}
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-6 md:flex" aria-label={publicNavigationLabels.main}>
           {navItems.map((item) => (
             <Link key={item.label} href={item.href} className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
               {item.label}
@@ -38,10 +38,10 @@ export default function PublicNavbar() {
 
         <details className="relative md:hidden">
           <summary className="flex cursor-pointer list-none items-center rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 marker:content-none hover:border-zinc-400 hover:text-zinc-900">
-            Menu
+            {publicNavigationLabels.menu}
           </summary>
           <div className="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white p-3 shadow-lg">
-            <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+            <nav className="flex flex-col gap-1" aria-label={publicNavigationLabels.mobile}>
               {navItems.map((item) => (
                 <Link
                   key={`mobile-${item.label}`}

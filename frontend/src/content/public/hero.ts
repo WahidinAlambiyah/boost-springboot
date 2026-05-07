@@ -36,11 +36,70 @@ export const reasons = [
 
 export const trialSteps = ["Pilih program", "Konsultasi via WhatsApp", "Ikut trial class", "Anak dinilai oleh coach", "Orang tua mendapat ringkasan progress"] as const;
 
+export const homePageContent = {
+  reasonsTitle: "Kenapa Memilih Kami",
+  programsTitle: "Program Utama",
+  trialFlowTitle: "Bagaimana Alur Ikut Trial",
+  trialStepLabel: "Step",
+  coachNotesTitle: "Yang Dicatat Coach",
+  audienceTitle: "Untuk Siapa Program Ini",
+  progressPreviewTitle: "Preview Progress Anak",
+  galleryPreviewTitle: "Preview Aktivitas Anak",
+  testimonialsTitle: "Testimoni",
+} as const;
+
+export const trialPageContent = {
+  eyebrow: "Trial Class Pushbike",
+  title: "Jadwalkan trial class yang nyaman untuk anak dan orang tua",
+  description:
+    "Halaman ini berisi form statis untuk membantu orang tua menyiapkan data awal sebelum tim Boost Academy menghubungi kembali. Trial dirancang fun, aman, dan fokus pada keberanian, keseimbangan, serta rasa percaya diri anak.",
+  whatsappLabel: "Chat WhatsApp untuk Jadwal",
+  whatsappMessage: "Halo Boost Academy, saya ingin menjadwalkan trial class untuk anak.",
+  programLabel: "Lihat Program Dulu",
+  programHref: "/program",
+  nextStepsTitle: "Apa yang terjadi setelah daftar?",
+  formTitle: "Form minat trial",
+  formDescription: "Dummy/static form untuk mencatat kebutuhan keluarga sebelum konfirmasi via WhatsApp.",
+  submitLabel: "Simpan Minat Trial",
+  confirmLabel: "Konfirmasi via WhatsApp",
+  confirmMessage: "Halo Boost Academy, saya sudah mengisi minat trial dan ingin konfirmasi jadwal.",
+} as const;
+
+export const trialFormFields = {
+  parentName: { label: "Nama orang tua", placeholder: "Contoh: Ayu Pratama" },
+  childName: { label: "Nama anak", placeholder: "Contoh: Raka" },
+  childAge: {
+    label: "Usia anak",
+    placeholder: "Pilih usia",
+    options: [
+      { value: "2-3", label: "2–3 tahun" },
+      { value: "4-5", label: "4–5 tahun" },
+      { value: "6-7", label: "6–7 tahun" },
+    ],
+  },
+  preferredSchedule: { label: "Preferensi jadwal", placeholder: "Contoh: Sabtu pagi" },
+  notes: { label: "Catatan untuk coach", placeholder: "Contoh: Anak baru pertama kali mencoba pushbike." },
+} as const;
+
 export const trialPageSteps = [
   "Isi data singkat anak dan pilihan jadwal yang paling nyaman untuk keluarga.",
   "Tim kami mengonfirmasi slot trial, lokasi, dan perlengkapan yang perlu dibawa.",
   "Anak mencoba kelas bersama coach, lalu orang tua mendapat ringkasan observasi awal.",
 ] as const;
+
+export const ctaSectionContent = {
+  title: "Siap coba trial class untuk anak Anda?",
+  description:
+    "Pilih program yang cocok, konsultasi singkat via WhatsApp, lalu jadwalkan trial class bersama coach.",
+} as const;
+
+export const progressPreviewLabels = {
+  levelPrefix: "Level",
+  balance: "Balance",
+  braking: "Braking",
+  confidence: "Confidence",
+  coachNote: "Catatan coach",
+} as const;
 
 export const progressPreviews = [
   {

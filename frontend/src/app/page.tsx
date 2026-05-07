@@ -9,6 +9,7 @@ import TestimonialCard from "@/app/(public)/components/testimonial-card";
 
 import {
   galleryPreviewItems,
+  homePageContent,
   progressPreviews,
   reasons,
   trialSteps,
@@ -45,39 +46,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ChecklistSection id="kenapa-kami" title="Kenapa Memilih Kami" items={reasons} />
+      <ChecklistSection id="kenapa-kami" title={homePageContent.reasonsTitle} items={reasons} />
 
       <section id="program" className="container mx-auto w-full px-6 py-14">
-        <h2 className="text-2xl font-semibold text-zinc-900">Program Utama</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{homePageContent.programsTitle}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {programs.map((program) => (<ProgramCard key={program.title} {...program} />))}
         </div>
       </section>
 
       <section id="alur-trial" className="container mx-auto w-full px-6 py-14">
-        <h2 className="text-2xl font-semibold text-zinc-900">Bagaimana Alur Ikut Trial</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{homePageContent.trialFlowTitle}</h2>
         <ol className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {trialSteps.map((step, index) => (
             <li key={step} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Step {index + 1}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">{homePageContent.trialStepLabel} {index + 1}</p>
               <p className="mt-2 text-sm font-medium text-zinc-800">{step}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <ChecklistSection id="catatan-coach" title="Yang Dicatat Coach" items={coachNotes} />
-      <ChecklistSection id="untuk-siapa" title="Untuk Siapa Program Ini" items={audience} />
+      <ChecklistSection id="catatan-coach" title={homePageContent.coachNotesTitle} items={coachNotes} />
+      <ChecklistSection id="untuk-siapa" title={homePageContent.audienceTitle} items={audience} />
 
       <section id="progres" className="container mx-auto w-full px-6 py-14">
-        <h2 className="text-2xl font-semibold text-zinc-900">Preview Progress Anak</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{homePageContent.progressPreviewTitle}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {progressPreviews.map((preview) => (<ProgressPreviewCard key={preview.studentName} {...preview} />))}
         </div>
       </section>
 
       <section id="galeri-preview" className="container mx-auto w-full px-6 py-14">
-        <h2 className="text-2xl font-semibold text-zinc-900">Preview Aktivitas Anak</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{homePageContent.galleryPreviewTitle}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {galleryPreviewItems.map((item) => (
             <EmptyImagePlaceholder key={item.title} category={item.category} title={item.title} />
@@ -86,7 +87,7 @@ export default function HomePage() {
       </section>
 
       <section id="testimoni" className="container mx-auto w-full px-6 py-14">
-        <h2 className="text-2xl font-semibold text-zinc-900">Testimoni</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{homePageContent.testimonialsTitle}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((item) => (<TestimonialCard key={item.id} {...item} />))}
         </div>
