@@ -4,7 +4,9 @@ import DashboardPage from "./page";
 import { useAuthStore } from "@/store/auth";
 
 vi.mock("@/app/components/app-shell", () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 describe("DashboardPage", () => {
@@ -23,13 +25,32 @@ describe("DashboardPage", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByRole("heading", { name: "Quick Links" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Developer Tools" })).toHaveAttribute("href", "/dev");
+    expect(
+      screen.getByRole("heading", { name: "Quick Links" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Developer Tools/ }),
+    ).toHaveAttribute("href", "/dev");
   });
+
+  it.each(["ROLE_READ", "USER_READ"])(
+    "keeps the temporary %s fallback for the dev tools quick link",
+    (permission) => {
+      useAuthStore.setState({ authorities: [permission] });
+
+      render(<DashboardPage />);
+
+      expect(
+        screen.getByRole("link", { name: /Developer Tools/ }),
+      ).toHaveAttribute("href", "/dev");
+    },
+  );
 
   it("hides the dev tools quick link without a matching permission", () => {
     render(<DashboardPage />);
 
-    expect(screen.queryByRole("link", { name: "Developer Tools" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Developer Tools/ }),
+    ).not.toBeInTheDocument();
   });
 });
