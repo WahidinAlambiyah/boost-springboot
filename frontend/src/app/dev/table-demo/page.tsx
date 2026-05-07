@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 
 import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { DEV_TOOLS_READ_PERMISSIONS } from "@/app/dev/permissions";
 import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { PageHeader } from "@/app/components/page-header";
@@ -91,7 +93,8 @@ export default function DevTableDemoPage() {
   );
 
   return (
-    <AppShell>
+    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+      <AppShell>
       <PageHeader
         title="Dev Table Demo"
         description="Halaman protected untuk memvalidasi state DataTable reusable dengan dummy TrainingCenterDemo."
@@ -146,6 +149,7 @@ export default function DevTableDemoPage() {
           />
         </SectionCard>
       </div>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

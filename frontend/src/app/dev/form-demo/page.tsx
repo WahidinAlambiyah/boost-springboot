@@ -7,6 +7,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { DEV_TOOLS_READ_PERMISSIONS } from "@/app/dev/permissions";
 import { ErrorMessage } from "@/app/components/error-message";
 import { FormField } from "@/app/components/form-field";
 import { PageHeader } from "@/app/components/page-header";
@@ -66,7 +68,8 @@ export default function DevFormDemoPage() {
   };
 
   return (
-    <AppShell>
+    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+      <AppShell>
       <PageHeader
         title="Dev Form Demo"
         description="Halaman protected untuk mengecek React Hook Form, Zod validation, field wrapper, dan preview payload tanpa backend."
@@ -174,6 +177,7 @@ export default function DevFormDemoPage() {
           </pre>
         </SectionCard>
       </div>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

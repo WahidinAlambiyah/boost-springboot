@@ -1,6 +1,8 @@
 "use client";
 
 import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { DEV_TOOLS_READ_PERMISSIONS } from "@/app/dev/permissions";
 import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import EmptyState from "@/app/components/empty-state";
@@ -110,7 +112,8 @@ const noopConfirm = () => undefined;
 
 export default function DevComponentsPage() {
   return (
-    <AppShell>
+    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+      <AppShell>
       <PageHeader
         title="Dev Components"
         description="Katalog demo komponen UI internal untuk mempercepat pembuatan halaman CRUD berikutnya. Semua contoh di halaman ini memakai data dummy static."
@@ -273,6 +276,7 @@ export default function DevComponentsPage() {
           <DataTable columns={columns} data={componentRows} getRowKey={(row) => row.name} />
         </SectionCard>
       </div>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }
