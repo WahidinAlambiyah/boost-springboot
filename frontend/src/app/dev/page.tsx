@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { DEV_TOOLS_READ_PERMISSIONS } from "@/app/dev/permissions";
 import { PageHeader } from "@/app/components/page-header";
 import { ENABLE_DEV_TOOLS } from "@/lib/dev-tools";
 
@@ -40,7 +42,8 @@ export default function DevToolsPage() {
   }
 
   return (
-    <AppShell>
+    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+      <AppShell>
       <PageHeader
         title="Developer Tools"
         description="Kumpulan halaman demo internal untuk mempercepat pengembangan dan validasi pola UI."
@@ -64,6 +67,7 @@ export default function DevToolsPage() {
           </Link>
         ))}
       </section>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }

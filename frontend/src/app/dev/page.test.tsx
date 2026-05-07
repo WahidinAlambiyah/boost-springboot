@@ -6,6 +6,10 @@ vi.mock("@/app/components/app-shell", () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+vi.mock("@/app/components/require-permission", () => ({
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@/app/components/page-header", () => ({
   PageHeader: ({ title, description }: { title: string; description: string }) => (
     <header>

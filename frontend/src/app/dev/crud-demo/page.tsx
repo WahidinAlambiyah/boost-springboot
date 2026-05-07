@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import AppShell from "@/app/components/app-shell";
+import RequirePermission from "@/app/components/require-permission";
+import { DEV_TOOLS_READ_PERMISSIONS } from "@/app/dev/permissions";
 import { ErrorMessage } from "@/app/components/error-message";
 import { PageHeader } from "@/app/components/page-header";
 import { SearchInput } from "@/app/components/search-input";
@@ -93,7 +95,8 @@ export default function DevCrudDemoPage() {
   const queryError = trainingCentersQuery.isError ? "Gagal memuat data training center demo." : undefined;
 
   return (
-    <AppShell>
+    <RequirePermission permissions={[...DEV_TOOLS_READ_PERMISSIONS]} mode="any">
+      <AppShell>
       <PageHeader
         title="Dev CRUD Demo"
         description="Playground protected untuk mencoba pola create, read, update, dan delete training center berbasis localStorage."
@@ -140,6 +143,7 @@ export default function DevCrudDemoPage() {
           />
         </SectionCard>
       </div>
-    </AppShell>
+      </AppShell>
+    </RequirePermission>
   );
 }
