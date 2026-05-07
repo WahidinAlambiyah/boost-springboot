@@ -104,7 +104,7 @@ test("smoke: dummy CRUD can create, update, and delete a training center", async
   await page.getByLabel("Lokasi").fill("QA Lab");
   await page.getByLabel("Murid Aktif").fill("11");
   await page.getByLabel("Jumlah Coach").fill("2");
-  await page.getByLabel("Status").selectOption("ACTIVE");
+  await page.locator("#dev-crud-status").selectOption("ACTIVE");
   await page.getByRole("button", { name: "Tambah training center", exact: true }).click();
 
   await expect(page.getByText("Boost Training Center QA")).toBeVisible();
@@ -116,7 +116,7 @@ test("smoke: dummy CRUD can create, update, and delete a training center", async
 
   await page.getByLabel("Nama Training Center").fill("Boost Training Center QA Updated");
   await page.getByLabel("Murid Aktif").fill("18");
-  await page.getByLabel("Status").selectOption("INACTIVE");
+  await page.locator("#dev-crud-status").selectOption("INACTIVE");
   await page.getByRole("button", { name: "Update training center" }).click();
 
   await expect(page.getByText("Boost Training Center QA Updated")).toBeVisible();

@@ -5,10 +5,11 @@ import { FormField } from "./form-field";
 import { StatusBadge } from "./status-badge";
 
 describe("admin foundation components", () => {
-  it("renders StatusBadge status text", () => {
+  it("renders StatusBadge status text with the mapped success variant", () => {
     render(<StatusBadge status="ACTIVE" />);
 
     expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+    expect(screen.getByText("ACTIVE")).toHaveClass("bg-emerald-100", "text-emerald-700");
   });
 
   it("renders DataTable empty state", () => {
@@ -31,6 +32,8 @@ describe("admin foundation components", () => {
     );
 
     expect(screen.getByText("Belum ada data")).toBeInTheDocument();
+    expect(screen.getByText("Tambahkan data untuk melihat daftar.")).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: /andi/i })).not.toBeInTheDocument();
   });
 
   it("renders DataTable loading, error, and action column states", () => {
@@ -68,10 +71,15 @@ describe("admin foundation components", () => {
     expect(screen.getByRole("button", { name: "Edit Andi" })).toBeInTheDocument();
   });
 
-  it("renders FormField label and error message", () => {
-    render(<FormField id="name" label="Nama" error="Nama wajib diisi" />);
+  it("renders FormField label, input association, and error message", () => {
+    render(
+      <FormField id="name" label="Nama" error="Nama wajib diisi" required>
+        <input id="name" />
+      </FormField>,
+    );
 
-    expect(screen.getByText("Nama")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Nama/)).toBeInTheDocument();
+    expect(screen.getByText("*", { selector: "span" })).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByRole("alert")).toHaveTextContent("Nama wajib diisi");
   });
 });

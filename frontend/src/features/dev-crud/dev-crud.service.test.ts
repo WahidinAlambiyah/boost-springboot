@@ -37,7 +37,12 @@ describe("devCrudService", () => {
       expect.objectContaining({
         id: expect.any(String),
         ...payload,
+        createdAt: expect.stringMatching(/^2026-05-07T10:00:00\.\d{3}Z$/),
+        updatedAt: expect.stringMatching(/^2026-05-07T10:00:00\.\d{3}Z$/),
       }),
+    );
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]")).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: created.id, code: payload.code })]),
     );
 
     const listRequest = devCrudService.list();
@@ -68,8 +73,10 @@ describe("devCrudService", () => {
         name: "Boost Training Center Bali",
         status: "INACTIVE",
         activeStudents: 64,
+        updatedAt: expect.stringMatching(/^2026-05-07T10:05:00\.\d{3}Z$/),
       }),
     );
+    expect(updated.createdAt).toBe(created.createdAt);
 
     const getByIdRequest = devCrudService.getById(created.id);
     await resolveServiceDelay();
@@ -92,5 +99,8 @@ describe("devCrudService", () => {
     const items = await listRequest;
 
     expect(items).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: created.id })]));
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]")).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: created.id })]),
+    );
   });
 });
