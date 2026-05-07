@@ -48,6 +48,26 @@ describe("Sidebar", () => {
     expect(screen.getByText("Students")).toBeInTheDocument();
   });
 
+  it("does not add dev tools from the local fallback menu", () => {
+    useAuthStore.setState({ menu: [] });
+    render(<Sidebar />);
+
+    expect(screen.queryByRole("link", { name: /dev tools/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /developer tools/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "/dev" })).not.toBeInTheDocument();
+  });
+
+  it("renders dev tools naturally when the backend menu provides it", () => {
+    const payload: MenuItemResponse[] = [
+      { id: "backend-dev", label: "Dev Tools", path: "/dev", visible: true, children: [] },
+    ];
+
+    useAuthStore.setState({ menu: payload });
+    render(<Sidebar />);
+
+    expect(screen.getByRole("link", { name: "Dev Tools" })).toHaveAttribute("href", "/dev");
+  });
+
   it("writes observability log when fallback is active", () => {
     const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
 
