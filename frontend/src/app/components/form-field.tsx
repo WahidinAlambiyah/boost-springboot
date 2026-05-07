@@ -4,8 +4,9 @@ export interface FormFieldProps {
   label: ReactNode;
   error?: string;
   required?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
   htmlFor?: string;
+  id?: string;
   className?: string;
 }
 
@@ -15,11 +16,14 @@ export function FormField({
   required = false,
   children,
   htmlFor,
+  id,
   className,
 }: FormFieldProps) {
+  const resolvedHtmlFor = htmlFor ?? id;
+
   return (
     <div className={["space-y-1", className].filter(Boolean).join(" ")}>
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-zinc-800">
+      <label htmlFor={resolvedHtmlFor} className="block text-sm font-medium text-zinc-800">
         {label}
         {required ? (
           <span className="ml-1 text-red-600" aria-hidden="true">
