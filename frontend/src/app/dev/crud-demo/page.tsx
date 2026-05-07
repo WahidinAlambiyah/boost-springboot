@@ -14,7 +14,12 @@ import DevCrudForm from "@/features/dev-crud/components/dev-crud-form";
 import DevCrudTable from "@/features/dev-crud/components/dev-crud-table";
 import type { DevCrudFormValues } from "@/features/dev-crud/dev-crud.schema";
 import { devCrudService } from "@/features/dev-crud/dev-crud.service";
-import { DEV_TOOLS_WRITE_PERMISSIONS, type TrainingCenterDemo } from "@/features/dev-crud/dev-crud.types";
+import {
+  DEV_TOOLS_WRITE_PERMISSIONS,
+  TRAINING_CENTER_DEMO_STATUSES,
+  type TrainingCenterDemo,
+  type TrainingCenterDemoStatus,
+} from "@/features/dev-crud/dev-crud.types";
 import { canAny } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { useAuthStore } from "@/store/auth";
@@ -25,13 +30,17 @@ export default function DevCrudDemoPage() {
   const canWrite = useMemo(() => canAny(authorities, [...DEV_TOOLS_WRITE_PERMISSIONS]), [authorities]);
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TrainingCenterDemoStatus | "ALL">("ALL");
   const [selected, setSelected] = useState<TrainingCenterDemo | null>(null);
   const [formVersion, setFormVersion] = useState(0);
   const [mutationError, setMutationError] = useState<string>();
 
   const trainingCentersQuery = useQuery({
-    queryKey: QUERY_KEYS.devCrudTrainingCenters.filter({ search: search || undefined }),
-    queryFn: () => devCrudService.list({ search }),
+    queryKey: QUERY_KEYS.devCrudTrainingCenters.filter({
+      search: search || undefined,
+      status: statusFilter === "ALL" ? undefined : statusFilter,
+    }),
+    queryFn: () => devCrudService.list({ search, status: statusFilter }),
   });
 
   const resetFormState = () => {
@@ -114,13 +123,29 @@ export default function DevCrudDemoPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <SectionCard title="Training Center Mock" description="Tabel memakai React Query dan service localStorage agar aman untuk eksplorasi developer.">
-          <SearchInput
-            className="mb-4"
-            label="Filter training center demo"
-            placeholder="Filter code, name, atau location..."
-            value={search}
-            onChange={setSearch}
-          />
+          <div className="mb-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+            <SearchInput
+              label="Filter training center demo"
+              placeholder="Filter code, name, atau location..."
+              value={search}
+              onChange={setSearch}
+            />
+            <label className="space-y-1 text-sm font-medium text-zinc-700">
+              <span>Status</span>
+              <select
+                className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as TrainingCenterDemoStatus | "ALL")}
+              >
+                <option value="ALL">Semua status</option>
+                {TRAINING_CENTER_DEMO_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <DevCrudTable
             items={trainingCentersQuery.data ?? []}
             canWrite={canWrite}
