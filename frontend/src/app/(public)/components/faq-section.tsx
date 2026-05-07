@@ -1,9 +1,9 @@
-import { faqGroups } from "@/content/public/faqs";
+import { faqGroups, faqSectionContent } from "@/content/public/faqs";
 
 export default function FaqSection() {
   return (
     <section id="faq" className="layout-container section-space">
-      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">Pertanyaan Umum Orang Tua</h2>
+      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">{faqSectionContent.title}</h2>
       <div className="mt-8 space-y-8">
         {faqGroups.map((group) => (
           <div key={group.id}>

@@ -1,6 +1,6 @@
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
 import { pushbikeFaqs } from "@/content/public/faqs";
-import { programDetailPageContent, pushbikeProgramContent } from "@/content/public/programs";
+import { programDetailPageContent, pushbikeProgramContent, pushbikeScheduleTableHeaders } from "@/content/public/programs";
 
 export default function PushbikeProgramPage() {
   return (
@@ -45,10 +45,10 @@ export default function PushbikeProgramPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-zinc-50 text-left text-zinc-600">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Hari</th>
-                  <th className="px-4 py-3 font-semibold">Jam</th>
-                  <th className="px-4 py-3 font-semibold">Level</th>
-                  <th className="px-4 py-3 font-semibold">Lokasi</th>
+                  <th className="px-4 py-3 font-semibold">{pushbikeScheduleTableHeaders.day}</th>
+                  <th className="px-4 py-3 font-semibold">{pushbikeScheduleTableHeaders.time}</th>
+                  <th className="px-4 py-3 font-semibold">{pushbikeScheduleTableHeaders.level}</th>
+                  <th className="px-4 py-3 font-semibold">{pushbikeScheduleTableHeaders.location}</th>
                 </tr>
               </thead>
               <tbody>

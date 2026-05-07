@@ -11,6 +11,15 @@ export const eventsPageContent = {
   ctaHref: "/register",
 } as const;
 
+export const eventTableHeaders = {
+  title: "Title",
+  date: "Date",
+  location: "Location",
+  ageCategory: "Age Category",
+  quota: "Quota",
+  status: "Status",
+} as const;
+
 export type EventStatus = "mendatang" | "selesai";
 
 export type EventItem = {

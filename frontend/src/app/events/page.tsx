@@ -1,5 +1,5 @@
 import PublicPageLayout from "@/app/(public)/components/public-page-layout";
-import { eventsPageContent, groupedEvents, type EventItem } from "@/content/public/events";
+import { eventTableHeaders, eventsPageContent, groupedEvents, type EventItem } from "@/content/public/events";
 
 function EventList({ title, items }: { title: string; items: EventItem[] }) {
   return (
@@ -9,12 +9,12 @@ function EventList({ title, items }: { title: string; items: EventItem[] }) {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-zinc-100 text-zinc-700">
             <tr>
-              <th className="px-4 py-3 font-semibold">Title</th>
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 font-semibold">Location</th>
-              <th className="px-4 py-3 font-semibold">Age Category</th>
-              <th className="px-4 py-3 font-semibold">Quota</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.title}</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.date}</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.location}</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.ageCategory}</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.quota}</th>
+              <th className="px-4 py-3 font-semibold">{eventTableHeaders.status}</th>
             </tr>
           </thead>
           <tbody>

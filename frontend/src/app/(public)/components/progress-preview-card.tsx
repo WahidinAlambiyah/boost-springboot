@@ -1,3 +1,5 @@
+import { progressPreviewLabels } from "@/content/public/hero";
+
 type ProgressPreviewCardProps = {
   studentName: string;
   level: string;
@@ -19,21 +21,21 @@ export default function ProgressPreviewCard({
     <article className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-zinc-900">{studentName}</p>
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Level {level}</span>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">{progressPreviewLabels.levelPrefix} {level}</span>
       </div>
       <div className="mt-4 space-y-2 text-sm text-zinc-700">
         <p>
-          <span className="font-semibold">Balance:</span> {balance}
+          <span className="font-semibold">{progressPreviewLabels.balance}:</span> {balance}
         </p>
         <p>
-          <span className="font-semibold">Braking:</span> {braking}
+          <span className="font-semibold">{progressPreviewLabels.braking}:</span> {braking}
         </p>
         <p>
-          <span className="font-semibold">Confidence:</span> {confidence}
+          <span className="font-semibold">{progressPreviewLabels.confidence}:</span> {confidence}
         </p>
       </div>
       <p className="mt-4 text-sm leading-6 text-zinc-600">
-        <span className="font-semibold text-zinc-800">Catatan coach:</span> {coachNote}
+        <span className="font-semibold text-zinc-800">{progressPreviewLabels.coachNote}:</span> {coachNote}
       </p>
     </article>
   );
