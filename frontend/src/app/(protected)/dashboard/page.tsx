@@ -20,6 +20,12 @@ const moduleLinks: ModuleLink[] = [
   { label: "Attendance", href: "/attendance", permissions: ["ATTENDANCE_READ", "ATTENDANCE_MARK"] },
   { label: "Billing", href: "/billing", permissions: ["BILLING_READ", "BILLING_WRITE"] },
   { label: "Notification", href: "/notification", permissions: ["NOTIFICATION_READ", "NOTIFICATION_WRITE"] },
+  {
+    label: "Developer Tools",
+    href: "/dev",
+    // TODO: remove ROLE_READ/USER_READ fallback when DEV_TOOLS_READ is available from backend.
+    permissions: ["DEV_TOOLS_READ", "ROLE_READ", "USER_READ"],
+  },
 ];
 
 export default function DashboardPage() {
