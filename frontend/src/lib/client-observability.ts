@@ -33,7 +33,6 @@ const sendPayload = (payload: ObservabilityPayload) => {
   const endpoint = getRuntimeLogEndpoint();
 
   if (!endpoint) {
-    console.warn("[runtime-log] endpoint is not configured", payload);
     return;
   }
 
