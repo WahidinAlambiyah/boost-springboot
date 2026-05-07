@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test tests/e2e/auth-smoke.spec.ts"
+    "test:e2e": "playwright test tests/e2e/*.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

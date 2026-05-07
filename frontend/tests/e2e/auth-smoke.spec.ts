@@ -53,6 +53,23 @@ test("smoke: login -> open modules -> logout", async ({ page }) => {
     });
   });
 
+  await page.route("**/api/me/menu", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: 200,
+        message: "ok",
+        data: [
+          { id: "dashboard", label: "Dashboard", path: "/dashboard", visible: true, children: [] },
+          { id: "catalog", label: "Catalog", path: "/catalog", visible: true, children: [] },
+          { id: "enrollment", label: "Enrollment", path: "/enrollment", visible: true, children: [] },
+          { id: "attendance", label: "Attendance", path: "/attendance", visible: true, children: [] },
+        ],
+      }),
+    });
+  });
+
   await page.route("**/api/catalog", async (route) => {
     await route.fulfill({
       status: 200,
@@ -66,6 +83,18 @@ test("smoke: login -> open modules -> logout", async ({ page }) => {
   });
 
   await page.route("**/api/enrollment", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: 200,
+        message: "ok",
+        data: [],
+      }),
+    });
+  });
+
+  await page.route("**/api/class-sessions", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -117,7 +146,7 @@ test("smoke: login -> open modules -> logout", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Enrollment Module" })).toBeVisible();
 
   await page.goto("/attendance");
-  await expect(page.getByRole("heading", { name: "Attendance Module" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Attendance per Class Session" })).toBeVisible();
 
   await page.getByRole("button", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/login$/);
