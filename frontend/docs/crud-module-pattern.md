@@ -1,142 +1,148 @@
 # CRUD Module Pattern
 
-## Catatan Scope Dokumentasi
+Panduan ini adalah standar membuat modul CRUD di frontend. Tujuannya agar struktur file, kontrak data, validasi, React Query, tabel, dan permission konsisten di semua fitur admin/protected.
 
-Panduan ini hanya menjelaskan pola implementasi untuk developer dan tidak mengubah runtime aplikasi.
+## Struktur folder module CRUD
 
-Panduan ini mendefinisikan pola standar untuk membuat modul CRUD di frontend. Contoh memakai struktur `src/features/*`, React Query, React Hook Form, Zod, dan komponen reusable yang sudah tersedia di `frontend/src/app/components/*`.
-
-## Struktur Folder Modul
-
-Gunakan satu folder per domain modul. Ganti `{module-name}`, `{module}`, dan `{route}` sesuai nama fitur.
+Gunakan satu folder domain di `src/features/{module-name}` dan satu route protected di `src/app/(protected)/{route}`.
 
 ```text
-src/features/{module-name}/{module}.types.ts
-src/features/{module-name}/{module}.schema.ts
-src/features/{module-name}/{module}.service.ts
-src/features/{module-name}/components/{module}-form.tsx
-src/features/{module-name}/components/{module}-table.tsx
+src/features/{module-name}/
+├── {module}.types.ts
+├── {module}.schema.ts
+├── {module}.service.ts
+└── components/
+    ├── {module}-form.tsx
+    └── {module}-table.tsx
+
 src/app/(protected)/{route}/page.tsx
 ```
 
-Contoh mapping untuk modul `training-centers`:
+Contoh untuk modul `training-centers`:
 
 ```text
-src/features/training-centers/training-center.types.ts
-src/features/training-centers/training-center.schema.ts
-src/features/training-centers/training-center.service.ts
-src/features/training-centers/components/training-center-form.tsx
-src/features/training-centers/components/training-center-table.tsx
+src/features/training-centers/
+├── training-center.types.ts
+├── training-center.schema.ts
+├── training-center.service.ts
+└── components/
+    ├── training-center-form.tsx
+    └── training-center-table.tsx
+
 src/app/(protected)/training-centers/page.tsx
 ```
 
-## Contoh Types
+Aturan penempatan:
 
-Definisikan tipe response, payload create/update, dan parameter list di file `{module}.types.ts`. Gunakan nama domain yang eksplisit agar mudah dibaca di komponen dan service.
+- `*.types.ts` berisi tipe response, request, enum/union, dan filter list.
+- `*.schema.ts` berisi Zod schema dan type form dari schema.
+- `*.service.ts` menjadi satu pintu akses data ke API, adapter, atau mock.
+- `components/*-form.tsx` fokus pada input form dan validasi.
+- `components/*-table.tsx` fokus pada rendering list, status, dan action row.
+- `page.tsx` menjadi orchestration layer untuk query, mutation, permission, search/filter, selected row, dan layout.
+
+## Contoh types
+
+Buat tipe yang eksplisit untuk domain modul. Hindari tipe generik seperti `any`, `Data`, atau `Payload` tanpa konteks domain.
 
 ```ts
-export const ENTITY_STATUSES = ["ACTIVE", "INACTIVE"] as const;
+export const TRAINING_CENTER_STATUSES = ["ACTIVE", "INACTIVE"] as const;
 
-export type EntityStatus = (typeof ENTITY_STATUSES)[number];
+export type TrainingCenterStatus = (typeof TRAINING_CENTER_STATUSES)[number];
 
-export interface EntityResponse {
+export interface TrainingCenterResponse {
   id: string;
   code: string;
   name: string;
-  description?: string;
-  status: EntityStatus;
+  address: string;
+  phone?: string;
+  status: TrainingCenterStatus;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateRequest {
+export interface CreateTrainingCenterRequest {
   code: string;
   name: string;
-  description?: string;
-  status: EntityStatus;
+  address: string;
+  phone?: string;
+  status: TrainingCenterStatus;
 }
 
-export type UpdateRequest = Partial<CreateRequest>;
+export type UpdateTrainingCenterRequest = Partial<CreateTrainingCenterRequest>;
 
-export interface ListParams {
+export interface TrainingCenterListParams {
   search?: string;
-  status?: EntityStatus | "ALL";
+  status?: TrainingCenterStatus | "ALL";
 }
 ```
 
-Catatan:
+Checklist types:
 
-- `EntityResponse` merepresentasikan data dari API atau adapter service.
-- `CreateRequest` berisi field wajib untuk create.
-- `UpdateRequest` boleh `Partial<CreateRequest>` jika endpoint update mendukung partial update.
-- `ListParams` dipakai sebagai input query dan bagian dari `QUERY_KEYS`.
+- Response mencerminkan data dari service/API setelah normalisasi.
+- Create request hanya memuat field yang dikirim saat create.
+- Update request memakai tipe terpisah jika aturan update berbeda dari create.
+- List params stabil karena dipakai sebagai bagian dari React Query key.
 
-## Contoh Schema
+## Contoh service
 
-Definisikan schema validasi di file `{module}.schema.ts`. Pola yang dipakai frontend adalah Zod sebagai resolver React Hook Form.
-
-```ts
-import { z } from "zod";
-
-import { ENTITY_STATUSES } from "./entity.types";
-
-export const entityFormSchema = z.object({
-  code: z.string().trim().min(2, "Kode minimal 2 karakter").max(32, "Kode maksimal 32 karakter"),
-  name: z.string().trim().min(3, "Nama minimal 3 karakter"),
-  description: z.string().trim().optional().or(z.literal("")),
-  status: z.enum(ENTITY_STATUSES, { message: "Status wajib dipilih" }),
-});
-
-export type EntityFormInputValues = z.input<typeof entityFormSchema>;
-export type EntityFormValues = z.output<typeof entityFormSchema>;
-```
-
-## Contoh Service
-
-Service ditempatkan di `{module}.service.ts` dan menjadi satu pintu akses data untuk page/component. Jika memakai API backend, panggil wrapper HTTP yang sudah dipakai modul terkait; jika memakai mock lokal, tetap pertahankan kontrak method yang sama.
+Service harus menyembunyikan detail transport dari UI. Page dan component cukup memanggil method service.
 
 ```ts
-import type { CreateRequest, EntityResponse, ListParams, UpdateRequest } from "./entity.types";
+import type {
+  CreateTrainingCenterRequest,
+  TrainingCenterListParams,
+  TrainingCenterResponse,
+  UpdateTrainingCenterRequest,
+} from "./training-center.types";
 
-export const entityService = {
-  async list(params?: ListParams): Promise<EntityResponse[]> {
-    // return httpClient.get("/entities", { params });
-    throw new Error("Implement entityService.list");
+export const trainingCenterService = {
+  async list(params?: TrainingCenterListParams): Promise<TrainingCenterResponse[]> {
+    // return apiClient.get("/training-centers", { params });
+    throw new Error(`Implement trainingCenterService.list with ${JSON.stringify(params ?? {})}`);
   },
 
-  async getById(id: string): Promise<EntityResponse> {
-    // return httpClient.get(`/entities/${id}`);
-    throw new Error(`Implement entityService.getById for ${id}`);
+  async getById(id: string): Promise<TrainingCenterResponse> {
+    // return apiClient.get(`/training-centers/${id}`);
+    throw new Error(`Implement trainingCenterService.getById for ${id}`);
   },
 
-  async create(payload: CreateRequest): Promise<EntityResponse> {
-    // return httpClient.post("/entities", payload);
-    throw new Error(`Implement entityService.create for ${payload.code}`);
+  async create(payload: CreateTrainingCenterRequest): Promise<TrainingCenterResponse> {
+    // return apiClient.post("/training-centers", payload);
+    throw new Error(`Implement trainingCenterService.create for ${payload.code}`);
   },
 
-  async update(id: string, payload: UpdateRequest): Promise<EntityResponse> {
-    // return httpClient.patch(`/entities/${id}`, payload);
-    throw new Error(`Implement entityService.update for ${id}`);
+  async update(id: string, payload: UpdateTrainingCenterRequest): Promise<TrainingCenterResponse> {
+    // return apiClient.patch(`/training-centers/${id}`, payload);
+    throw new Error(`Implement trainingCenterService.update for ${id} with ${JSON.stringify(payload)}`);
   },
 
   async remove(id: string): Promise<void> {
-    // return httpClient.delete(`/entities/${id}`);
-    throw new Error(`Implement entityService.remove for ${id}`);
+    // return apiClient.delete(`/training-centers/${id}`);
+    throw new Error(`Implement trainingCenterService.remove for ${id}`);
   },
 };
 ```
 
-Method minimal yang harus tersedia:
+Standar method minimal:
 
-- `list`
-- `getById`
-- `create`
-- `update`
-- `remove`
+- `list(params?)`
+- `getById(id)` jika fitur membutuhkan detail/edit by id
+- `create(payload)`
+- `update(id, payload)`
+- `remove(id)`
+
+Jika backend belum tersedia, service boleh memakai mock lokal, tetapi kontrak method dan tipe return tetap sama agar mudah diganti ke API sungguhan.
 
 ## Contoh React Query
 
-Page protected menjadi orchestration layer untuk query, mutation, permission, dan state UI seperti search/selected row. Gunakan `useQuery` untuk list, `useMutation` untuk create/update/delete, lalu panggil `queryClient.invalidateQueries(...)` setelah mutation sukses.
+Tambahkan key module ke `QUERY_KEYS` terlebih dahulu:
+
+```ts
+trainingCenters: createEntityKeys<{ search?: string; status?: string }>("trainingCenters"),
+```
+
+Contoh orchestration di `src/app/(protected)/training-centers/page.tsx`:
 
 ```tsx
 "use client";
@@ -150,70 +156,77 @@ import { PageHeader } from "@/app/components/page-header";
 import RequirePermission from "@/app/components/require-permission";
 import { SearchInput } from "@/app/components/search-input";
 import { SectionCard } from "@/app/components/section-card";
-import EntityForm from "@/features/entities/components/entity-form";
-import EntityTable from "@/features/entities/components/entity-table";
-import type { EntityFormValues } from "@/features/entities/entity.schema";
-import { entityService } from "@/features/entities/entity.service";
-import type { EntityResponse } from "@/features/entities/entity.types";
+import TrainingCenterForm from "@/features/training-centers/components/training-center-form";
+import TrainingCenterTable from "@/features/training-centers/components/training-center-table";
+import type { TrainingCenterFormValues } from "@/features/training-centers/training-center.schema";
+import { trainingCenterService } from "@/features/training-centers/training-center.service";
+import type { TrainingCenterResponse } from "@/features/training-centers/training-center.types";
 import { can } from "@/lib/permissions";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { useAuthStore } from "@/store/auth";
 
-export default function EntitiesPage() {
+export default function TrainingCentersPage() {
   const queryClient = useQueryClient();
   const authorities = useAuthStore((state) => state.authorities);
-  const canWrite = useMemo(() => can(authorities, "MODULE_WRITE"), [authorities]);
-
+  const canWrite = can(authorities, "TRAINING_CENTER_WRITE");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<EntityResponse | null>(null);
-  const [formVersion, setFormVersion] = useState(0);
+  const [selected, setSelected] = useState<TrainingCenterResponse | null>(null);
   const [mutationError, setMutationError] = useState<string>();
 
-  const entitiesQuery = useQuery({
-    queryKey: QUERY_KEYS.entities.filter({ search: search || undefined }),
-    queryFn: () => entityService.list({ search }),
+  const listQuery = useQuery({
+    queryKey: QUERY_KEYS.trainingCenters.filter({ search: search || undefined }),
+    queryFn: () => trainingCenterService.list({ search: search || undefined }),
   });
 
-  const resetFormState = () => {
-    setSelected(null);
-    setFormVersion((current) => current + 1);
-  };
-
-  const invalidateEntities = async () => {
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities.all });
+  const invalidateTrainingCenters = async () => {
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.trainingCenters.all });
   };
 
   const createMutation = useMutation({
-    mutationFn: (payload: EntityFormValues) => entityService.create(payload),
+    mutationFn: trainingCenterService.create,
     onMutate: () => setMutationError(undefined),
     onSuccess: async () => {
-      resetFormState();
-      await invalidateEntities();
+      setSelected(null);
+      await invalidateTrainingCenters();
     },
-    onError: () => setMutationError("Data gagal ditambahkan."),
+    onError: () => setMutationError("Data gagal dibuat."),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: EntityFormValues }) => entityService.update(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: TrainingCenterFormValues }) =>
+      trainingCenterService.update(id, payload),
     onMutate: () => setMutationError(undefined),
     onSuccess: async () => {
-      resetFormState();
-      await invalidateEntities();
+      setSelected(null);
+      await invalidateTrainingCenters();
     },
     onError: () => setMutationError("Data gagal diperbarui."),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => entityService.remove(id),
+    mutationFn: (id: string) => trainingCenterService.remove(id),
     onMutate: () => setMutationError(undefined),
-    onSuccess: async () => {
-      resetFormState();
-      await invalidateEntities();
-    },
+    onSuccess: invalidateTrainingCenters,
     onError: () => setMutationError("Data gagal dihapus."),
   });
 
-  const handleSubmit = (values: EntityFormValues) => {
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  const formInitialValues = useMemo(
+    () =>
+      selected
+        ? {
+            code: selected.code,
+            name: selected.name,
+            address: selected.address,
+            phone: selected.phone ?? "",
+            status: selected.status,
+          }
+        : undefined,
+    [selected],
+  );
+
+  const handleSubmit = (values: TrainingCenterFormValues) => {
     if (selected) {
       updateMutation.mutate({ id: selected.id, payload: values });
       return;
@@ -222,60 +235,76 @@ export default function EntitiesPage() {
     createMutation.mutate(values);
   };
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
-  const queryError = entitiesQuery.isError ? "Gagal memuat data." : undefined;
-
   return (
-    <RequirePermission permissions="MODULE_READ">
+    <RequirePermission permissions="TRAINING_CENTER_READ">
       <AppShell>
-        <PageHeader title="Entities" description="Kelola data entity." />
+        <PageHeader
+          title="Training Centers"
+          description="Kelola lokasi training center yang tersedia."
+        />
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <SectionCard title="Daftar Entity" description="Filter dan kelola data entity.">
-            <SearchInput
-              className="mb-4"
-              label="Cari entity"
-              placeholder="Filter code atau name..."
-              value={search}
-              onChange={setSearch}
-            />
-            <EntityTable
-              items={entitiesQuery.data ?? []}
-              canWrite={canWrite}
-              error={queryError}
-              isLoading={entitiesQuery.isLoading}
-              onEdit={setSelected}
-              onDelete={(item) => deleteMutation.mutate(item.id)}
-            />
-          </SectionCard>
+        {mutationError ? <ErrorMessage message={mutationError} /> : null}
 
-          <SectionCard title={selected ? "Edit Entity" : "Tambah Entity"} description="Form memakai React Hook Form dan Zod.">
-            {mutationError ? <ErrorMessage className="mb-4" message={mutationError} /> : null}
-            <EntityForm
-              key={`entity-form-${selected?.id ?? "new"}-${formVersion}`}
-              initialData={selected}
-              canWrite={canWrite}
+        <SectionCard title="Filter" description="Cari data berdasarkan kode atau nama.">
+          <SearchInput value={search} onChange={setSearch} placeholder="Cari training center..." />
+        </SectionCard>
+
+        <SectionCard title={selected ? "Edit training center" : "Tambah training center"}>
+          <RequirePermission permissions="TRAINING_CENTER_WRITE">
+            <TrainingCenterForm
+              initialValues={formInitialValues}
               isSubmitting={isSubmitting}
-              onCancelEdit={() => setSelected(null)}
+              onCancel={() => setSelected(null)}
               onSubmit={handleSubmit}
             />
-          </SectionCard>
-        </div>
+          </RequirePermission>
+        </SectionCard>
+
+        <SectionCard title="Daftar training center">
+          <TrainingCenterTable
+            data={listQuery.data ?? []}
+            error={listQuery.error ? "Data gagal dimuat." : undefined}
+            isLoading={listQuery.isLoading}
+            canWrite={canWrite}
+            onDelete={(row) => deleteMutation.mutate(row.id)}
+            onEdit={setSelected}
+          />
+        </SectionCard>
       </AppShell>
     </RequirePermission>
   );
 }
 ```
 
-Pastikan menambahkan key modul ke `QUERY_KEYS`, misalnya:
+Catatan React Query:
+
+- Query key harus mencakup filter yang memengaruhi hasil list.
+- Mutation harus invalidate query list/detail yang terdampak.
+- Jangan panggil service langsung di component table/form kecuali untuk kebutuhan lokal yang sangat spesifik.
+- Simpan error mutation di page agar pesan error tidak tersebar di banyak component.
+
+## Contoh form React Hook Form + Zod
+
+Definisikan schema di `{module}.schema.ts`:
 
 ```ts
-entities: createEntityKeys<{ search?: string; status?: string }>("entities"),
+import { z } from "zod";
+
+import { TRAINING_CENTER_STATUSES } from "./training-center.types";
+
+export const trainingCenterFormSchema = z.object({
+  code: z.string().trim().min(2, "Kode minimal 2 karakter").max(32, "Kode maksimal 32 karakter"),
+  name: z.string().trim().min(3, "Nama minimal 3 karakter"),
+  address: z.string().trim().min(5, "Alamat minimal 5 karakter"),
+  phone: z.string().trim().optional().or(z.literal("")),
+  status: z.enum(TRAINING_CENTER_STATUSES, { message: "Status wajib dipilih" }),
+});
+
+export type TrainingCenterFormInputValues = z.input<typeof trainingCenterFormSchema>;
+export type TrainingCenterFormValues = z.output<typeof trainingCenterFormSchema>;
 ```
 
-## Contoh Form
-
-Form memakai React Hook Form, Zod schema, `FormField`, dan `ErrorMessage`. `ErrorMessage` dipakai untuk error form-level atau submit-level, sedangkan error field ditampilkan melalui prop `error` pada `FormField`.
+Contoh form di `components/training-center-form.tsx`:
 
 ```tsx
 "use client";
@@ -284,253 +313,249 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { ErrorMessage } from "@/app/components/error-message";
-import { FormField } from "@/app/components/form-field";
-import { entityFormSchema, type EntityFormInputValues, type EntityFormValues } from "@/features/entities/entity.schema";
-import { ENTITY_STATUSES, type EntityResponse } from "@/features/entities/entity.types";
+import {
+  trainingCenterFormSchema,
+  type TrainingCenterFormInputValues,
+  type TrainingCenterFormValues,
+} from "../training-center.schema";
 
-interface EntityFormProps {
-  initialData?: EntityResponse | null;
-  canWrite: boolean;
-  isSubmitting?: boolean;
-  submitError?: string;
-  onSubmit: (values: EntityFormValues) => void;
-  onCancelEdit?: () => void;
-}
-
-const defaultValues: EntityFormInputValues = {
+const defaultValues: TrainingCenterFormInputValues = {
   code: "",
   name: "",
-  description: "",
+  address: "",
+  phone: "",
   status: "ACTIVE",
 };
 
-const inputClassName = "w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-100 disabled:text-zinc-500";
+type TrainingCenterFormProps = {
+  initialValues?: TrainingCenterFormInputValues;
+  isSubmitting?: boolean;
+  onCancel?: () => void;
+  onSubmit: (values: TrainingCenterFormValues) => void;
+};
 
-export default function EntityForm({
-  initialData,
-  canWrite,
+export default function TrainingCenterForm({
+  initialValues,
   isSubmitting = false,
-  submitError,
+  onCancel,
   onSubmit,
-  onCancelEdit,
-}: EntityFormProps) {
-  const form = useForm<EntityFormInputValues, unknown, EntityFormValues>({
-    resolver: zodResolver(entityFormSchema),
+}: TrainingCenterFormProps) {
+  const form = useForm<TrainingCenterFormInputValues, unknown, TrainingCenterFormValues>({
+    resolver: zodResolver(trainingCenterFormSchema),
     defaultValues,
   });
 
   useEffect(() => {
-    form.reset(
-      initialData
-        ? {
-            code: initialData.code,
-            name: initialData.name,
-            description: initialData.description ?? "",
-            status: initialData.status,
-          }
-        : defaultValues,
-    );
-  }, [form, initialData]);
+    form.reset(initialValues ?? defaultValues);
+  }, [form, initialValues]);
 
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-      {submitError ? <ErrorMessage message={submitError} /> : null}
+    <form className="grid gap-4 md:grid-cols-2" onSubmit={form.handleSubmit(onSubmit)}>
+      <label className="grid gap-2 text-sm font-medium">
+        Kode
+        <input className="rounded border px-3 py-2" {...form.register("code")} />
+        {form.formState.errors.code ? (
+          <span className="text-sm text-red-600">{form.formState.errors.code.message}</span>
+        ) : null}
+      </label>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FormField label="Kode" required error={form.formState.errors.code?.message} htmlFor="entity-code">
-          <input
-            id="entity-code"
-            className={inputClassName}
-            disabled={!canWrite || isSubmitting}
-            placeholder="ENT-001"
-            {...form.register("code")}
-          />
-        </FormField>
+      <label className="grid gap-2 text-sm font-medium">
+        Nama
+        <input className="rounded border px-3 py-2" {...form.register("name")} />
+        {form.formState.errors.name ? (
+          <span className="text-sm text-red-600">{form.formState.errors.name.message}</span>
+        ) : null}
+      </label>
 
-        <FormField label="Nama" required error={form.formState.errors.name?.message} htmlFor="entity-name">
-          <input
-            id="entity-name"
-            className={inputClassName}
-            disabled={!canWrite || isSubmitting}
-            placeholder="Entity utama"
-            {...form.register("name")}
-          />
-        </FormField>
+      <label className="grid gap-2 text-sm font-medium md:col-span-2">
+        Alamat
+        <textarea className="rounded border px-3 py-2" rows={3} {...form.register("address")} />
+        {form.formState.errors.address ? (
+          <span className="text-sm text-red-600">{form.formState.errors.address.message}</span>
+        ) : null}
+      </label>
 
-        <FormField label="Deskripsi" error={form.formState.errors.description?.message} htmlFor="entity-description">
-          <textarea
-            id="entity-description"
-            className={inputClassName}
-            disabled={!canWrite || isSubmitting}
-            placeholder="Deskripsi singkat"
-            {...form.register("description")}
-          />
-        </FormField>
+      <label className="grid gap-2 text-sm font-medium">
+        Telepon
+        <input className="rounded border px-3 py-2" {...form.register("phone")} />
+      </label>
 
-        <FormField label="Status" required error={form.formState.errors.status?.message} htmlFor="entity-status">
-          <select id="entity-status" className={inputClassName} disabled={!canWrite || isSubmitting} {...form.register("status")}>
-            {ENTITY_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </FormField>
-      </div>
+      <label className="grid gap-2 text-sm font-medium">
+        Status
+        <select className="rounded border px-3 py-2" {...form.register("status")}>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </label>
 
-      {canWrite ? (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="submit"
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Menyimpan..." : initialData ? "Update entity" : "Tambah entity"}
+      <div className="flex gap-2 md:col-span-2">
+        <button className="rounded bg-zinc-900 px-4 py-2 text-white" disabled={isSubmitting} type="submit">
+          {isSubmitting ? "Menyimpan..." : "Simpan"}
+        </button>
+        {onCancel ? (
+          <button className="rounded border px-4 py-2" type="button" onClick={onCancel}>
+            Batal
           </button>
-          {initialData && onCancelEdit ? (
-            <button
-              type="button"
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
-              onClick={onCancelEdit}
-              disabled={isSubmitting}
-            >
-              Batal edit
-            </button>
-          ) : null}
-        </div>
-      ) : (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          Mode read-only. Anda tidak memiliki permission untuk mengubah data.
-        </p>
-      )}
+        ) : null}
+      </div>
     </form>
   );
 }
 ```
 
-## Contoh Table
+Aturan form:
 
-Table memakai `DataTable` agar loading, empty, dan error state konsisten. Gunakan `StatusBadge` untuk status dan `ConfirmActionButton` untuk delete action yang butuh konfirmasi.
+- Gunakan `zodResolver(schema)` sebagai resolver React Hook Form.
+- Pisahkan `InputValues` dan `Values` jika schema melakukan transform/coerce.
+- Reset form saat `initialValues` berubah agar mode edit menampilkan data terpilih.
+- Disable tombol submit saat mutation pending.
+
+## Contoh table dengan DataTable
+
+Gunakan `DataTable` agar loading, empty, error, horizontal scroll, dan action column konsisten.
 
 ```tsx
 "use client";
 
-import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { StatusBadge } from "@/app/components/status-badge";
-import type { EntityResponse, EntityStatus } from "@/features/entities/entity.types";
 
-interface EntityTableProps {
-  items: EntityResponse[];
-  canWrite?: boolean;
-  isLoading?: boolean;
+import type { TrainingCenterResponse } from "../training-center.types";
+
+type TrainingCenterTableProps = {
+  data: TrainingCenterResponse[];
   error?: string;
-  onEdit?: (item: EntityResponse) => void;
-  onDelete?: (item: EntityResponse) => void;
-}
-
-const statusTone: Record<EntityStatus, "default" | "success"> = {
-  ACTIVE: "success",
-  INACTIVE: "default",
+  isLoading?: boolean;
+  canWrite?: boolean;
+  onDelete: (row: TrainingCenterResponse) => void;
+  onEdit: (row: TrainingCenterResponse) => void;
 };
 
-export default function EntityTable({
-  items,
-  canWrite = false,
-  isLoading = false,
+const columns: DataTableColumn<TrainingCenterResponse>[] = [
+  {
+    key: "code",
+    header: "Kode",
+    render: (row) => row.code,
+  },
+  {
+    key: "name",
+    header: "Nama",
+    render: (row) => row.name,
+  },
+  {
+    key: "address",
+    header: "Alamat",
+    render: (row) => row.address,
+  },
+  {
+    key: "status",
+    header: "Status",
+    render: (row) => <StatusBadge status={row.status} />,
+  },
+];
+
+export default function TrainingCenterTable({
+  data,
   error,
-  onEdit,
+  isLoading = false,
+  canWrite = false,
   onDelete,
-}: EntityTableProps) {
-  const columns: DataTableColumn<EntityResponse>[] = [
-    {
-      key: "code",
-      header: "Kode",
-      render: (item) => <span className="font-medium text-zinc-900">{item.code}</span>,
-    },
-    {
-      key: "name",
-      header: "Nama",
-      render: (item) => item.name,
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (item) => <StatusBadge status={item.status} variant={statusTone[item.status]} />,
-    },
-  ];
-
-  if (canWrite) {
-    columns.push({
-      key: "actions",
-      header: "Aksi",
-      render: (item) => (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
-            onClick={() => onEdit?.(item)}
-          >
-            Edit
-          </button>
-          <ConfirmActionButton
-            className="px-3 py-1 text-xs"
-            confirmMessage={`Entity ${item.name} akan dihapus.`}
-            label="Hapus"
-            onConfirm={() => onDelete?.(item)}
-            variant="danger"
-          />
-        </div>
-      ),
-    });
-  }
-
+  onEdit,
+}: TrainingCenterTableProps) {
   return (
     <DataTable
+      ariaLabel="Daftar training center"
       columns={columns}
-      data={items}
+      data={data}
+      emptyTitle="Belum ada training center"
+      emptyDescription="Tambahkan training center pertama untuk mulai mengelola lokasi."
       error={error}
-      getRowKey={(item) => item.id}
+      getRowKey={(row) => row.id}
       isLoading={isLoading}
-      emptyTitle="Belum ada entity"
-      emptyDescription="Tambahkan data entity baru untuk mulai."
+      actionColumn={
+        canWrite
+          ? {
+              render: (row) => (
+                <div className="flex justify-end gap-2">
+                  <button className="rounded border px-3 py-1" type="button" onClick={() => onEdit(row)}>
+                    Edit
+                  </button>
+                  <button className="rounded border border-red-300 px-3 py-1 text-red-700" type="button" onClick={() => onDelete(row)}>
+                    Hapus
+                  </button>
+                </div>
+              ),
+            }
+          : undefined
+      }
     />
   );
 }
 ```
 
-## Permission
+Aturan table:
 
-Gunakan `RequirePermission` untuk guard page atau blok fitur. Jika user boleh masuk ketika punya salah satu permission, pakai `mode="any"`.
+- Column config ditulis dengan `DataTableColumn<T>[]` agar type-safe.
+- Gunakan `getRowKey` berbasis id stabil.
+- Action edit/delete dikirim dari page melalui callback.
+- Sembunyikan action column jika user tidak memiliki permission write.
+- Untuk delete produksi, gunakan komponen konfirmasi jika tersedia pada modul tersebut.
+
+## Contoh permission
+
+Gunakan `RequirePermission` untuk guard halaman atau section. Gunakan helper `can` untuk kondisi render action.
 
 ```tsx
 import RequirePermission from "@/app/components/require-permission";
+import { can } from "@/lib/permissions";
+import { useAuthStore } from "@/store/auth";
 
-export default function ProtectedModulePage() {
+export default function ExamplePermissionBlock() {
+  const authorities = useAuthStore((state) => state.authorities);
+  const canWrite = can(authorities, "TRAINING_CENTER_WRITE");
+
   return (
-    <RequirePermission permissions={["MODULE_READ", "MODULE_WRITE"]} mode="any">
-      {/* konten modul */}
+    <RequirePermission permissions="TRAINING_CENTER_READ">
+      <RequirePermission permissions="TRAINING_CENTER_WRITE">
+        <button type="button">Tambah data</button>
+      </RequirePermission>
+
+      {canWrite ? <button type="button">Edit row</button> : null}
     </RequirePermission>
   );
 }
 ```
 
-Rekomendasi:
+Jika halaman bisa dibuka oleh salah satu dari beberapa permission, gunakan `mode="any"`:
 
-- Page list biasanya butuh `MODULE_READ`.
-- Tombol create/update/delete dan form submit dicek dengan `MODULE_WRITE`.
-- Jangan hanya menyembunyikan tombol; tetap disable form/action ketika `canWrite` bernilai `false`.
+```tsx
+<RequirePermission permissions={["TRAINING_CENTER_READ", "TRAINING_CENTER_WRITE"]} mode="any">
+  <TrainingCentersPageContent />
+</RequirePermission>
+```
 
-## Checklist Sebelum Merge
+Standar permission:
 
-- [ ] typecheck sukses
-- [ ] lint sukses
-- [ ] build sukses
-- [ ] loading state ada
-- [ ] empty state ada
-- [ ] error state ada
-- [ ] permission dicek
-- [ ] form validation ada
-- [ ] mutation invalidate query
-- [ ] mobile responsive
+- Page list/detail minimal diguard dengan permission read.
+- Form create/edit dan action delete diguard dengan permission write.
+- Jangan hanya menyembunyikan tombol; endpoint/backend tetap harus enforce authorization.
+- Nama permission mengikuti authority backend yang tersedia.
+
+## Checklist sebelum merge
+
+Sebelum membuka PR/merge modul CRUD baru, pastikan:
+
+- [ ] Struktur folder mengikuti `src/features/{module-name}` dan route protected.
+- [ ] Types response/request/filter sudah eksplisit dan tidak memakai `any`.
+- [ ] Zod schema mencakup field wajib, format, min/max, dan pesan validasi user-friendly.
+- [ ] Form memakai React Hook Form + `zodResolver` dan reset saat `initialValues` berubah.
+- [ ] Service menjadi satu pintu akses data dan tidak ada call API langsung dari table/form.
+- [ ] `QUERY_KEYS` sudah ditambahkan dan query key memasukkan filter yang memengaruhi list.
+- [ ] Mutation create/update/delete melakukan invalidate query yang terdampak.
+- [ ] Page memakai `RequirePermission` untuk read dan write.
+- [ ] Action table disembunyikan atau disabled untuk user tanpa permission write.
+- [ ] Table memakai `DataTable` dengan loading, error, empty state, dan `getRowKey`.
+- [ ] Delete action memakai konfirmasi jika operasi tidak bisa dibatalkan.
+- [ ] Empty state dan error message jelas dalam Bahasa Indonesia.
+- [ ] Unit/integration/e2e test relevan sudah ditambahkan atau diperbarui jika ada logic baru.
+- [ ] `npm run lint`, `npm run test`, atau check lain yang relevan sudah dijalankan sesuai perubahan.
