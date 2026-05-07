@@ -1,5 +1,9 @@
 # Public Page Pattern
 
+## Catatan Scope Dokumentasi
+
+Panduan ini hanya menjelaskan pola implementasi untuk developer dan tidak mengubah runtime aplikasi.
+
 ## Cara membuat halaman publik baru
 
 Untuk menambahkan halaman publik baru:

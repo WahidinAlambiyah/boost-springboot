@@ -1,5 +1,9 @@
 # CRUD Module Pattern
 
+## Catatan Scope Dokumentasi
+
+Panduan ini hanya menjelaskan pola implementasi untuk developer dan tidak mengubah runtime aplikasi.
+
 Panduan ini mendefinisikan pola standar untuk membuat modul CRUD di frontend. Contoh memakai struktur `src/features/*`, React Query, React Hook Form, Zod, dan komponen reusable yang sudah tersedia di `frontend/src/app/components/*`.
 
 ## Struktur Folder Modul
