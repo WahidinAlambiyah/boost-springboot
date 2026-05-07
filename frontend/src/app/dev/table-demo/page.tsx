@@ -6,7 +6,6 @@ import AppShell from "@/app/components/app-shell";
 import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { DataTable, type DataTableColumn } from "@/app/components/data-table";
 import { PageHeader } from "@/app/components/page-header";
-import RequirePermission from "@/app/components/require-permission";
 import { SectionCard } from "@/app/components/section-card";
 import { StatusBadge } from "@/app/components/status-badge";
 import { devCrudMockItems } from "@/features/dev-crud/dev-crud.mock";
@@ -92,64 +91,61 @@ export default function DevTableDemoPage() {
   );
 
   return (
-    // TODO: replace USER_READ with DEV_TOOLS_READ when dev tools permission is available.
-    <RequirePermission permissions="USER_READ">
-      <AppShell>
-        <PageHeader
-          title="Dev Table Demo"
-          description="Halaman protected untuk memvalidasi state DataTable reusable dengan dummy TrainingCenterDemo."
-        />
+    <AppShell>
+      <PageHeader
+        title="Dev Table Demo"
+        description="Halaman protected untuk memvalidasi state DataTable reusable dengan dummy TrainingCenterDemo."
+      />
 
-        <div className="space-y-6">
-          <SectionCard title="DataTable Normal" description="Contoh tabel standar dengan dummy TrainingCenterDemo.">
-            <DataTable
-              columns={baseColumns}
-              data={devCrudMockItems}
-              getRowKey={(trainingCenter) => trainingCenter.id}
-            />
-          </SectionCard>
+      <div className="space-y-6">
+        <SectionCard title="DataTable Normal" description="Contoh tabel standar dengan dummy TrainingCenterDemo.">
+          <DataTable
+            columns={baseColumns}
+            data={devCrudMockItems}
+            getRowKey={(trainingCenter) => trainingCenter.id}
+          />
+        </SectionCard>
 
-          <SectionCard title="DataTable Loading" description="Contoh skeleton loading saat data masih dimuat.">
-            <DataTable
-              columns={baseColumns}
-              data={[]}
-              getRowKey={(trainingCenter) => trainingCenter.id}
-              isLoading
-            />
-          </SectionCard>
+        <SectionCard title="DataTable Loading" description="Contoh skeleton loading saat data masih dimuat.">
+          <DataTable
+            columns={baseColumns}
+            data={[]}
+            getRowKey={(trainingCenter) => trainingCenter.id}
+            isLoading
+          />
+        </SectionCard>
 
-          <SectionCard title="DataTable Empty" description="Contoh empty state dengan title dan description khusus.">
-            <DataTable
-              columns={baseColumns}
-              data={[]}
-              emptyTitle="Belum ada training center demo"
-              emptyDescription="Data kosong ini disengaja untuk mengecek copy empty state di halaman admin."
-              getRowKey={(trainingCenter) => trainingCenter.id}
-            />
-          </SectionCard>
+        <SectionCard title="DataTable Empty" description="Contoh empty state dengan title dan description khusus.">
+          <DataTable
+            columns={baseColumns}
+            data={[]}
+            emptyTitle="Belum ada training center demo"
+            emptyDescription="Data kosong ini disengaja untuk mengecek copy empty state di halaman admin."
+            getRowKey={(trainingCenter) => trainingCenter.id}
+          />
+        </SectionCard>
 
-          <SectionCard title="DataTable Error" description="Contoh pesan error dummy saat request gagal.">
-            <DataTable
-              columns={baseColumns}
-              data={[]}
-              error={tableErrorMessage}
-              getRowKey={(trainingCenter) => trainingCenter.id}
-            />
-          </SectionCard>
+        <SectionCard title="DataTable Error" description="Contoh pesan error dummy saat request gagal.">
+          <DataTable
+            columns={baseColumns}
+            data={[]}
+            error={tableErrorMessage}
+            getRowKey={(trainingCenter) => trainingCenter.id}
+          />
+        </SectionCard>
 
-          <SectionCard
-            title="DataTable Action Column"
-            description="Contoh kolom action edit/delete memakai render function agar mudah dicopy ke tabel fitur lain."
-            actions={<span className="text-xs text-zinc-500">{lastAction}</span>}
-          >
-            <DataTable
-              columns={actionColumns}
-              data={devCrudMockItems}
-              getRowKey={(trainingCenter) => trainingCenter.id}
-            />
-          </SectionCard>
-        </div>
-      </AppShell>
-    </RequirePermission>
+        <SectionCard
+          title="DataTable Action Column"
+          description="Contoh kolom action edit/delete memakai render function agar mudah dicopy ke tabel fitur lain."
+          actions={<span className="text-xs text-zinc-500">{lastAction}</span>}
+        >
+          <DataTable
+            columns={actionColumns}
+            data={devCrudMockItems}
+            getRowKey={(trainingCenter) => trainingCenter.id}
+          />
+        </SectionCard>
+      </div>
+    </AppShell>
   );
 }

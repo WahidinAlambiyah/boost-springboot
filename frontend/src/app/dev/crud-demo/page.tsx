@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AppShell from "@/app/components/app-shell";
 import { ErrorMessage } from "@/app/components/error-message";
 import { PageHeader } from "@/app/components/page-header";
-import RequirePermission from "@/app/components/require-permission";
 import { SearchInput } from "@/app/components/search-input";
 import { SectionCard } from "@/app/components/section-card";
 import DevCrudForm from "@/features/dev-crud/components/dev-crud-form";
@@ -94,56 +93,53 @@ export default function DevCrudDemoPage() {
   const queryError = trainingCentersQuery.isError ? "Gagal memuat data training center demo." : undefined;
 
   return (
-    // TODO: replace USER_READ with DEV_TOOLS_READ when dev tools permission is available.
-    <RequirePermission permissions="USER_READ">
-      <AppShell>
-        <PageHeader
-          title="Dev CRUD Demo"
-          description="Playground protected untuk mencoba pola create, read, update, dan delete training center berbasis localStorage."
-          actions={
-            <button
-              type="button"
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!canWrite}
-              onClick={handleStartCreate}
-            >
-              Tambah Training Center
-            </button>
-          }
-        />
+    <AppShell>
+      <PageHeader
+        title="Dev CRUD Demo"
+        description="Playground protected untuk mencoba pola create, read, update, dan delete training center berbasis localStorage."
+        actions={
+          <button
+            type="button"
+            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!canWrite}
+            onClick={handleStartCreate}
+          >
+            Tambah Training Center
+          </button>
+        }
+      />
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <SectionCard title="Training Center Mock" description="Tabel memakai React Query dan service localStorage agar aman untuk eksplorasi developer.">
-            <SearchInput
-              className="mb-4"
-              label="Filter training center demo"
-              placeholder="Filter code, name, atau location..."
-              value={search}
-              onChange={setSearch}
-            />
-            <DevCrudTable
-              items={trainingCentersQuery.data ?? []}
-              canWrite={canWrite}
-              error={queryError}
-              isLoading={trainingCentersQuery.isLoading}
-              onEdit={setSelected}
-              onDelete={handleDelete}
-            />
-          </SectionCard>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <SectionCard title="Training Center Mock" description="Tabel memakai React Query dan service localStorage agar aman untuk eksplorasi developer.">
+          <SearchInput
+            className="mb-4"
+            label="Filter training center demo"
+            placeholder="Filter code, name, atau location..."
+            value={search}
+            onChange={setSearch}
+          />
+          <DevCrudTable
+            items={trainingCentersQuery.data ?? []}
+            canWrite={canWrite}
+            error={queryError}
+            isLoading={trainingCentersQuery.isLoading}
+            onEdit={setSelected}
+            onDelete={handleDelete}
+          />
+        </SectionCard>
 
-          <SectionCard title={selected ? "Edit Training Center" : "Tambah Training Center"} description="Form memakai react-hook-form dan zod schema.">
-            {mutationError ? <ErrorMessage className="mb-4" message={mutationError} /> : null}
-            <DevCrudForm
-              key={`dev-crud-form-${selected?.id ?? "new"}-${formVersion}`}
-              initialData={selected}
-              canWrite={canWrite}
-              isSubmitting={isSubmitting}
-              onCancelEdit={() => setSelected(null)}
-              onSubmit={handleSubmit}
-            />
-          </SectionCard>
-        </div>
-      </AppShell>
-    </RequirePermission>
+        <SectionCard title={selected ? "Edit Training Center" : "Tambah Training Center"} description="Form memakai react-hook-form dan zod schema.">
+          {mutationError ? <ErrorMessage className="mb-4" message={mutationError} /> : null}
+          <DevCrudForm
+            key={`dev-crud-form-${selected?.id ?? "new"}-${formVersion}`}
+            initialData={selected}
+            canWrite={canWrite}
+            isSubmitting={isSubmitting}
+            onCancelEdit={() => setSelected(null)}
+            onSubmit={handleSubmit}
+          />
+        </SectionCard>
+      </div>
+    </AppShell>
   );
 }
