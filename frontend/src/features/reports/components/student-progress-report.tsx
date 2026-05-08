@@ -6,153 +6,92 @@ import { useQuery } from "@tanstack/react-query";
 import EmptyState from "@/app/components/empty-state";
 import { ErrorMessage } from "@/app/components/error-message";
 import LoadingSkeleton from "@/app/components/loading-skeleton";
-import { progressReportService } from "@/features/reports/progress-report.service";
-import { studentService } from "@/features/students/student.service";
 import { QUERY_KEYS } from "@/lib/query-keys";
 
-const trendLabel: Record<string, string> = {
-  UP: "Naik",
-  DOWN: "Turun",
-  STABLE: "Stabil",
+import { studentProgressReportService } from "../student-progress-report.service";
+import { AttendanceSummaryCard } from "./attendance-summary-card";
+import { AttendanceTimeline } from "./attendance-timeline";
+import { CoachNotesList } from "./coach-notes-list";
+import { SkillProgressList } from "./skill-progress-list";
+import { StudentProgressFilter, StudentProgressFilterValue } from "./student-progress-filter";
+import { StudentProfileSummaryCard } from "./student-profile-summary-card";
+import { UpcomingSessionsCard } from "./upcoming-sessions-card";
+import { WhatsappSummaryCard } from "./whatsapp-summary-card";
+
+const initialFilter: StudentProgressFilterValue = {
+  studentId: "",
+  from: "",
+  to: "",
 };
 
 export default function StudentProgressReport() {
-  const [studentId, setStudentId] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [filter, setFilter] = useState<StudentProgressFilterValue>(initialFilter);
+  const [submittedFilter, setSubmittedFilter] = useState<StudentProgressFilterValue | null>(null);
 
-  const filters = useMemo(
+  const reportParams = useMemo(
     () => ({
-      studentId,
-      from: from || undefined,
-      to: to || undefined,
+      from: submittedFilter?.from || undefined,
+      to: submittedFilter?.to || undefined,
     }),
-    [from, studentId, to],
+    [submittedFilter],
   );
 
-  const studentsQuery = useQuery({
-    queryKey: QUERY_KEYS.students.list(),
-    queryFn: () => studentService.list(),
+  const progressQuery = useQuery({
+    queryKey: QUERY_KEYS.studentProgressReport.byStudent(submittedFilter?.studentId ?? "", reportParams),
+    queryFn: () => studentProgressReportService.getStudentProgressReport(submittedFilter?.studentId ?? "", reportParams),
+    enabled: Boolean(submittedFilter?.studentId),
     retry: false,
   });
 
-  const progressQuery = useQuery({
-    queryKey: QUERY_KEYS.studentProgressReport.filter(filters),
-    queryFn: () => progressReportService.getStudentProgressReport(filters),
-    enabled: Boolean(studentId),
-  });
+  const handleGenerate = () => {
+    if (!filter.studentId) return;
+
+    if (submittedFilter && JSON.stringify(submittedFilter) === JSON.stringify(filter)) {
+      void progressQuery.refetch();
+      return;
+    }
+
+    setSubmittedFilter(filter);
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 rounded-lg border border-zinc-200 bg-white p-4 md:grid-cols-3">
-        <label className="text-sm">
-          <span className="mb-1 block">Student</span>
-          <select
-            className="w-full rounded-md border border-zinc-300 px-3 py-2"
-            value={studentId}
-            onChange={(event) => setStudentId(event.target.value)}
-          >
-            <option value="">Pilih student</option>
-            {studentsQuery.data?.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.fullName}
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className="space-y-5">
+      <StudentProgressFilter
+        value={filter}
+        onChange={setFilter}
+        onGenerate={handleGenerate}
+        isGenerating={progressQuery.isFetching}
+      />
 
-        <label className="text-sm">
-          <span className="mb-1 block">Dari Tanggal</span>
-          <input
-            type="date"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-          />
-        </label>
-
-        <label className="text-sm">
-          <span className="mb-1 block">Sampai Tanggal</span>
-          <input
-            type="date"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2"
-            value={to}
-            onChange={(event) => setTo(event.target.value)}
-          />
-        </label>
-      </div>
-
-      {studentsQuery.isLoading ? <LoadingSkeleton rows={3} /> : null}
-      {studentsQuery.isError ? <ErrorMessage message="Gagal memuat daftar student." /> : null}
-
-      {!studentId ? (
-        <EmptyState title="Pilih student" description="Pilih student dan periode untuk melihat progress report." />
+      {!submittedFilter ? (
+        <EmptyState
+          title="Pilih student untuk generate report"
+          description="Gunakan filter di atas untuk memilih student dan periode report, lalu klik Generate."
+        />
       ) : null}
 
-      {studentId && progressQuery.isLoading ? <LoadingSkeleton rows={8} /> : null}
-      {studentId && progressQuery.isError ? <ErrorMessage message="Gagal memuat progress report." /> : null}
+      {submittedFilter && progressQuery.isLoading ? <LoadingSkeleton rows={8} /> : null}
 
-      {studentId && progressQuery.data ? (
-        <div className="space-y-4">
-          <section className="rounded-lg border border-zinc-200 bg-white p-4">
-            <h2 className="text-lg font-semibold text-zinc-900">Data Anak</h2>
-            <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-zinc-700 md:grid-cols-2">
-              <p><span className="font-medium">Nama:</span> {progressQuery.data.student.fullName}</p>
-              <p><span className="font-medium">Nickname:</span> {progressQuery.data.student.nickname || "-"}</p>
-              <p><span className="font-medium">Student No:</span> {progressQuery.data.student.studentNo || "-"}</p>
-              <p><span className="font-medium">Status:</span> {progressQuery.data.student.status || "-"}</p>
-            </div>
-          </section>
+      {submittedFilter && progressQuery.isError ? (
+        <ErrorMessage
+          title="Gagal memuat progress report"
+          message="Pastikan Anda memiliki permission REPORT_PROGRESS_READ dan coba generate ulang."
+        />
+      ) : null}
 
-          <section className="rounded-lg border border-zinc-200 bg-white p-4">
-            <h2 className="text-lg font-semibold text-zinc-900">Attendance Summary</h2>
-            <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
-              <div className="rounded border border-zinc-200 p-3">Total: {progressQuery.data.attendanceSummary.total}</div>
-              <div className="rounded border border-zinc-200 p-3">Present: {progressQuery.data.attendanceSummary.present}</div>
-              <div className="rounded border border-zinc-200 p-3">Permit: {progressQuery.data.attendanceSummary.permit}</div>
-              <div className="rounded border border-zinc-200 p-3">Sick: {progressQuery.data.attendanceSummary.sick}</div>
-              <div className="rounded border border-zinc-200 p-3">Absent: {progressQuery.data.attendanceSummary.absent}</div>
-              <div className="rounded border border-zinc-200 p-3">Alpha: {progressQuery.data.attendanceSummary.alpha}</div>
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-zinc-200 bg-white p-4">
-            <h2 className="text-lg font-semibold text-zinc-900">Skill Progress</h2>
-            {progressQuery.data.skillProgress.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-600">Belum ada data skill progress.</p>
-            ) : (
-              <div className="mt-3 overflow-x-auto">
-                <table className="min-w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-200 text-left text-zinc-600">
-                      <th className="px-3 py-2">Skill</th>
-                      <th className="px-3 py-2">Latest</th>
-                      <th className="px-3 py-2">Average</th>
-                      <th className="px-3 py-2">Trend</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {progressQuery.data.skillProgress.map((item, index) => (
-                      <tr key={`${item.skillCode || item.skillName}-${index}`} className="border-b border-zinc-100">
-                        <td className="px-3 py-2">{item.skillName}</td>
-                        <td className="px-3 py-2">{item.latest}</td>
-                        <td className="px-3 py-2">{item.average.toFixed(2)}</td>
-                        <td className="px-3 py-2">{trendLabel[item.trend] || item.trend}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-zinc-200 bg-white p-4">
-            <h2 className="text-lg font-semibold text-zinc-900">Coach Notes & Recommendation</h2>
-            <div className="mt-3 space-y-3 text-sm text-zinc-700">
-              <p><span className="font-medium">Coach Notes:</span> {progressQuery.data.coachNotes || "-"}</p>
-              <p><span className="font-medium">Recommendation:</span> {progressQuery.data.recommendation || "-"}</p>
-            </div>
-          </section>
+      {progressQuery.data ? (
+        <div className="space-y-5">
+          <StudentProfileSummaryCard report={progressQuery.data} />
+          <AttendanceSummaryCard attendanceSummary={progressQuery.data.attendanceSummary} />
+          <AttendanceTimeline items={progressQuery.data.attendanceTimeline} />
+          <SkillProgressList items={progressQuery.data.skillProgress ?? []} />
+          <CoachNotesList
+            notes={progressQuery.data.coachNotes}
+            recommendations={progressQuery.data.nextRecommendations}
+            legacyRecommendation={progressQuery.data.recommendation}
+          />
+          <UpcomingSessionsCard items={progressQuery.data.upcomingSessions} />
+          <WhatsappSummaryCard report={progressQuery.data} params={reportParams} />
         </div>
       ) : null}
     </div>

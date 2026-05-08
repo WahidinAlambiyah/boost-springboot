@@ -24,6 +24,10 @@ interface AcademyScopedSelectProps extends BaseSelectProps {
   params?: Omit<LookupParams, "academyId">;
 }
 
+interface StudentSelectProps extends AcademyScopedSelectProps {
+  allowAll?: boolean;
+}
+
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Gagal memuat opsi.");
 
 const mergeAcademyParams = (academyId?: string, params?: Omit<LookupParams, "academyId">): LookupParams | undefined => {
@@ -86,8 +90,8 @@ export function CoachSelect({ academyId, params, disabled, helperText, ...props 
   );
 }
 
-export function StudentSelect({ academyId, params, disabled, helperText, ...props }: AcademyScopedSelectProps) {
-  const isEnabled = Boolean(academyId);
+export function StudentSelect({ academyId, params, disabled, helperText, allowAll = false, ...props }: StudentSelectProps) {
+  const isEnabled = allowAll || Boolean(academyId);
   const query = useStudentOptions(mergeAcademyParams(academyId, params), { enabled: isEnabled });
   const fallbackHelperText = isEnabled ? helperText : "Pilih academy terlebih dahulu.";
 
