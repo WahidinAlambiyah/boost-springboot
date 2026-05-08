@@ -5,15 +5,10 @@ import com.example.boost.domain.dto.DashboardCommonResponses.AcademySummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.CoachSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.CoachTodaySession;
 import com.example.boost.domain.dto.DashboardCommonResponses.LatestProgress;
-import com.example.boost.domain.dto.DashboardCommonResponses.LevelDistributionItem;
-import com.example.boost.domain.dto.DashboardCommonResponses.FinanceSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.OwnerTodaySession;
-import com.example.boost.domain.dto.DashboardCommonResponses.AttendanceTrendItem;
-import com.example.boost.domain.dto.DashboardCommonResponses.PackageSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.ParentAttendanceSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.ParentStudentSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.PendingAssessmentStudent;
-import com.example.boost.domain.dto.DashboardCommonResponses.PayrollSummary;
 import com.example.boost.domain.dto.DashboardCommonResponses.RecentAssessment;
 import com.example.boost.domain.dto.DashboardCommonResponses.SkillProgress;
 import com.example.boost.domain.dto.DashboardCommonResponses.StudentNeedAttention;
@@ -26,7 +21,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,53 +41,6 @@ public class DashboardRepository {
                 rs.getString("name"),
                 rs.getString("code")
         ), academyId).stream().findFirst();
-    }
-
-    public Optional<UUID> findFirstActiveAcademyId() {
-        String sql = """
-                select id
-                from fastworks_springboot.academies
-                where is_active = true and deleted_at is null
-                order by name asc
-                limit 1
-                """;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getObject("id", UUID.class)).stream().findFirst();
-    }
-
-    public List<UUID> findAccessibleAcademyIds(UUID userId, int limit) {
-        String sql = """
-                with accessible as (
-                    select cp.academy_id
-                    from fastworks_springboot.coach_profiles cp
-                    where cp.user_id = ?
-                      and cp.is_active = true
-                      and cp.deleted_at is null
-
-                    union
-
-                    select g.academy_id
-                    from fastworks_springboot.guardians g
-                    join fastworks_springboot.users u on lower(u.email) = lower(g.email) and u.deleted_at is null
-                    where u.id = ?
-                      and g.is_active = true
-                      and g.deleted_at is null
-
-                    union
-
-                    select cg.academy_id
-                    from fastworks_springboot.class_groups cg
-                    where cg.instructor_id = ?
-                      and cg.deleted_at is null
-                )
-                select a.id
-                from fastworks_springboot.academies a
-                join accessible acc on acc.academy_id = a.id
-                where a.is_active = true
-                  and a.deleted_at is null
-                order by a.name asc
-                limit ?
-                """;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getObject("id", UUID.class), userId, userId, userId, limit);
     }
 
     public long countActiveStudents(UUID academyId) {
@@ -248,147 +195,6 @@ public class DashboardRepository {
                 rs.getObject("class_session_id", UUID.class), nullableDate(rs.getDate("session_date")), rs.getString("coach_name"),
                 rs.getString("overall_notes"), rs.getString("recommendation")
         ), academyId, Date.valueOf(from), Date.valueOf(to));
-    }
-
-    public List<AttendanceTrendItem> attendanceTrend(UUID academyId, LocalDate from, LocalDate to) {
-        String sql = """
-                with trend_dates as (
-                    select generate_series(?::date, ?::date, interval '1 day')::date as trend_date
-                )
-                select td.trend_date as date,
-                       count(ar.id) filter (where upper(ar.attendance_status) = 'PRESENT') as present,
-                       count(ar.id) filter (where upper(ar.attendance_status) = 'ABSENT') as absent,
-                       count(ar.id) filter (where upper(ar.attendance_status) = 'PERMIT') as permit,
-                       count(ar.id) filter (where upper(ar.attendance_status) = 'SICK') as sick,
-                       count(ar.id) filter (where upper(ar.attendance_status) = 'LATE') as late,
-                       count(ar.id) as total
-                from trend_dates td
-                left join fastworks_springboot.class_sessions cs
-                       on cs.academy_id = ?
-                      and cs.session_date = td.trend_date
-                      and cs.deleted_at is null
-                left join fastworks_springboot.attendance_records ar
-                       on ar.class_session_id = cs.id
-                      and ar.deleted_at is null
-                group by td.trend_date
-                order by td.trend_date asc
-                """;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> new AttendanceTrendItem(
-                rs.getDate("date").toLocalDate(),
-                rs.getLong("present"),
-                rs.getLong("absent"),
-                rs.getLong("permit"),
-                rs.getLong("sick"),
-                rs.getLong("late"),
-                rs.getLong("total")
-        ), Date.valueOf(from), Date.valueOf(to), academyId);
-    }
-
-    public List<LevelDistributionItem> levelDistribution(UUID academyId) {
-        String sql = """
-                select coalesce(nullif(trim(s.current_level), ''), 'UNKNOWN') as level,
-                       count(*) as total_students
-                from fastworks_springboot.students s
-                where s.academy_id = ?
-                  and s.is_active = true
-                  and s.deleted_at is null
-                group by coalesce(nullif(trim(s.current_level), ''), 'UNKNOWN')
-                order by level asc
-                """;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> new LevelDistributionItem(
-                rs.getString("level"),
-                rs.getLong("total_students")
-        ), academyId);
-    }
-
-    public PackageSummary packageSummary(UUID academyId, LocalDate today) {
-        String sql = """
-                select count(*) filter (where upper(sps.status) = 'ACTIVE') as active_subscriptions,
-                       count(*) filter (
-                           where upper(sps.status) = 'ACTIVE'
-                             and sps.end_date is not null
-                             and sps.end_date between ? and ?
-                       ) as expiring_soon,
-                       count(*) filter (
-                           where upper(sps.status) = 'ACTIVE'
-                             and sps.remaining_sessions is not null
-                             and sps.remaining_sessions <= 3
-                       ) as low_remaining_sessions
-                from fastworks_springboot.student_package_subscriptions sps
-                where sps.academy_id = ?
-                  and sps.deleted_at is null
-                """;
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new PackageSummary(
-                rs.getLong("active_subscriptions"),
-                rs.getLong("expiring_soon"),
-                rs.getLong("low_remaining_sessions")
-        ), Date.valueOf(today), Date.valueOf(today.plusDays(7)), academyId);
-    }
-
-    public FinanceSummary financeSummary(UUID academyId, LocalDate from, LocalDate to, LocalDate today) {
-        String sql = """
-                select coalesce(sum(i.paid_amount), 0) as paid_amount,
-                       coalesce(sum(greatest(i.total_amount - i.paid_amount, 0)), 0) as unpaid_amount,
-                       coalesce(sum(
-                           case
-                               when i.due_date < ? and upper(i.status) in ('OPEN', 'PARTIALLY_PAID', 'OVERDUE', 'UNPAID')
-                                   then greatest(i.total_amount - i.paid_amount, 0)
-                               else 0
-                           end
-                       ), 0) as overdue_amount,
-                       count(*) as total_invoices
-                from fastworks_springboot.invoices i
-                where i.academy_id = ?
-                  and i.issue_date between ? and ?
-                  and i.deleted_at is null
-                """;
-        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new FinanceSummary(
-                zeroIfNull(rs.getBigDecimal("paid_amount")),
-                zeroIfNull(rs.getBigDecimal("unpaid_amount")),
-                zeroIfNull(rs.getBigDecimal("overdue_amount")),
-                rs.getLong("total_invoices")
-        ), Date.valueOf(today), academyId, Date.valueOf(from), Date.valueOf(to));
-    }
-
-    public PayrollSummary payrollSummary(UUID academyId, YearMonth periodMonth) {
-        String sql = """
-                select cpp.period_month,
-                       cpp.period_year,
-                       cpp.status,
-                       count(distinct cpi.coach_id) as total_coaches,
-                       coalesce(sum(cpi.total_amount), 0) as total_amount
-                from fastworks_springboot.coach_payroll_periods cpp
-                left join fastworks_springboot.coach_payroll_items cpi
-                       on cpi.payroll_period_id = cpp.id
-                      and cpi.deleted_at is null
-                where cpp.academy_id = ?
-                  and cpp.period_month = ?
-                  and cpp.period_year = ?
-                  and cpp.deleted_at is null
-                group by cpp.id, cpp.period_month, cpp.period_year, cpp.status, cpp.created_at
-                order by cpp.created_at desc
-                limit 1
-                """;
-
-        List<PayrollSummary> results = jdbcTemplate.query(sql, (rs, rowNum) -> new PayrollSummary(
-                rs.getInt("period_month"),
-                rs.getInt("period_year"),
-                rs.getString("status"),
-                rs.getLong("total_coaches"),
-                zeroIfNull(rs.getBigDecimal("total_amount"))
-        ), academyId, periodMonth.getMonthValue(), periodMonth.getYear());
-
-        if (results.isEmpty()) {
-            return new PayrollSummary(
-                    periodMonth.getMonthValue(),
-                    periodMonth.getYear(),
-                    "NOT_GENERATED",
-                    0L,
-                    BigDecimal.ZERO.setScale(2)
-            );
-        }
-
-        return results.get(0);
     }
 
     public Optional<CoachSummary> findCoachByUserId(UUID userId, UUID academyId) {
@@ -571,10 +377,6 @@ public class DashboardRepository {
             return BigDecimal.ZERO.setScale(2);
         }
         return BigDecimal.valueOf(present).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal zeroIfNull(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO.setScale(2) : value;
     }
 
     private static LocalDate nullableDate(Date date) {

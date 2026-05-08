@@ -550,49 +550,6 @@ export interface OwnerDashboardRecentAssessment {
   recommendation?: string | null;
 }
 
-export interface OwnerAttendanceTrendItem {
-  date: string;
-  present: number;
-  absent: number;
-  permit: number;
-  sick: number;
-  late: number;
-  total: number;
-}
-
-export interface OwnerAssessmentCompletionSummary {
-  totalActiveStudents: number;
-  assessedStudents: number;
-  notAssessedStudents: number;
-  completionRate: number;
-}
-
-export interface OwnerLevelDistributionItem {
-  level: string;
-  totalStudents: number;
-}
-
-export interface OwnerPackageSummary {
-  activeSubscriptions: number;
-  expiringSoon: number;
-  lowRemainingSessions: number;
-}
-
-export interface OwnerFinanceSummary {
-  paidAmount: number;
-  unpaidAmount: number;
-  overdueAmount: number;
-  totalInvoices: number;
-}
-
-export interface OwnerPayrollSummary {
-  periodMonth: number;
-  periodYear: number;
-  status: string;
-  totalCoaches: number;
-  totalAmount: number;
-}
-
 export interface OwnerDashboardResponse {
   academy: DashboardAcademySummary;
   period: DashboardPeriod;
@@ -601,12 +558,6 @@ export interface OwnerDashboardResponse {
   studentsNeedAttention: StudentNeedAttention[];
   upcomingEvents: OwnerDashboardUpcomingEvent[];
   recentAssessments: OwnerDashboardRecentAssessment[];
-  attendanceTrend?: OwnerAttendanceTrendItem[];
-  assessmentCompletion?: OwnerAssessmentCompletionSummary;
-  levelDistribution?: OwnerLevelDistributionItem[];
-  packageSummary?: OwnerPackageSummary;
-  financeSummary?: OwnerFinanceSummary;
-  payrollSummary?: OwnerPayrollSummary;
 }
 
 export interface CoachDashboardSummaryCards {

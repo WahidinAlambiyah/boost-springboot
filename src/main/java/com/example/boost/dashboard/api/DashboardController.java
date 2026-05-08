@@ -32,14 +32,14 @@ public class DashboardController {
     @GetMapping("/owner")
     // TODO: remove fallback permissions after DASHBOARD_OWNER_READ is assigned to all required roles in production.
     @PreAuthorize("hasAnyAuthority('DASHBOARD_OWNER_READ','REPORT_PROGRESS_READ','ACADEMY_READ')")
-    @Operation(summary = "Get owner dashboard", description = "Returns academy summary cards, attendance trend, assessment completion, level distribution, package, finance, payroll, and recent assessments.")
+    @Operation(summary = "Get owner dashboard", description = "Returns academy summary cards, today's sessions, attention list, events, and recent assessments.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Owner dashboard retrieved"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - requires DASHBOARD_OWNER_READ")
     })
     public ResponseEntity<ApiResponse<OwnerDashboardResponse>> owner(
-            @RequestParam(required = false) UUID academyId,
+            @RequestParam UUID academyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {

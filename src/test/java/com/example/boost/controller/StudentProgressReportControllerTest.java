@@ -51,7 +51,7 @@ class StudentProgressReportControllerTest {
     private AuditLogService auditLogService;
 
     @Test
-    @WithMockUser(authorities = "ATTENDANCE_READ")
+    @WithMockUser(authorities = "REPORT_PROGRESS_READ")
     void reportShouldReturnCombinedAttendanceAndAssessmentData() throws Exception {
         UUID studentId = UUID.randomUUID();
         when(studentProgressReportService.getStudentProgressReport(any(), any(), any())).thenReturn(report(studentId));
@@ -60,8 +60,8 @@ class StudentProgressReportControllerTest {
                         .param("from", "2026-01-01")
                         .param("to", "2026-01-31"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.attendance.totalSessions").value(8))
-                .andExpect(jsonPath("$.data.skillProgress.averageScore").value(4.25));
+                .andExpect(jsonPath("$.data.attendanceSummary.totalSessions").value(8))
+                .andExpect(jsonPath("$.data.skillProgress[0].averageScore").value(4.25));
     }
 
     @Test
@@ -76,11 +76,34 @@ class StudentProgressReportControllerTest {
 
     private StudentProgressReportResponse report(UUID studentId) {
         return new StudentProgressReportResponse(
-                new StudentProgressReportResponse.StudentIdentity(studentId, "S-001", "Budi", "Bud", "L2"),
+                new StudentProgressReportResponse.StudentIdentity(
+                        studentId,
+                        "S-001",
+                        "Budi",
+                        "Bud",
+                        LocalDate.parse("2020-01-10"),
+                        "6 tahun",
+                        "L2",
+                        "Pushbike Academy",
+                        List.of("Bapak Budi")
+                ),
                 new StudentProgressReportResponse.Period(LocalDate.parse("2026-01-01"), LocalDate.parse("2026-01-31")),
-                new StudentProgressReportResponse.AttendanceSummary(8, 6, 1, 1),
-                new StudentProgressReportResponse.SkillProgress(BigDecimal.valueOf(4.5), BigDecimal.valueOf(4.25), BigDecimal.valueOf(4.0), StudentProgressReportResponse.Trend.UP),
-                List.of(new StudentProgressReportResponse.CoachNoteBySessionDate(LocalDate.parse("2026-01-20"), "progress bagus"))
+                new StudentProgressReportResponse.AttendanceSummary(8, 6, 1, 1, 0, 0, BigDecimal.valueOf(75.00)),
+                List.of(),
+                List.of(new StudentProgressReportResponse.SkillProgress(
+                        "BALANCE",
+                        "Balance",
+                        BigDecimal.valueOf(4.5),
+                        BigDecimal.valueOf(4.25),
+                        BigDecimal.valueOf(4.0),
+                        StudentProgressReportResponse.Trend.UP,
+                        5,
+                        "stabil"
+                )),
+                List.of(new StudentProgressReportResponse.CoachNote(UUID.randomUUID(), LocalDate.parse("2026-01-20"), "Coach A", "progress bagus", null)),
+                List.of(new StudentProgressReportResponse.NextRecommendation("Latihan Balance", "Latihan ringan di rumah", "HIGH")),
+                List.of(),
+                "Halo Bapak/Ibu, progres Bud baik."
         );
     }
 }

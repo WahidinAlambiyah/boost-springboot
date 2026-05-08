@@ -33,15 +33,6 @@ type DashboardParentFilter = {
   studentId?: string | number;
 } & DateRange;
 
-type LookupFilter = {
-  academyId?: string | number;
-  status?: string;
-  level?: string;
-  date?: string;
-  search?: string;
-  limit?: number;
-};
-
 const normalizeFilter = <T extends Record<string, unknown>>(filter: T) => {
   const entries = Object.entries(filter).filter(([, value]) => value !== undefined);
   entries.sort(([a], [b]) => a.localeCompare(b));
