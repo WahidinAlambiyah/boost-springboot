@@ -30,8 +30,8 @@ public class StudentProgressReportController {
     private final StudentProgressReportService studentProgressReportService;
 
     @GetMapping("/{studentId}/progress")
-    @PreAuthorize("hasAnyAuthority('ASSESSMENT_READ','ATTENDANCE_READ')")
-    @Operation(summary = "Get student progress report")
+    @PreAuthorize("hasAuthority('REPORT_PROGRESS_READ')")
+    @Operation(summary = "Get student progress report", description = "Returns parent-ready progress, attendance, skill trends, recommendations, upcoming sessions, and WhatsApp copy.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Student progress report retrieved"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -41,8 +41,8 @@ public class StudentProgressReportController {
     })
     public ResponseEntity<ApiResponse<StudentProgressReportResponse>> getStudentProgress(
             @PathVariable UUID studentId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
         StudentProgressReportResponse response = studentProgressReportService.getStudentProgressReport(studentId, from, to);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Student progress report retrieved", response));

@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 031-seed-dashboard-permissions
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.permissions (code, name, description, module, is_active, created_at, updated_at)
+              values
+                ('DASHBOARD_OWNER_READ', 'Dashboard Owner Read', 'Read owner dashboard aggregates', 'DASHBOARD', true, now(), now()),
+                ('DASHBOARD_COACH_READ', 'Dashboard Coach Read', 'Read coach dashboard aggregates', 'DASHBOARD', true, now(), now()),
+                ('DASHBOARD_PARENT_READ', 'Dashboard Parent Read', 'Read parent dashboard aggregates', 'DASHBOARD', true, now(), now()),
+                ('DASHBOARD_EVENT_READ', 'Dashboard Event Read', 'Read event dashboard aggregates', 'DASHBOARD', true, now(), now())
+              on conflict (code) do nothing;
+
+              insert into fastworks_springboot.role_permissions (role_id, permission_id, assigned_at)
+              select r.id, p.id, now()
+              from fastworks_springboot.roles r
+              join fastworks_springboot.permissions p
+                on p.code in ('DASHBOARD_OWNER_READ', 'DASHBOARD_COACH_READ', 'DASHBOARD_PARENT_READ', 'DASHBOARD_EVENT_READ')
+              where r.code in ('ADMIN', 'ROLE_ADMIN')
+              on conflict (role_id, permission_id) do nothing;

@@ -25,6 +25,14 @@ type StudentProgressReportFilter = {
   studentId?: string | number;
 } & DateRange;
 
+type DashboardAcademyFilter = {
+  academyId?: string | number;
+} & DateRange;
+
+type DashboardParentFilter = {
+  studentId?: string | number;
+} & DateRange;
+
 const normalizeFilter = <T extends Record<string, unknown>>(filter: T) => {
   const entries = Object.entries(filter).filter(([, value]) => value !== undefined);
   entries.sort(([a], [b]) => a.localeCompare(b));
@@ -46,6 +54,12 @@ export const QUERY_KEYS = {
   attendance: ["attendance"] as const,
   billing: ["billing"] as const,
   notification: ["notification"] as const,
+  dashboard: {
+    owner: (params?: DashboardAcademyFilter) => ["dashboard", "owner", normalizeFilter(params ?? {})] as const,
+    coach: (params?: DashboardAcademyFilter) => ["dashboard", "coach", normalizeFilter(params ?? {})] as const,
+    parent: (params?: DashboardParentFilter) => ["dashboard", "parent", normalizeFilter(params ?? {})] as const,
+    event: (params?: DashboardAcademyFilter) => ["dashboard", "event", normalizeFilter(params ?? {})] as const,
+  },
 
   devCrudTrainingCenters: createEntityKeys<{ search?: string; status?: string }>("devCrudTrainingCenters"),
 
