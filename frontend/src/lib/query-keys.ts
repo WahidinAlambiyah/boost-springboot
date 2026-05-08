@@ -116,6 +116,19 @@ export const QUERY_KEYS = {
     byStudent: (studentId: string | number, filter?: Omit<StudentProgressReportFilter, "studentId">) =>
       ["studentProgressReport", "byStudent", studentId, normalizeFilter(filter ?? {})] as const,
   },
+  lookups: {
+    academies: (params?: LookupFilter) => ["lookups", "academies", normalizeFilter(params ?? {})] as const,
+    locations: (params?: LookupFilter) => ["lookups", "locations", normalizeFilter(params ?? {})] as const,
+    coaches: (params?: LookupFilter) => ["lookups", "coaches", normalizeFilter(params ?? {})] as const,
+    students: (params?: LookupFilter) => ["lookups", "students", normalizeFilter(params ?? {})] as const,
+    classGroups: (params?: LookupFilter) => ["lookups", "classGroups", normalizeFilter(params ?? {})] as const,
+    classSessions: (params?: LookupFilter) => ["lookups", "classSessions", normalizeFilter(params ?? {})] as const,
+    assessmentSkills: (params?: LookupFilter) =>
+      ["lookups", "assessmentSkills", normalizeFilter(params ?? {})] as const,
+    trainingPackages: (params?: LookupFilter) =>
+      ["lookups", "trainingPackages", normalizeFilter(params ?? {})] as const,
+    events: (params?: LookupFilter) => ["lookups", "events", normalizeFilter(params ?? {})] as const,
+  },
   trainingPackages: createEntityKeys<{ academyId?: string | number }>("trainingPackages"),
   studentPackages: {
     ...createEntityKeys<{

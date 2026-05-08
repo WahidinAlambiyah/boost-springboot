@@ -35,6 +35,11 @@ const devToolLinks: DevToolLink[] = [
     href: "/dev/form-demo",
     description: "Contoh struktur form, validasi, dan feedback input.",
   },
+  {
+    title: "Lookup Demo",
+    href: "/dev/lookup-demo",
+    description: "Playground lookup service dan reusable select untuk akselerasi form CRUD/report.",
+  },
 ];
 
 export default function DevToolsPage() {

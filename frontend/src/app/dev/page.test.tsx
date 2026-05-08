@@ -28,5 +28,6 @@ describe("DevToolsPage", () => {
     expect(screen.getByRole("link", { name: /CRUD Demo/ })).toHaveAttribute("href", "/dev/crud-demo");
     expect(screen.getByRole("link", { name: /Table Demo/ })).toHaveAttribute("href", "/dev/table-demo");
     expect(screen.getByRole("link", { name: /Form Demo/ })).toHaveAttribute("href", "/dev/form-demo");
+    expect(screen.getByRole("link", { name: /Lookup Demo/ })).toHaveAttribute("href", "/dev/lookup-demo");
   });
 });
