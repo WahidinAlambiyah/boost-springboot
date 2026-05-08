@@ -9,6 +9,12 @@ public record OwnerDashboardResponse(
         List<DashboardCommonResponses.OwnerTodaySession> todaySessions,
         List<DashboardCommonResponses.StudentNeedAttention> studentsNeedAttention,
         List<DashboardCommonResponses.DashboardEventItem> upcomingEvents,
-        List<DashboardCommonResponses.RecentAssessment> recentAssessments
+        List<DashboardCommonResponses.RecentAssessment> recentAssessments,
+        List<DashboardCommonResponses.AttendanceTrendItem> attendanceTrend,
+        DashboardCommonResponses.AssessmentCompletionSummary assessmentCompletion,
+        List<DashboardCommonResponses.LevelDistributionItem> levelDistribution,
+        DashboardCommonResponses.PackageSummary packageSummary,
+        DashboardCommonResponses.FinanceSummary financeSummary,
+        DashboardCommonResponses.PayrollSummary payrollSummary
 ) {
 }

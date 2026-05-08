@@ -55,6 +55,64 @@ export const ownerDashboardMock: OwnerDashboardResponse = {
   ],
   upcomingEvents: [],
   recentAssessments: [],
+  attendanceTrend: [
+    {
+      date: "2026-05-05",
+      present: 22,
+      absent: 1,
+      permit: 0,
+      sick: 1,
+      late: 2,
+      total: 26,
+    },
+    {
+      date: "2026-05-06",
+      present: 25,
+      absent: 0,
+      permit: 1,
+      sick: 0,
+      late: 1,
+      total: 27,
+    },
+  ],
+  assessmentCompletion: {
+    totalActiveStudents: 128,
+    assessedStudents: 110,
+    notAssessedStudents: 18,
+    completionRate: 85.94,
+  },
+  levelDistribution: [
+    {
+      level: "BEGINNER",
+      totalStudents: 68,
+    },
+    {
+      level: "INTERMEDIATE",
+      totalStudents: 42,
+    },
+    {
+      level: "ADVANCED",
+      totalStudents: 18,
+    },
+  ],
+  packageSummary: {
+    activeSubscriptions: 120,
+    expiringSoon: 8,
+    lowRemainingSessions: 14,
+  },
+  financeSummary: {
+    paidAmount: 45200000,
+    unpaidAmount: 6200000,
+    overdueAmount: 1800000,
+    totalInvoices: 132,
+  },
+  payrollSummary: {
+    periodMonth: 5,
+    periodYear: 2026,
+    status: "CALCULATED",
+    totalCoaches: 12,
+    totalAmount: 28450000,
+  },
 };
 
 export const coachDashboardMock: CoachDashboardResponse = {

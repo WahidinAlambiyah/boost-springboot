@@ -76,6 +76,55 @@ public final class DashboardCommonResponses {
     ) {
     }
 
+    public record AttendanceTrendItem(
+            LocalDate date,
+            long present,
+            long absent,
+            long permit,
+            long sick,
+            long late,
+            long total
+    ) {
+    }
+
+    public record AssessmentCompletionSummary(
+            long totalActiveStudents,
+            long assessedStudents,
+            long notAssessedStudents,
+            BigDecimal completionRate
+    ) {
+    }
+
+    public record LevelDistributionItem(
+            String level,
+            long totalStudents
+    ) {
+    }
+
+    public record PackageSummary(
+            long activeSubscriptions,
+            long expiringSoon,
+            long lowRemainingSessions
+    ) {
+    }
+
+    public record FinanceSummary(
+            BigDecimal paidAmount,
+            BigDecimal unpaidAmount,
+            BigDecimal overdueAmount,
+            long totalInvoices
+    ) {
+    }
+
+    public record PayrollSummary(
+            int periodMonth,
+            int periodYear,
+            String status,
+            long totalCoaches,
+            BigDecimal totalAmount
+    ) {
+    }
+
     public record CoachSummary(UUID id, UUID userId, String name, UUID academyId) {
     }
 
