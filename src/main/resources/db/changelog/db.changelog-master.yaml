@@ -62,4 +62,8 @@ databaseChangeLog:
       file: db/changelog/changes/029-add-academic-menu-paths.yaml
   - include:
       file: db/changelog/changes/030-add-fe4-assessment-skills-menu.yaml
+  - include:
+      file: db/changelog/changes/031-seed-dashboard-permissions.yaml
 
+  - include:
+      file: db/changelog/changes/032-seed-lookup-permission.yaml
