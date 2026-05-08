@@ -482,3 +482,194 @@ export interface CoachPayrollItemUpdateRequest {
   bonusAmount: number;
   deductionAmount: number;
 }
+
+export interface DashboardPeriod {
+  from: string;
+  to: string;
+}
+
+export interface DashboardAcademySummary {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface OwnerDashboardSummaryCards {
+  activeStudents: number;
+  activeCoaches: number;
+  todaySessions: number;
+  attendanceRate: number;
+  pendingAssessments: number;
+  upcomingEvents: number;
+  unpaidInvoices: number;
+  currentMonthPayrollStatus: string;
+}
+
+export interface OwnerDashboardSession {
+  id: string;
+  title: string;
+  sessionDate: string;
+  startTime: string;
+  endTime: string;
+  locationName?: string | null;
+  classGroupName?: string | null;
+  coachNames: string;
+  status: string;
+  attendanceStatus: string;
+}
+
+export interface StudentNeedAttention {
+  studentId: string;
+  studentName: string;
+  nickname?: string | null;
+  currentLevel?: string | null;
+  reason: string;
+  lastAttendanceDate?: string | null;
+  lastAssessmentDate?: string | null;
+}
+
+export interface OwnerDashboardUpcomingEvent {
+  id: string;
+  title: string;
+  eventDate: string;
+  locationName?: string | null;
+  ageCategory?: string | null;
+  quota?: number | null;
+  registeredCount?: number | null;
+  status: string;
+}
+
+export interface OwnerDashboardRecentAssessment {
+  assessmentId: string;
+  studentId: string;
+  studentName: string;
+  classSessionId: string;
+  sessionDate?: string | null;
+  coachName?: string | null;
+  overallNotes?: string | null;
+  recommendation?: string | null;
+}
+
+export interface OwnerDashboardResponse {
+  academy: DashboardAcademySummary;
+  period: DashboardPeriod;
+  summaryCards: OwnerDashboardSummaryCards;
+  todaySessions: OwnerDashboardSession[];
+  studentsNeedAttention: StudentNeedAttention[];
+  upcomingEvents: OwnerDashboardUpcomingEvent[];
+  recentAssessments: OwnerDashboardRecentAssessment[];
+}
+
+export interface CoachDashboardSummaryCards {
+  todaySessions: number;
+  pendingAttendance: number;
+  pendingAssessments: number;
+  completedAssessmentsThisMonth: number;
+}
+
+export interface CoachDashboardCoach {
+  id: string;
+  userId: string;
+  name: string;
+  academyId: string;
+}
+
+export interface CoachDashboardSession {
+  id: string;
+  title: string;
+  sessionDate: string;
+  startTime: string;
+  endTime: string;
+  locationName?: string | null;
+  classGroupName?: string | null;
+  studentCount: number;
+  attendanceSubmitted: boolean;
+  assessmentCompletedCount: number;
+  status: string;
+}
+
+export interface PendingAssessmentStudent {
+  studentId: string;
+  studentName: string;
+  nickname?: string | null;
+  classSessionId: string;
+  sessionDate: string;
+  currentLevel?: string | null;
+}
+
+export interface CoachDashboardResponse {
+  coach: CoachDashboardCoach;
+  period: DashboardPeriod;
+  summaryCards: CoachDashboardSummaryCards;
+  todaySessions: CoachDashboardSession[];
+  pendingAssessmentStudents: PendingAssessmentStudent[];
+}
+
+export interface ParentDashboardStudent {
+  id: string;
+  studentNo?: string | null;
+  fullName: string;
+  nickname?: string | null;
+  currentLevel?: string | null;
+  academyName: string;
+}
+
+export interface ParentAttendanceSummary {
+  totalSessions: number;
+  present: number;
+  absent: number;
+  permit: number;
+  sick: number;
+  late: number;
+  attendanceRate: number;
+}
+
+export interface ParentLatestProgress {
+  latestAssessmentDate?: string | null;
+  coachName?: string | null;
+  overallNotes?: string | null;
+  recommendation?: string | null;
+}
+
+export interface ParentSkillProgress {
+  skillCode: string;
+  skillName: string;
+  latestScore?: number | null;
+  averageScore?: number | null;
+  previousScore?: number | null;
+  trend: "UP" | "DOWN" | "FLAT" | string;
+}
+
+export interface ParentUpcomingSession {
+  sessionId: string;
+  sessionDate: string;
+  startTime: string;
+  endTime: string;
+  locationName?: string | null;
+  classGroupName?: string | null;
+  status: string;
+}
+
+export interface ParentDashboardResponse {
+  student: ParentDashboardStudent;
+  period: DashboardPeriod;
+  attendanceSummary: ParentAttendanceSummary;
+  latestProgress: ParentLatestProgress;
+  skillProgress: ParentSkillProgress[];
+  upcomingSessions: ParentUpcomingSession[];
+  upcomingEvents: OwnerDashboardUpcomingEvent[];
+}
+
+export interface EventDashboardSummaryCards {
+  totalEvents: number;
+  upcomingEvents: number;
+  completedEvents: number;
+  totalParticipants: number;
+}
+
+export interface EventDashboardResponse {
+  period: DashboardPeriod;
+  summaryCards: EventDashboardSummaryCards;
+  upcomingEvents: OwnerDashboardUpcomingEvent[];
+  recentEvents: OwnerDashboardUpcomingEvent[];
+}
