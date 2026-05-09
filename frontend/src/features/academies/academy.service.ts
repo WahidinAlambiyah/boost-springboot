@@ -7,10 +7,28 @@ export interface AcademyListParams {
   page?: number;
 }
 
+interface PageResponse<T> {
+  content?: T[];
+}
+
+const normalizeAcademyList = (payload: Academy[] | PageResponse<Academy> | null | undefined) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  return payload?.content ?? [];
+};
+
 export const academyService = {
   async list(params?: AcademyListParams): Promise<Academy[]> {
-    const response = await api.get<ApiResponse<Academy[]>>("/api/academies", { params });
-    return response.data.data;
+    const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>("/api/academies", {
+      params: {
+        keyword: params?.search || undefined,
+        page: params?.page,
+      },
+    });
+
+    return normalizeAcademyList(response.data.data);
   },
 
   async create(payload: AcademyCreateRequest): Promise<ApiResponse<Academy>> {
