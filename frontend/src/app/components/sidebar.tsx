@@ -43,6 +43,11 @@ const filterVisibleMenu = (items: MenuItemResponse[]): MenuItemResponse[] =>
       children: item.children ? filterVisibleMenu(item.children) : [],
     }));
 
+const flattenMenu = (item: MenuItemResponse): MenuItemResponse[] => [
+  item,
+  ...(item.children?.flatMap((child) => flattenMenu(child)) ?? []),
+];
+
 const mergeMenuWithLocalFallback = (items: MenuItemResponse[]): MenuItemResponse[] => {
   if (!ENABLE_MENU_FALLBACK) {
     return items;
@@ -65,47 +70,66 @@ const mergeMenuWithLocalFallback = (items: MenuItemResponse[]): MenuItemResponse
   return [...items, ...fallbackItems];
 };
 
-const flattenMenu = (item: MenuItemResponse): MenuItemResponse[] => [
-  item,
-  ...(item.children?.flatMap((child) => flattenMenu(child)) ?? []),
-];
+const getMenuInitials = (label: string) => {
+  const words = label.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return words
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+};
 
 interface SidebarItemProps {
   item: MenuItemResponse;
   pathname: string;
   level?: number;
+  collapsed?: boolean;
 }
 
-function SidebarItem({ item, pathname, level = 0 }: SidebarItemProps) {
+function SidebarItem({ item, pathname, level = 0, collapsed = false }: SidebarItemProps) {
   const children = item.children ?? [];
   const hasChildren = children.length > 0;
   const isActive = Boolean(item.path) && pathname === item.path;
+  const itemTitle = collapsed && level === 0 ? item.label : undefined;
+  const collapsedClassName = collapsed && level === 0 ? "justify-center px-2" : "px-3";
+  const itemContent = collapsed && level === 0 ? (
+    <span aria-hidden="true" className="text-xs font-semibold uppercase">
+      {getMenuInitials(item.label)}
+    </span>
+  ) : (
+    item.label
+  );
 
   return (
     <div className="flex flex-col gap-1">
       {item.path ? (
         <Link
           href={item.path}
-          className={`rounded-md px-3 py-2 text-sm transition-colors ${
+          title={itemTitle}
+          aria-label={collapsed && level === 0 ? item.label : undefined}
+          className={`flex rounded-md py-2 text-sm transition-colors ${collapsedClassName} ${
             isActive ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100"
           }`}
-          style={{ paddingLeft: `${0.75 + level * 0.75}rem` }}
+          style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
         >
-          {item.label}
+          {itemContent}
         </Link>
       ) : (
         <p
-          className="px-3 py-2 text-sm font-medium text-zinc-600"
-          style={{ paddingLeft: `${0.75 + level * 0.75}rem` }}
+          title={itemTitle}
+          className={`py-2 text-sm font-medium text-zinc-600 ${collapsedClassName}`}
+          style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
         >
-          {item.label}
+          {itemContent}
         </p>
       )}
 
-      {hasChildren ? (
+      {hasChildren && !collapsed ? (
         <div className="flex flex-col gap-1">
           {children.map((child) => (
-            <SidebarItem key={child.id} item={child} pathname={pathname} level={level + 1} />
+            <SidebarItem key={child.id} item={child} pathname={pathname} level={level + 1} collapsed={collapsed} />
           ))}
         </div>
       ) : null}
@@ -113,22 +137,31 @@ function SidebarItem({ item, pathname, level = 0 }: SidebarItemProps) {
   );
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed?: boolean;
+}
+
+export default function Sidebar({ collapsed = false }: SidebarProps) {
   const pathname = usePathname();
   const menu = useAuthStore((state) => state.menu);
   const visibleMenu = filterVisibleMenu(mergeMenuWithLocalFallback(menu));
 
   return (
-    <aside className="w-64 border-r border-zinc-200 bg-white p-4">
-      <p className="mb-3 text-sm font-semibold uppercase text-zinc-500">Navigation</p>
+    <aside
+      className={`border-r border-zinc-200 bg-white p-4 transition-all duration-200 ${collapsed ? "w-20" : "w-64"}`}
+      aria-label="Sidebar navigation"
+    >
+      <p className={`mb-3 text-sm font-semibold uppercase text-zinc-500 ${collapsed ? "text-center text-xs" : ""}`}>
+        {collapsed ? "Nav" : "Navigation"}
+      </p>
       {visibleMenu.length === 0 ? (
         <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-sm text-zinc-500">
-          Tidak ada menu yang tersedia.
+          {collapsed ? "-" : "Tidak ada menu yang tersedia."}
         </div>
       ) : (
         <nav className="flex flex-col gap-2">
           {visibleMenu.map((item) => (
-            <SidebarItem key={item.id} item={item} pathname={pathname} />
+            <SidebarItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} />
           ))}
         </nav>
       )}
