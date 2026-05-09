@@ -1,6 +1,7 @@
 "use client";
 
 import AppShell from "@/app/components/app-shell";
+import { PageHeader } from "@/app/components/page-header";
 import RequirePermission from "@/app/components/require-permission";
 import StudentProgressReport from "@/features/reports/components/student-progress-report";
 
@@ -8,12 +9,12 @@ export default function StudentProgressReportPage() {
   return (
     <RequirePermission permissions="REPORT_PROGRESS_READ">
       <AppShell>
-        <h1 className="text-2xl font-semibold text-zinc-900">Student Progress Report</h1>
-        <p className="mt-2 text-zinc-600">Filter student dan periode untuk melihat attendance, skill progress, dan catatan coach.</p>
+        <PageHeader
+          title="Student Progress Report"
+          description="Generate report attendance, skill progress, coach notes, upcoming sessions, dan ringkasan WhatsApp untuk admin, coach, atau orang tua."
+        />
 
-        <div className="mt-6">
-          <StudentProgressReport />
-        </div>
+        <StudentProgressReport />
       </AppShell>
     </RequirePermission>
   );

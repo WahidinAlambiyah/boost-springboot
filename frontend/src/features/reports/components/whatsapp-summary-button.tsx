@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 
-import { StudentProgressReportResponse } from "@/features/reports/progress-report.service";
+import { StudentProgressReportResponse } from "@/features/reports/student-progress-report.types";
+
+import { buildFallbackWhatsappSummary } from "./student-progress-formatters";
 
 interface WhatsAppSummaryButtonProps {
   report: StudentProgressReportResponse;
@@ -10,12 +12,6 @@ interface WhatsAppSummaryButtonProps {
   to?: string;
   className?: string;
 }
-
-const trendLabel: Record<string, string> = {
-  UP: "naik",
-  DOWN: "turun",
-  STABLE: "stabil",
-};
 
 function fallbackCopyTextToClipboard(text: string) {
   const textArea = document.createElement("textarea");
@@ -35,36 +31,7 @@ function fallbackCopyTextToClipboard(text: string) {
 
 export default function WhatsAppSummaryButton({ report, from, to, className }: WhatsAppSummaryButtonProps) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-
-  const summary = useMemo(() => {
-    const period = from && to ? `${from} s/d ${to}` : from ? `mulai ${from}` : to ? `sampai ${to}` : "Semua data";
-
-    const topSkills = [...report.skillProgress].sort((a, b) => b.latest - a.latest).slice(0, 3);
-    const skillsText =
-      topSkills.length > 0
-        ? topSkills
-            .map((skill, index) => {
-              const trend = trendLabel[skill.trend] || skill.trend.toLowerCase();
-              return `${index + 1}. ${skill.skillName}: ${skill.latest} (${trend})`;
-            })
-            .join("\n")
-        : "- Belum ada data skill.";
-
-    return [
-      `Ringkasan Progress ${report.student.fullName}`,
-      `Periode: ${period}`,
-      "",
-      "Kehadiran:",
-      `- Hadir ${report.attendanceSummary.present}/${report.attendanceSummary.total} pertemuan`,
-      `- Izin ${report.attendanceSummary.permit}, Sakit ${report.attendanceSummary.sick}, Absen ${report.attendanceSummary.absent}, Alpha ${report.attendanceSummary.alpha}`,
-      "",
-      "Skill kunci:",
-      skillsText,
-      "",
-      `Catatan coach: ${report.coachNotes || "Belum ada catatan."}`,
-      `Rekomendasi: ${report.recommendation || "Lanjutkan latihan rutin di rumah."}`,
-    ].join("\n");
-  }, [from, report, to]);
+  const summary = useMemo(() => report.whatsappSummary?.trim() || buildFallbackWhatsappSummary(report, { from, to }), [from, report, to]);
 
   const handleCopy = async () => {
     try {
