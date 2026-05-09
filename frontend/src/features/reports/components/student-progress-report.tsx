@@ -19,6 +19,7 @@ import { UpcomingSessionsCard } from "./upcoming-sessions-card";
 import { WhatsappSummaryCard } from "./whatsapp-summary-card";
 
 const initialFilter: StudentProgressFilterValue = {
+  academyId: "",
   studentId: "",
   from: "",
   to: "",
@@ -39,12 +40,12 @@ export default function StudentProgressReport() {
   const progressQuery = useQuery({
     queryKey: QUERY_KEYS.studentProgressReport.byStudent(submittedFilter?.studentId ?? "", reportParams),
     queryFn: () => studentProgressReportService.getStudentProgressReport(submittedFilter?.studentId ?? "", reportParams),
-    enabled: Boolean(submittedFilter?.studentId),
+    enabled: Boolean(submittedFilter?.academyId && submittedFilter?.studentId),
     retry: false,
   });
 
   const handleGenerate = () => {
-    if (!filter.studentId) return;
+    if (!filter.academyId || !filter.studentId) return;
 
     if (submittedFilter && JSON.stringify(submittedFilter) === JSON.stringify(filter)) {
       void progressQuery.refetch();
@@ -65,8 +66,8 @@ export default function StudentProgressReport() {
 
       {!submittedFilter ? (
         <EmptyState
-          title="Pilih student untuk generate report"
-          description="Gunakan filter di atas untuk memilih student dan periode report, lalu klik Generate."
+          title="Pilih academy dan student untuk generate report"
+          description="Gunakan filter di atas untuk memilih academy, student, dan periode report, lalu klik Generate."
         />
       ) : null}
 
@@ -75,7 +76,7 @@ export default function StudentProgressReport() {
       {submittedFilter && progressQuery.isError ? (
         <ErrorMessage
           title="Gagal memuat progress report"
-          message="Pastikan Anda memiliki permission REPORT_PROGRESS_READ dan coba generate ulang."
+          message="Pastikan academy, student, dan permission REPORT_PROGRESS_READ sudah sesuai lalu coba generate ulang."
         />
       ) : null}
 
