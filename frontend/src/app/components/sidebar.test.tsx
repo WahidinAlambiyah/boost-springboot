@@ -68,6 +68,21 @@ describe("Sidebar", () => {
     expect(screen.getByRole("link", { name: "Dev Tools" })).toHaveAttribute("href", "/dev");
   });
 
+  it("renders compact labels when collapsed", () => {
+    const payload: MenuItemResponse[] = [
+      { id: "1", label: "Dashboard", path: "/dashboard", visible: true, children: [] },
+      { id: "2", label: "User Management", path: "/users", visible: true, children: [] },
+    ];
+
+    useAuthStore.setState({ menu: payload });
+    render(<Sidebar collapsed />);
+
+    expect(screen.getByLabelText("Sidebar navigation")).toHaveClass("w-20");
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("title", "Dashboard");
+    expect(screen.getByText("DA")).toBeInTheDocument();
+    expect(screen.getByText("UM")).toBeInTheDocument();
+  });
+
   it("writes observability log when fallback is active", () => {
     const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
 
