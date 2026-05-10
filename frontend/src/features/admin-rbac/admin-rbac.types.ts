@@ -1,10 +1,26 @@
 export interface AdminSliceResponse<T> {
-  content: T[];
+  items: T[];
+  content?: T[];
   page: number;
   size: number;
   hasNext: boolean;
-  sortBy: string;
-  sortDirection: "asc" | "desc";
+  hasPrevious: boolean;
+  sort: string;
+  direction: "asc" | "desc" | string;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+}
+
+export interface AdminDatatableParams {
+  search?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+  direction?: "asc" | "desc";
+  active?: boolean | null;
+  roleCode?: string;
+  permissionCode?: string;
+  module?: string;
 }
 
 export interface AdminUser {
