@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,6 +29,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/rbac")
 public class AdminRbacController {
+
+    private static final Map<String, String> USER_SORT_COLUMNS = Map.of(
+            "username", "u.username",
+            "email", "u.email",
+            "fullName", "u.full_name",
+            "active", "u.is_active",
+            "createdAt", "u.created_at",
+            "updatedAt", "u.updated_at"
+    );
+
+    private static final Map<String, String> ROLE_SORT_COLUMNS = Map.of(
+            "code", "r.code",
+            "name", "r.name",
+            "active", "r.is_active",
+            "createdAt", "r.created_at",
+            "updatedAt", "r.updated_at"
+    );
+
+    private static final Map<String, String> PERMISSION_SORT_COLUMNS = Map.of(
+            "code", "code",
+            "name", "name",
+            "module", "module nulls last",
+            "active", "is_active",
+            "createdAt", "created_at",
+            "updatedAt", "updated_at"
+    );
 
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
@@ -53,7 +79,9 @@ public class AdminRbacController {
         int safePage = safePage(page);
         int safeSize = safeSize(size);
         int offset = safePage * safeSize;
-        String orderBy = resolveOrderBy(sort, direction, Set.of("username", "email", "fullName", "active", "createdAt", "updatedAt"), "u.created_at desc");
+        String safeSort = safeSort(sort, USER_SORT_COLUMNS, "createdAt");
+        String safeDirection = safeDirection(direction, "desc");
+        String orderBy = resolveOrderBy(safeSort, safeDirection, USER_SORT_COLUMNS);
 
         List<AdminUserResponse> rows = jdbcTemplate.query("""
                 select
@@ -96,7 +124,7 @@ public class AdminRbacController {
                 blankToNull(roleCode), blankToNull(roleCode),
                 safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Users loaded", toSlice(rows, safePage, safeSize, sort, direction));
+        return ApiResponse.success(200, "Users loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
     }
 
     @PostMapping("/users")
@@ -109,12 +137,7 @@ public class AdminRbacController {
                 values (?, ?, ?, ?, ?)
                 returning id
                 """, UUID.class,
-                request.username(),
-                request.email(),
-                passwordEncoder.encode(request.password()),
-                request.fullName(),
-                request.active());
-
+                request.username(), request.email(), passwordEncoder.encode(request.password()), request.fullName(), request.active());
         replaceUserRoles(userId, request.roleCodes());
         return ApiResponse.success(201, "User created", getUserById(userId));
     }
@@ -128,7 +151,6 @@ public class AdminRbacController {
                    set username = ?, email = ?, full_name = ?, is_active = ?, updated_at = now()
                  where id = ? and deleted_at is null
                 """, request.username(), request.email(), request.fullName(), request.active(), id);
-
         replaceUserRoles(id, request.roleCodes());
         return ApiResponse.success(200, "User updated", getUserById(id));
     }
@@ -180,7 +202,9 @@ public class AdminRbacController {
         int safePage = safePage(page);
         int safeSize = safeSize(size);
         int offset = safePage * safeSize;
-        String orderBy = resolveOrderBy(sort, direction, Set.of("code", "name", "active", "createdAt", "updatedAt"), "r.code asc");
+        String safeSort = safeSort(sort, ROLE_SORT_COLUMNS, "code");
+        String safeDirection = safeDirection(direction, "asc");
+        String orderBy = resolveOrderBy(safeSort, safeDirection, ROLE_SORT_COLUMNS);
 
         List<RoleResponse> rows = jdbcTemplate.query("""
                 select
@@ -222,7 +246,7 @@ public class AdminRbacController {
                 blankToNull(permissionCode), blankToNull(permissionCode),
                 safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Roles loaded", toSlice(rows, safePage, safeSize, sort, direction));
+        return ApiResponse.success(200, "Roles loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
     }
 
     @PostMapping("/roles")
@@ -275,7 +299,9 @@ public class AdminRbacController {
         int safePage = safePage(page);
         int safeSize = safeSize(size);
         int offset = safePage * safeSize;
-        String orderBy = resolveOrderBy(sort, direction, Set.of("code", "name", "module", "active", "createdAt", "updatedAt"), "module asc nulls last, code asc");
+        String safeSort = safeSort(sort, PERMISSION_SORT_COLUMNS, "module");
+        String safeDirection = safeDirection(direction, "asc");
+        String orderBy = resolveOrderBy(safeSort, safeDirection, PERMISSION_SORT_COLUMNS);
         String normalizedModule = normalizeSearch(module);
 
         List<PermissionResponse> rows = jdbcTemplate.query("""
@@ -301,7 +327,7 @@ public class AdminRbacController {
                 active, active,
                 normalizedModule, normalizedModule,
                 safeSize + 1, offset);
-        return ApiResponse.success(200, "Permissions loaded", toSlice(rows, safePage, safeSize, sort, direction));
+        return ApiResponse.success(200, "Permissions loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
     }
 
     @PostMapping("/permissions")
@@ -472,28 +498,29 @@ public class AdminRbacController {
         return Math.min(size, 100);
     }
 
-    private String resolveOrderBy(String sort, String direction, Set<String> allowedFields, String defaultOrderBy) {
-        if (sort == null || !allowedFields.contains(sort)) {
-            return defaultOrderBy;
+    private String safeSort(String sort, Map<String, String> sortColumns, String defaultSort) {
+        if (sort == null || !sortColumns.containsKey(sort)) {
+            return defaultSort;
         }
+        return sort;
+    }
 
-        String dir = "desc".equalsIgnoreCase(direction) ? "desc" : "asc";
-        String column = switch (sort) {
-            case "username" -> "u.username";
-            case "email" -> "u.email";
-            case "fullName" -> "u.full_name";
-            case "code" -> "code";
-            case "name" -> "name";
-            case "module" -> "module nulls last";
-            case "active" -> "is_active";
-            case "updatedAt" -> "updated_at";
-            case "createdAt" -> "created_at";
-            default -> null;
-        };
-        if (column == null) {
-            return defaultOrderBy;
+    private String safeDirection(String direction, String defaultDirection) {
+        if ("asc".equalsIgnoreCase(direction)) {
+            return "asc";
         }
-        return column + " " + dir;
+        if ("desc".equalsIgnoreCase(direction)) {
+            return "desc";
+        }
+        return defaultDirection;
+    }
+
+    private String resolveOrderBy(String sort, String direction, Map<String, String> sortColumns) {
+        String column = sortColumns.get(sort);
+        if (column == null) {
+            throw new IllegalArgumentException("Unsupported sort field: " + sort);
+        }
+        return column + " " + direction;
     }
 
     private <T> SliceResponse<T> toSlice(List<T> rows, int page, int size, String sort, String direction) {
