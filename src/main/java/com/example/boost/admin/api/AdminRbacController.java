@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/rbac")
 public class AdminRbacController {
 
-    private static final String SCHEMA = "fastworks_springboot";
-
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
 
@@ -41,9 +40,22 @@ public class AdminRbacController {
 
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ROLE_ADMIN')")
-    public ApiResponse<List<AdminUserResponse>> listUsers(@RequestParam(required = false) String search) {
+    public ApiResponse<SliceResponse<AdminUserResponse>> listUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String roleCode,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
         String keyword = normalizeSearch(search);
-        List<AdminUserResponse> users = jdbcTemplate.query("""
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        int offset = safePage * safeSize;
+        String orderBy = resolveOrderBy(sort, direction, Set.of("username", "email", "fullName", "active", "createdAt", "updatedAt"), "u.created_at desc");
+
+        List<AdminUserResponse> rows = jdbcTemplate.query("""
                 select
                     u.id,
                     u.username,
@@ -58,9 +70,17 @@ public class AdminRbacController {
                 left join fastworks_springboot.roles r on r.id = ur.role_id
                 where u.deleted_at is null
                   and (? is null or lower(u.username) like ? or lower(u.email) like ? or lower(coalesce(u.full_name, '')) like ?)
+                  and (? is null or u.is_active = ?)
+                  and (? is null or exists (
+                    select 1
+                      from fastworks_springboot.user_roles fur
+                      join fastworks_springboot.roles fr on fr.id = fur.role_id
+                     where fur.user_id = u.id and fr.code = ?
+                  ))
                 group by u.id, u.username, u.email, u.full_name, u.is_active, u.created_at, u.updated_at
-                order by u.created_at desc
-                """,
+                order by %s
+                limit ? offset ?
+                """.formatted(orderBy),
                 (rs, rowNum) -> new AdminUserResponse(
                         rs.getObject("id", UUID.class),
                         rs.getString("username"),
@@ -71,9 +91,12 @@ public class AdminRbacController {
                         rs.getString("created_at"),
                         rs.getString("updated_at")
                 ),
-                keyword, like(keyword), like(keyword), like(keyword));
+                keyword, like(keyword), like(keyword), like(keyword),
+                active, active,
+                blankToNull(roleCode), blankToNull(roleCode),
+                safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Users loaded", users);
+        return ApiResponse.success(200, "Users loaded", toSlice(rows, safePage, safeSize, sort, direction));
     }
 
     @PostMapping("/users")
@@ -144,9 +167,22 @@ public class AdminRbacController {
 
     @GetMapping("/roles")
     @PreAuthorize("hasAuthority('ROLE_READ') or hasAuthority('ROLE_ADMIN')")
-    public ApiResponse<List<RoleResponse>> listRoles(@RequestParam(required = false) String search) {
+    public ApiResponse<SliceResponse<RoleResponse>> listRoles(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String permissionCode,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "code") String sort,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
         String keyword = normalizeSearch(search);
-        List<RoleResponse> roles = jdbcTemplate.query("""
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        int offset = safePage * safeSize;
+        String orderBy = resolveOrderBy(sort, direction, Set.of("code", "name", "active", "createdAt", "updatedAt"), "r.code asc");
+
+        List<RoleResponse> rows = jdbcTemplate.query("""
                 select
                     r.id,
                     r.code,
@@ -159,10 +195,18 @@ public class AdminRbacController {
                 from fastworks_springboot.roles r
                 left join fastworks_springboot.role_permissions rp on rp.role_id = r.id
                 left join fastworks_springboot.permissions p on p.id = rp.permission_id
-                where ? is null or lower(r.code) like ? or lower(r.name) like ? or lower(coalesce(r.description, '')) like ?
+                where (? is null or lower(r.code) like ? or lower(r.name) like ? or lower(coalesce(r.description, '')) like ?)
+                  and (? is null or r.is_active = ?)
+                  and (? is null or exists (
+                    select 1
+                      from fastworks_springboot.role_permissions frp
+                      join fastworks_springboot.permissions fp on fp.id = frp.permission_id
+                     where frp.role_id = r.id and fp.code = ?
+                  ))
                 group by r.id, r.code, r.name, r.description, r.is_active, r.created_at, r.updated_at
-                order by r.code asc
-                """,
+                order by %s
+                limit ? offset ?
+                """.formatted(orderBy),
                 (rs, rowNum) -> new RoleResponse(
                         rs.getObject("id", UUID.class),
                         rs.getString("code"),
@@ -173,9 +217,12 @@ public class AdminRbacController {
                         rs.getString("created_at"),
                         rs.getString("updated_at")
                 ),
-                keyword, like(keyword), like(keyword), like(keyword));
+                keyword, like(keyword), like(keyword), like(keyword),
+                active, active,
+                blankToNull(permissionCode), blankToNull(permissionCode),
+                safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Roles loaded", roles);
+        return ApiResponse.success(200, "Roles loaded", toSlice(rows, safePage, safeSize, sort, direction));
     }
 
     @PostMapping("/roles")
@@ -215,14 +262,31 @@ public class AdminRbacController {
 
     @GetMapping("/permissions")
     @PreAuthorize("hasAuthority('PERMISSION_READ') or hasAuthority('ROLE_ADMIN')")
-    public ApiResponse<List<PermissionResponse>> listPermissions(@RequestParam(required = false) String search) {
+    public ApiResponse<SliceResponse<PermissionResponse>> listPermissions(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String module,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "module") String sort,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
         String keyword = normalizeSearch(search);
-        List<PermissionResponse> permissions = jdbcTemplate.query("""
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        int offset = safePage * safeSize;
+        String orderBy = resolveOrderBy(sort, direction, Set.of("code", "name", "module", "active", "createdAt", "updatedAt"), "module asc nulls last, code asc");
+        String normalizedModule = normalizeSearch(module);
+
+        List<PermissionResponse> rows = jdbcTemplate.query("""
                 select id, code, name, description, module, is_active, created_at::text, updated_at::text
                   from fastworks_springboot.permissions
-                 where ? is null or lower(code) like ? or lower(name) like ? or lower(coalesce(module, '')) like ?
-                 order by module nulls last, code asc
-                """,
+                 where (? is null or lower(code) like ? or lower(name) like ? or lower(coalesce(module, '')) like ?)
+                   and (? is null or is_active = ?)
+                   and (? is null or lower(coalesce(module, '')) = ?)
+                 order by %s
+                 limit ? offset ?
+                """.formatted(orderBy),
                 (rs, rowNum) -> new PermissionResponse(
                         rs.getObject("id", UUID.class),
                         rs.getString("code"),
@@ -233,8 +297,11 @@ public class AdminRbacController {
                         rs.getString("created_at"),
                         rs.getString("updated_at")
                 ),
-                keyword, like(keyword), like(keyword), like(keyword));
-        return ApiResponse.success(200, "Permissions loaded", permissions);
+                keyword, like(keyword), like(keyword), like(keyword),
+                active, active,
+                normalizedModule, normalizedModule,
+                safeSize + 1, offset);
+        return ApiResponse.success(200, "Permissions loaded", toSlice(rows, safePage, safeSize, sort, direction));
     }
 
     @PostMapping("/permissions")
@@ -377,6 +444,13 @@ public class AdminRbacController {
         return search.trim().toLowerCase();
     }
 
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
     private String like(String value) {
         if (value == null) {
             return null;
@@ -384,43 +458,59 @@ public class AdminRbacController {
         return "%" + value + "%";
     }
 
+    private int safePage(Integer page) {
+        if (page == null || page < 0) {
+            return 0;
+        }
+        return page;
+    }
+
+    private int safeSize(Integer size) {
+        if (size == null || size < 1) {
+            return 10;
+        }
+        return Math.min(size, 100);
+    }
+
+    private String resolveOrderBy(String sort, String direction, Set<String> allowedFields, String defaultOrderBy) {
+        if (sort == null || !allowedFields.contains(sort)) {
+            return defaultOrderBy;
+        }
+
+        String dir = "desc".equalsIgnoreCase(direction) ? "desc" : "asc";
+        String column = switch (sort) {
+            case "username" -> "u.username";
+            case "email" -> "u.email";
+            case "fullName" -> "u.full_name";
+            case "code" -> "code";
+            case "name" -> "name";
+            case "module" -> "module nulls last";
+            case "active" -> "is_active";
+            case "updatedAt" -> "updated_at";
+            case "createdAt" -> "created_at";
+            default -> null;
+        };
+        if (column == null) {
+            return defaultOrderBy;
+        }
+        return column + " " + dir;
+    }
+
+    private <T> SliceResponse<T> toSlice(List<T> rows, int page, int size, String sort, String direction) {
+        boolean hasNext = rows.size() > size;
+        List<T> items = hasNext ? rows.subList(0, size) : rows;
+        return new SliceResponse<>(items, page, size, hasNext, page > 0, sort, direction);
+    }
+
+    public record SliceResponse<T>(List<T> items, int page, int size, boolean hasNext, boolean hasPrevious, String sort, String direction) {}
     public record AdminUserResponse(UUID id, String username, String email, String fullName, boolean active, List<String> roles, String createdAt, String updatedAt) {}
     public record RoleResponse(UUID id, String code, String name, String description, boolean active, List<String> permissions, String createdAt, String updatedAt) {}
     public record PermissionResponse(UUID id, String code, String name, String description, String module, boolean active, String createdAt, String updatedAt) {}
 
-    public record CreateUserRequest(
-            @NotBlank @Size(max = 50) String username,
-            @NotBlank @Email @Size(max = 255) String email,
-            @NotBlank @Size(min = 8, max = 100) String password,
-            @Size(max = 255) String fullName,
-            @NotNull Boolean active,
-            List<String> roleCodes
-    ) {}
-
-    public record UpdateUserRequest(
-            @NotBlank @Size(max = 50) String username,
-            @NotBlank @Email @Size(max = 255) String email,
-            @Size(max = 255) String fullName,
-            @NotNull Boolean active,
-            List<String> roleCodes
-    ) {}
-
+    public record CreateUserRequest(@NotBlank @Size(max = 50) String username, @NotBlank @Email @Size(max = 255) String email, @NotBlank @Size(min = 8, max = 100) String password, @Size(max = 255) String fullName, @NotNull Boolean active, List<String> roleCodes) {}
+    public record UpdateUserRequest(@NotBlank @Size(max = 50) String username, @NotBlank @Email @Size(max = 255) String email, @Size(max = 255) String fullName, @NotNull Boolean active, List<String> roleCodes) {}
     public record UpdatePasswordRequest(@NotBlank @Size(min = 8, max = 100) String password) {}
     public record UpdateActiveRequest(@NotNull Boolean active) {}
-
-    public record RoleRequest(
-            @NotBlank @Size(max = 100) String code,
-            @NotBlank @Size(max = 150) String name,
-            @Size(max = 500) String description,
-            @NotNull Boolean active,
-            List<String> permissionCodes
-    ) {}
-
-    public record PermissionRequest(
-            @NotBlank @Size(max = 150) String code,
-            @NotBlank @Size(max = 150) String name,
-            @Size(max = 500) String description,
-            @Size(max = 100) String module,
-            @NotNull Boolean active
-    ) {}
+    public record RoleRequest(@NotBlank @Size(max = 100) String code, @NotBlank @Size(max = 150) String name, @Size(max = 500) String description, @NotNull Boolean active, List<String> permissionCodes) {}
+    public record PermissionRequest(@NotBlank @Size(max = 150) String code, @NotBlank @Size(max = 150) String name, @Size(max = 500) String description, @Size(max = 100) String module, @NotNull Boolean active) {}
 }
