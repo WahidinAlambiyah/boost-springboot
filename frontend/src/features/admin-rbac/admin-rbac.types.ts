@@ -1,3 +1,12 @@
+export interface AdminSliceResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  hasNext: boolean;
+  sortBy: string;
+  sortDirection: "asc" | "desc";
+}
+
 export interface AdminUser {
   id: string;
   username: string;
