@@ -2,6 +2,12 @@
 
 import { useRouter } from "next/navigation";
 
+import {
+  CloseIcon,
+  HamburgerIcon,
+  TailAdminNotificationDropdown,
+  TailAdminUserDropdown,
+} from "@/app/components/tailadmin";
 import { logoutSession } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 
@@ -22,41 +28,30 @@ export default function Topbar({ isSidebarCollapsed = false, onToggleSidebar }: 
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-expanded={!isSidebarCollapsed}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-zinc-300 text-zinc-700 transition-colors hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-        >
-          <span className="sr-only">{isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
-          <span className="flex flex-col gap-1" aria-hidden="true">
-            <span className="h-0.5 w-5 rounded bg-current" />
-            <span className="h-0.5 w-5 rounded bg-current" />
-            <span className="h-0.5 w-5 rounded bg-current" />
-          </span>
-        </button>
+    <header className="sticky top-0 z-40 flex w-full border-b border-gray-200 bg-white">
+      <div className="flex grow items-center justify-between gap-3 px-3 py-3 sm:gap-4 lg:px-6 lg:py-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!isSidebarCollapsed}
+            className="z-40 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            <span className="sr-only">{isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
+            {isSidebarCollapsed ? <HamburgerIcon /> : <CloseIcon className="h-6 w-6" />}
+          </button>
 
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Boost</p>
-          <p className="text-lg font-semibold text-zinc-900">Admin Console</p>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Boost</p>
+            <p className="text-base font-semibold text-gray-900 sm:text-lg">Admin Console</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-4">
-        <div className="text-right">
-          <p className="text-sm font-medium text-zinc-900">{user?.username ?? "Unknown User"}</p>
-          <p className="text-xs text-zinc-500">{user?.email ?? "No email"}</p>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <TailAdminNotificationDropdown />
+          <TailAdminUserDropdown username={user?.username} email={user?.email} onLogout={handleLogout} />
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100"
-        >
-          Logout
-        </button>
       </div>
     </header>
   );

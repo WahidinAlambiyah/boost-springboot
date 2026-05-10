@@ -12,17 +12,18 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const mainContentMargin = isSidebarCollapsed ? "lg:ml-[90px]" : "lg:ml-[290px]";
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-gray-50 xl:flex">
       <HttpDebugDrawer />
-      <Topbar
-        isSidebarCollapsed={isSidebarCollapsed}
-        onToggleSidebar={() => setIsSidebarCollapsed((currentValue) => !currentValue)}
-      />
-      <div className="flex min-h-[calc(100vh-4rem)]">
-        <Sidebar collapsed={isSidebarCollapsed} />
-        <main className="min-w-0 flex-1 p-6 transition-all duration-200">{children}</main>
+      <Sidebar collapsed={isSidebarCollapsed} />
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
+        <Topbar
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={() => setIsSidebarCollapsed((currentValue) => !currentValue)}
+        />
+        <main className="mx-auto min-w-0 max-w-screen-2xl p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
