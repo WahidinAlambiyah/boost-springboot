@@ -1,10 +1,22 @@
-# TailAdmin Pro Migration Plan
+# TailAdmin Pro / TailAdmin Free Migration Plan
 
-Tujuan dokumen ini adalah memandu migrasi UI admin existing ke gaya TailAdmin Pro secara bertahap tanpa merusak auth, RBAC menu, API service, route, dan flow backend yang sudah berjalan.
+Tujuan dokumen ini adalah memandu migrasi UI admin existing ke gaya TailAdmin secara bertahap tanpa merusak auth, RBAC menu, API service, route, dan flow backend yang sudah berjalan.
+
+## Source Reference
+
+Referensi UI yang digunakan untuk phase awal:
+
+- `TailAdmin/free-nextjs-admin-dashboard`
+- Pattern utama yang diadaptasi: fixed sidebar, sticky header, collapsed width `90px`, expanded width `290px`, dan main content margin dinamis.
+
+Catatan lisensi:
+
+- Source TailAdmin Free adalah referensi public.
+- Source TailAdmin Pro berlisensi tidak boleh dicopy ke repo tanpa memastikan lisensi dan permission penggunaan.
 
 ## Prinsip Utama
 
-- TailAdmin Pro dipakai sebagai UI/layout layer, bukan mengganti business logic aplikasi.
+- TailAdmin dipakai sebagai UI/layout layer, bukan mengganti business logic aplikasi.
 - Auth, JWT, `useAuthStore`, protected route, permission guard, dan API client existing tetap dipertahankan.
 - Menu sidebar tetap berasal dari backend/RBAC. Template hanya mengubah tampilan dan interaksi.
 - Migrasi dilakukan per phase dan per branch agar mudah rollback.
@@ -20,8 +32,8 @@ Output:
 
 Checklist:
 
-- Pastikan source TailAdmin Pro tersedia secara legal.
-- Cek apakah TailAdmin Pro memakai Next.js, React, Tailwind, icon package, chart package, datepicker, dan UI helper lain.
+- Pastikan source TailAdmin Pro tersedia secara legal bila nanti ingin memakai versi Pro.
+- Cek apakah TailAdmin memakai Next.js, React, Tailwind, icon package, chart package, datepicker, dan UI helper lain.
 - Jangan replace folder `src/app`, `src/lib`, `src/store`, atau service API existing.
 
 ## Phase 1 — Design Token & Shared UI Foundation
@@ -44,8 +56,8 @@ Scope coding:
 Output:
 
 - App shell bergaya TailAdmin.
-- Sidebar responsive + collapsed/expanded.
-- Topbar dengan hamburger, user dropdown area, dan layout yang lebih modern.
+- Sidebar fixed responsive baseline + collapsed/expanded.
+- Topbar sticky dengan hamburger dan user area.
 - Tetap menggunakan menu backend dari `useAuthStore`.
 
 Scope coding:
@@ -119,6 +131,7 @@ Saat mengerjakan TailAdmin migration:
 
 ## Status
 
-- Phase 0: Started
-- Phase 1: Next
-- Phase 2: Partially available via collapsible sidebar baseline
+- Phase 0: Done
+- Phase 1: Started — foundation components added
+- Phase 2: Started — app shell, topbar, and sidebar adapted to TailAdmin Free layout pattern
+- Phase 3: Next — dashboard visual migration
