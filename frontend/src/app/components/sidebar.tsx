@@ -93,14 +93,19 @@ function SidebarItem({ item, pathname, level = 0, collapsed = false }: SidebarIt
   const hasChildren = children.length > 0;
   const isActive = Boolean(item.path) && pathname === item.path;
   const itemTitle = collapsed && level === 0 ? item.label : undefined;
-  const collapsedClassName = collapsed && level === 0 ? "justify-center px-2" : "px-3";
   const itemContent = collapsed && level === 0 ? (
     <span aria-hidden="true" className="text-xs font-semibold uppercase">
       {getMenuInitials(item.label)}
     </span>
   ) : (
-    item.label
+    <span className="truncate">{item.label}</span>
   );
+  const itemBaseClassName =
+    "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200";
+  const activeClassName = isActive
+    ? "bg-blue-50 text-blue-700"
+    : "text-gray-700 hover:bg-gray-50 hover:text-blue-700";
+  const collapsedClassName = collapsed && level === 0 ? "justify-center" : "justify-start";
 
   return (
     <div className="flex flex-col gap-1">
@@ -109,25 +114,33 @@ function SidebarItem({ item, pathname, level = 0, collapsed = false }: SidebarIt
           href={item.path}
           title={itemTitle}
           aria-label={collapsed && level === 0 ? item.label : undefined}
-          className={`flex rounded-md py-2 text-sm transition-colors ${collapsedClassName} ${
-            isActive ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100"
-          }`}
+          className={`${itemBaseClassName} ${activeClassName} ${collapsedClassName}`}
           style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
         >
-          {itemContent}
+          <span
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold ${
+              isActive ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-blue-700"
+            }`}
+          >
+            {getMenuInitials(item.label)}
+          </span>
+          {!collapsed || level > 0 ? itemContent : null}
         </Link>
       ) : (
         <p
           title={itemTitle}
-          className={`py-2 text-sm font-medium text-zinc-600 ${collapsedClassName}`}
+          className={`${itemBaseClassName} ${collapsedClassName} text-gray-500`}
           style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
         >
-          {itemContent}
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs font-semibold text-gray-500">
+            {getMenuInitials(item.label)}
+          </span>
+          {!collapsed || level > 0 ? itemContent : null}
         </p>
       )}
 
       {hasChildren && !collapsed ? (
-        <div className="flex flex-col gap-1">
+        <div className="ml-4 flex flex-col gap-1 border-l border-gray-100 pl-2">
           {children.map((child) => (
             <SidebarItem key={child.id} item={child} pathname={pathname} level={level + 1} collapsed={collapsed} />
           ))}
@@ -148,23 +161,43 @@ export default function Sidebar({ collapsed = false }: SidebarProps) {
 
   return (
     <aside
-      className={`border-r border-zinc-200 bg-white p-4 transition-all duration-200 ${collapsed ? "w-20" : "w-64"}`}
+      className={`fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out ${
+        collapsed ? "w-[90px]" : "w-[290px]"
+      }`}
       aria-label="Sidebar navigation"
     >
-      <p className={`mb-3 text-sm font-semibold uppercase text-zinc-500 ${collapsed ? "text-center text-xs" : ""}`}>
-        {collapsed ? "Nav" : "Navigation"}
-      </p>
-      {visibleMenu.length === 0 ? (
-        <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-sm text-zinc-500">
-          {collapsed ? "-" : "Tidak ada menu yang tersedia."}
-        </div>
-      ) : (
-        <nav className="flex flex-col gap-2">
-          {visibleMenu.map((item) => (
-            <SidebarItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} />
-          ))}
+      <div className={`flex py-8 ${collapsed ? "justify-center" : "justify-start"}`}>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">
+            B
+          </span>
+          {!collapsed ? (
+            <span>
+              <span className="block text-sm font-semibold uppercase tracking-wide text-gray-400">Boost</span>
+              <span className="block text-lg font-semibold text-gray-900">Admin</span>
+            </span>
+          ) : null}
+        </Link>
+      </div>
+
+      <div className="flex flex-1 flex-col overflow-y-auto pb-6">
+        <nav className="mb-6">
+          <h2 className={`mb-4 flex text-xs uppercase leading-5 text-gray-400 ${collapsed ? "justify-center" : "justify-start"}`}>
+            {collapsed ? "•••" : "Menu"}
+          </h2>
+          {visibleMenu.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-4 text-sm text-gray-500">
+              {collapsed ? "-" : "Tidak ada menu yang tersedia."}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {visibleMenu.map((item) => (
+                <SidebarItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} />
+              ))}
+            </div>
+          )}
         </nav>
-      )}
+      </div>
     </aside>
   );
 }
