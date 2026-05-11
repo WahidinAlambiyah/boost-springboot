@@ -50,7 +50,7 @@ public class AdminRbacController {
     private static final Map<String, String> PERMISSION_SORT_COLUMNS = Map.of(
             "code", "code",
             "name", "name",
-            "module", "module nulls last",
+            "module", "module",
             "active", "is_active",
             "createdAt", "created_at",
             "updatedAt", "updated_at"
@@ -124,7 +124,13 @@ public class AdminRbacController {
                 blankToNull(roleCode), blankToNull(roleCode),
                 safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Users loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+        return ApiResponse.success(200, "Data pengguna berhasil dimuat", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+    }
+
+    @GetMapping("/users/{id}")
+    @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<AdminUserResponse> getUser(@PathVariable UUID id) {
+        return ApiResponse.success(200, "Detail pengguna berhasil dimuat", getUserById(id));
     }
 
     @PostMapping("/users")
@@ -139,7 +145,7 @@ public class AdminRbacController {
                 """, UUID.class,
                 request.username(), request.email(), passwordEncoder.encode(request.password()), request.fullName(), request.active());
         replaceUserRoles(userId, request.roleCodes());
-        return ApiResponse.success(201, "User created", getUserById(userId));
+        return ApiResponse.success(201, "Pengguna berhasil dibuat", getUserById(userId));
     }
 
     @PutMapping("/users/{id}")
@@ -152,7 +158,7 @@ public class AdminRbacController {
                  where id = ? and deleted_at is null
                 """, request.username(), request.email(), request.fullName(), request.active(), id);
         replaceUserRoles(id, request.roleCodes());
-        return ApiResponse.success(200, "User updated", getUserById(id));
+        return ApiResponse.success(200, "Pengguna berhasil diperbarui", getUserById(id));
     }
 
     @PatchMapping("/users/{id}/password")
@@ -164,7 +170,7 @@ public class AdminRbacController {
                    set password_hash = ?, updated_at = now()
                  where id = ? and deleted_at is null
                 """, passwordEncoder.encode(request.password()), id);
-        return ApiResponse.success(200, "Password updated", getUserById(id));
+        return ApiResponse.success(200, "Kata sandi berhasil diperbarui", getUserById(id));
     }
 
     @PatchMapping("/users/{id}/active")
@@ -176,7 +182,7 @@ public class AdminRbacController {
                    set is_active = ?, updated_at = now()
                  where id = ? and deleted_at is null
                 """, request.active(), id);
-        return ApiResponse.success(200, request.active() ? "User enabled" : "User disabled", getUserById(id));
+        return ApiResponse.success(200, request.active() ? "Pengguna berhasil diaktifkan" : "Pengguna berhasil dinonaktifkan", getUserById(id));
     }
 
     @DeleteMapping("/users/{id}")
@@ -184,7 +190,7 @@ public class AdminRbacController {
     @PreAuthorize("hasAuthority('USER_DELETE') or hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> deleteUser(@PathVariable UUID id) {
         jdbcTemplate.update("update fastworks_springboot.users set deleted_at = now(), updated_at = now() where id = ? and deleted_at is null", id);
-        return ApiResponse.success(200, "User deleted", null);
+        return ApiResponse.success(200, "Pengguna berhasil dihapus", null);
     }
 
     @GetMapping("/roles")
@@ -246,7 +252,13 @@ public class AdminRbacController {
                 blankToNull(permissionCode), blankToNull(permissionCode),
                 safeSize + 1, offset);
 
-        return ApiResponse.success(200, "Roles loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+        return ApiResponse.success(200, "Data role berhasil dimuat", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+    }
+
+    @GetMapping("/roles/{id}")
+    @PreAuthorize("hasAuthority('ROLE_READ') or hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<RoleResponse> getRole(@PathVariable UUID id) {
+        return ApiResponse.success(200, "Detail role berhasil dimuat", getRoleById(id));
     }
 
     @PostMapping("/roles")
@@ -260,7 +272,7 @@ public class AdminRbacController {
                 returning id
                 """, UUID.class, request.code(), request.name(), request.description(), request.active());
         replaceRolePermissions(roleId, request.permissionCodes());
-        return ApiResponse.success(201, "Role created", getRoleById(roleId));
+        return ApiResponse.success(201, "Role berhasil dibuat", getRoleById(roleId));
     }
 
     @PutMapping("/roles/{id}")
@@ -273,7 +285,7 @@ public class AdminRbacController {
                  where id = ?
                 """, request.code(), request.name(), request.description(), request.active(), id);
         replaceRolePermissions(id, request.permissionCodes());
-        return ApiResponse.success(200, "Role updated", getRoleById(id));
+        return ApiResponse.success(200, "Role berhasil diperbarui", getRoleById(id));
     }
 
     @DeleteMapping("/roles/{id}")
@@ -281,7 +293,7 @@ public class AdminRbacController {
     @PreAuthorize("hasAuthority('ROLE_DELETE') or hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> deleteRole(@PathVariable UUID id) {
         jdbcTemplate.update("delete from fastworks_springboot.roles where id = ?", id);
-        return ApiResponse.success(200, "Role deleted", null);
+        return ApiResponse.success(200, "Role berhasil dihapus", null);
     }
 
     @GetMapping("/permissions")
@@ -327,7 +339,13 @@ public class AdminRbacController {
                 active, active,
                 normalizedModule, normalizedModule,
                 safeSize + 1, offset);
-        return ApiResponse.success(200, "Permissions loaded", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+        return ApiResponse.success(200, "Data permission berhasil dimuat", toSlice(rows, safePage, safeSize, safeSort, safeDirection));
+    }
+
+    @GetMapping("/permissions/{id}")
+    @PreAuthorize("hasAuthority('PERMISSION_READ') or hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<PermissionResponse> getPermission(@PathVariable UUID id) {
+        return ApiResponse.success(200, "Detail permission berhasil dimuat", getPermissionById(id));
     }
 
     @PostMapping("/permissions")
@@ -340,7 +358,7 @@ public class AdminRbacController {
                 values (?, ?, ?, ?, ?)
                 returning id
                 """, UUID.class, request.code(), request.name(), request.description(), request.module(), request.active());
-        return ApiResponse.success(201, "Permission created", getPermissionById(id));
+        return ApiResponse.success(201, "Permission berhasil dibuat", getPermissionById(id));
     }
 
     @PutMapping("/permissions/{id}")
@@ -352,7 +370,7 @@ public class AdminRbacController {
                    set code = ?, name = ?, description = ?, module = ?, is_active = ?, updated_at = now()
                  where id = ?
                 """, request.code(), request.name(), request.description(), request.module(), request.active(), id);
-        return ApiResponse.success(200, "Permission updated", getPermissionById(id));
+        return ApiResponse.success(200, "Permission berhasil diperbarui", getPermissionById(id));
     }
 
     @DeleteMapping("/permissions/{id}")
@@ -360,7 +378,7 @@ public class AdminRbacController {
     @PreAuthorize("hasAuthority('PERMISSION_DELETE') or hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> deletePermission(@PathVariable UUID id) {
         jdbcTemplate.update("delete from fastworks_springboot.permissions where id = ?", id);
-        return ApiResponse.success(200, "Permission deleted", null);
+        return ApiResponse.success(200, "Permission berhasil dihapus", null);
     }
 
     private AdminUserResponse getUserById(UUID id) {
@@ -520,7 +538,8 @@ public class AdminRbacController {
         if (column == null) {
             throw new IllegalArgumentException("Unsupported sort field: " + sort);
         }
-        return column + " " + direction;
+        String nullHandling = "module".equals(sort) ? " nulls last" : "";
+        return column + " " + direction + nullHandling;
     }
 
     private <T> SliceResponse<T> toSlice(List<T> rows, int page, int size, String sort, String direction) {
