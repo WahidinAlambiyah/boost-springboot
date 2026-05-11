@@ -6,7 +6,6 @@ import com.example.boost.lookup.application.LookupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +22,12 @@ import java.util.UUID;
 @RestController
 @Tag(name = "Lookup", description = "Lightweight dropdown/select options for frontend forms")
 @RequestMapping("/api/lookups")
-@RequiredArgsConstructor
 public class LookupController {
     private final LookupService lookupService;
+
+    public LookupController(LookupService lookupService) {
+        this.lookupService = lookupService;
+    }
 
     @GetMapping("/academies")
     @PreAuthorize("hasAnyAuthority('LOOKUP_READ','ACADEMY_READ')")
