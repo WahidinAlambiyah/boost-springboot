@@ -1,0 +1,127 @@
+databaseChangeLog:
+  - changeSet:
+      id: 034-reorganize-menu-structure-phase-1
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              insert into fastworks_springboot.menus (parent_id, code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              values
+                (null, 'DASHBOARD',     'Dashboard',             '/dashboard', 'grid',     10, true, true, now(), now()),
+                (null, 'OPERATIONS',    'Operasional Latihan',   null,         'calendar', 20, true, true, now(), now()),
+                (null, 'MASTER_DATA',   'Master Data',           null,         'box',      30, true, true, now(), now()),
+                (null, 'FINANCE',       'Keuangan',              null,         'pie',      40, true, true, now(), now()),
+                (null, 'REPORTS',       'Laporan',               null,         'pie',      50, true, true, now(), now()),
+                (null, 'ADMIN',         'Administrasi Sistem',   '/admin',     'lock',     60, true, true, now(), now()),
+                (null, 'NOTIFICATIONS', 'Notifikasi',            null,         'plugin',   70, true, true, now(), now())
+              on conflict (code) do update
+                set parent_id = null,
+                    name = excluded.name,
+                    path = excluded.path,
+                    icon = excluded.icon,
+                    order_no = excluded.order_no,
+                    is_active = true,
+                    is_visible = true,
+                    updated_at = now();
+
+              insert into fastworks_springboot.menus (parent_id, code, name, path, icon, order_no, is_active, is_visible, created_at, updated_at)
+              select parent.id, child.code, child.name, child.path, child.icon, child.order_no, true, true, now(), now()
+              from (
+                values
+                  ('OPERATIONS',    'SCHEDULING',                 'Jadwal Latihan',       '/operations/schedules',         'calendar', 10),
+                  ('OPERATIONS',    'ATTENDANCE',                 'Absensi',              '/operations/attendance',        'table',    20),
+                  ('OPERATIONS',    'ENROLLMENT',                 'Pendaftaran',          '/operations/enrollment',        'list',     30),
+                  ('OPERATIONS',    'OPERATION_STUDENT_PROGRESS', 'Laporan Perkembangan', '/operations/student-progress',  'page',     40),
+
+                  ('MASTER_DATA',   'ACADEMIES',                  'Akademi',              '/master/academies',             'box',      10),
+                  ('MASTER_DATA',   'ACADEMY_LOCATIONS',          'Lokasi Akademi',       '/master/academy-locations',     'page',     20),
+                  ('MASTER_DATA',   'STUDENTS',                   'Siswa',                '/master/students',              'user',     30),
+                  ('MASTER_DATA',   'COACH_PROFILES',             'Coach',                '/master/coaches',               'user',     40),
+                  ('MASTER_DATA',   'CATALOG',                    'Paket Latihan',        '/master/training-packages',     'table',    50),
+                  ('MASTER_DATA',   'ASSESSMENT_SKILLS',          'Skill Penilaian',      '/master/assessment-skills',     'list',     60),
+
+                  ('FINANCE',       'BILLING',                    'Tagihan',              '/finance/billings',             'pie',      10),
+                  ('FINANCE',       'FINANCE_PAYMENTS',           'Pembayaran',           '/finance/payments',             'table',    20),
+
+                  ('REPORTS',       'REPORT_STUDENT_PROGRESS',    'Progress Siswa',       '/reports/student-progress',     'page',     10),
+                  ('REPORTS',       'REPORT_ATTENDANCE',          'Laporan Absensi',      '/reports/attendance',           'table',    20),
+                  ('REPORTS',       'REPORT_FINANCE',             'Laporan Keuangan',     '/reports/finance',              'pie',      30),
+
+                  ('ADMIN',         'ADMIN_USER',                 'Pengguna',             '/admin/users',                  'user',     10),
+                  ('ADMIN',         'ADMIN_ROLE',                 'Role',                 '/admin/roles',                  'lock',     20),
+                  ('ADMIN',         'ADMIN_PERMISSION',           'Permission',           '/admin/permissions',            'lock',     30),
+                  ('ADMIN',         'ADMIN_AUDIT',                'Audit Log',            '/admin/audit-log',              'page',     40),
+
+                  ('NOTIFICATIONS', 'NOTIFICATION_TEMPLATES',     'Template Notifikasi',  '/notifications/templates',      'plugin',   10),
+                  ('NOTIFICATIONS', 'NOTIFICATION',               'Riwayat Notifikasi',   '/notifications/history',        'plugin',   20)
+              ) as child(parent_code, code, name, path, icon, order_no)
+              join fastworks_springboot.menus parent on parent.code = child.parent_code
+              on conflict (code) do update
+                set parent_id = excluded.parent_id,
+                    name = excluded.name,
+                    path = excluded.path,
+                    icon = excluded.icon,
+                    order_no = excluded.order_no,
+                    is_active = true,
+                    is_visible = true,
+                    updated_at = now();
+
+              with menu_perm(menu_code, perm_code) as (
+                values
+                  ('DASHBOARD',                  'DASHBOARD_OWNER_READ'),
+                  ('DASHBOARD',                  'REPORT_EXPORT'),
+
+                  ('OPERATIONS',                 'SCHEDULE_READ'),
+                  ('OPERATIONS',                 'ATTENDANCE_READ'),
+                  ('OPERATIONS',                 'ENROLLMENT_READ'),
+                  ('OPERATIONS',                 'REPORT_PROGRESS_READ'),
+                  ('SCHEDULING',                 'SCHEDULE_READ'),
+                  ('ATTENDANCE',                 'ATTENDANCE_READ'),
+                  ('ENROLLMENT',                 'ENROLLMENT_READ'),
+                  ('OPERATION_STUDENT_PROGRESS', 'REPORT_PROGRESS_READ'),
+
+                  ('MASTER_DATA',                'ACADEMY_READ'),
+                  ('MASTER_DATA',                'LOCATION_READ'),
+                  ('MASTER_DATA',                'STUDENT_READ'),
+                  ('MASTER_DATA',                'COACH_READ'),
+                  ('MASTER_DATA',                'PACKAGE_READ'),
+                  ('MASTER_DATA',                'ASSESSMENT_READ'),
+                  ('ACADEMIES',                  'ACADEMY_READ'),
+                  ('ACADEMY_LOCATIONS',          'LOCATION_READ'),
+                  ('STUDENTS',                   'STUDENT_READ'),
+                  ('COACH_PROFILES',             'COACH_READ'),
+                  ('CATALOG',                    'PACKAGE_READ'),
+                  ('CATALOG',                    'CLASS_READ'),
+                  ('ASSESSMENT_SKILLS',          'ASSESSMENT_READ'),
+
+                  ('FINANCE',                    'BILLING_READ'),
+                  ('BILLING',                    'BILLING_READ'),
+                  ('FINANCE_PAYMENTS',           'BILLING_READ'),
+
+                  ('REPORTS',                    'REPORT_PROGRESS_READ'),
+                  ('REPORTS',                    'ATTENDANCE_READ'),
+                  ('REPORTS',                    'BILLING_READ'),
+                  ('REPORT_STUDENT_PROGRESS',    'REPORT_PROGRESS_READ'),
+                  ('REPORT_ATTENDANCE',          'ATTENDANCE_READ'),
+                  ('REPORT_FINANCE',             'BILLING_READ'),
+
+                  ('ADMIN',                      'USER_READ'),
+                  ('ADMIN',                      'ROLE_READ'),
+                  ('ADMIN',                      'PERMISSION_READ'),
+                  ('ADMIN_USER',                 'USER_READ'),
+                  ('ADMIN_ROLE',                 'ROLE_READ'),
+                  ('ADMIN_PERMISSION',           'PERMISSION_READ'),
+                  ('ADMIN_AUDIT',                'AUDIT_READ'),
+
+                  ('NOTIFICATIONS',              'NOTIFICATION_READ'),
+                  ('NOTIFICATION_TEMPLATES',     'NOTIFICATION_READ'),
+                  ('NOTIFICATION',               'NOTIFICATION_READ')
+              )
+              insert into fastworks_springboot.menu_permissions (menu_id, permission_id, match_mode, created_at)
+              select distinct m.id, p.id, 'ANY', now()
+              from menu_perm mp
+              join fastworks_springboot.menus m on m.code = mp.menu_code
+              join fastworks_springboot.permissions p on p.code = mp.perm_code
+              on conflict (menu_id, permission_id) do nothing;
