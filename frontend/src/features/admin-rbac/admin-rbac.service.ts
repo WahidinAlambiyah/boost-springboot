@@ -46,6 +46,11 @@ export const adminRbacService = {
     return normalizeSlice(response.data.data);
   },
 
+  async getUser(id: string): Promise<AdminUser> {
+    const response = await api.get<ApiResponse<AdminUser>>(`/api/admin/rbac/users/${id}`);
+    return response.data.data;
+  },
+
   async createUser(payload: AdminUserCreateRequest): Promise<AdminUser> {
     const response = await api.post<ApiResponse<AdminUser>>("/api/admin/rbac/users", payload);
     return response.data.data;
@@ -77,6 +82,11 @@ export const adminRbacService = {
     return normalizeSlice(response.data.data);
   },
 
+  async getRole(id: string): Promise<AdminRole> {
+    const response = await api.get<ApiResponse<AdminRole>>(`/api/admin/rbac/roles/${id}`);
+    return response.data.data;
+  },
+
   async createRole(payload: AdminRoleRequest): Promise<AdminRole> {
     const response = await api.post<ApiResponse<AdminRole>>("/api/admin/rbac/roles", payload);
     return response.data.data;
@@ -96,6 +106,11 @@ export const adminRbacService = {
       params: buildParams(params),
     });
     return normalizeSlice(response.data.data);
+  },
+
+  async getPermission(id: string): Promise<AdminPermission> {
+    const response = await api.get<ApiResponse<AdminPermission>>(`/api/admin/rbac/permissions/${id}`);
+    return response.data.data;
   },
 
   async createPermission(payload: AdminPermissionRequest): Promise<AdminPermission> {
