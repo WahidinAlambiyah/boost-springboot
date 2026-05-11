@@ -166,23 +166,16 @@ const normalizeMenuItem = (item: MenuItemResponse): MenuItemResponse => {
 };
 
 const hasVisibleChildren = (item: MenuItemResponse): boolean => item.children?.some((child) => isMenuVisible(child)) ?? false;
-
 const isMenuVisible = (item: MenuItemResponse): boolean => {
   if (item.visible === false) return false;
   if (!item.children || item.children.length === 0) return true;
   return hasVisibleChildren(item);
 };
-
-const filterVisibleMenu = (items: MenuItemResponse[]): MenuItemResponse[] =>
-  items.filter((item) => isMenuVisible(item)).map((item) => ({ ...item, children: item.children ? filterVisibleMenu(item.children) : [] }));
-
+const filterVisibleMenu = (items: MenuItemResponse[]): MenuItemResponse[] => items.filter((item) => isMenuVisible(item)).map((item) => ({ ...item, children: item.children ? filterVisibleMenu(item.children) : [] }));
 const flattenMenu = (item: MenuItemResponse): MenuItemResponse[] => [item, ...(item.children?.flatMap((child) => flattenMenu(child)) ?? [])];
 
 const filterMissingFallbackItem = (item: MenuItemResponse, knownPaths: Set<string>): MenuItemResponse | null => {
-  if (item.path) {
-    return knownPaths.has(normalizeRoutePath(item.path) ?? item.path) ? null : item;
-  }
-
+  if (item.path) return knownPaths.has(normalizeRoutePath(item.path) ?? item.path) ? null : item;
   const children = (item.children ?? []).map((child) => filterMissingFallbackItem(child, knownPaths)).filter(Boolean) as MenuItemResponse[];
   if (children.length === 0) return null;
   return { ...item, children };
@@ -190,19 +183,11 @@ const filterMissingFallbackItem = (item: MenuItemResponse, knownPaths: Set<strin
 
 const mergeMenuWithLocalFallback = (items: MenuItemResponse[]): MenuItemResponse[] => {
   if (!ENABLE_MENU_FALLBACK) return items;
-
   const knownPaths = new Set(items.flatMap((item) => flattenMenu(item).map((node) => normalizeRoutePath(node.path))).filter(Boolean) as string[]);
   const fallbackItems = LOCAL_FALLBACK_MENU.map((item) => filterMissingFallbackItem(item, knownPaths)).filter(Boolean) as MenuItemResponse[];
-
   if (fallbackItems.length > 0) {
-    console.info("[sidebar] Local menu fallback active.", {
-      mode: FALLBACK_MODE,
-      backendCount: items.length,
-      fallbackCount: fallbackItems.length,
-      fallbackPaths: fallbackItems.flatMap((item) => flattenMenu(item).map((node) => node.path)).filter(Boolean),
-    });
+    console.info("[sidebar] Local menu fallback active.", { mode: FALLBACK_MODE, backendCount: items.length, fallbackCount: fallbackItems.length, fallbackPaths: fallbackItems.flatMap((item) => flattenMenu(item).map((node) => node.path)).filter(Boolean) });
   }
-
   return [...items, ...fallbackItems];
 };
 
@@ -211,28 +196,16 @@ const isPathActive = (pathname: string, path?: string | null) => {
   const normalizedPath = normalizeRoutePath(path);
   return Boolean(normalizedPath) && (normalizedPathname === normalizedPath || normalizedPathname.startsWith(`${normalizedPath}/`));
 };
-
-const hasActiveDescendant = (item: MenuItemResponse, pathname: string): boolean => {
-  if (isPathActive(pathname, item.path)) return true;
-  return item.children?.some((child) => hasActiveDescendant(child, pathname)) ?? false;
-};
-
+const hasActiveDescendant = (item: MenuItemResponse, pathname: string): boolean => isPathActive(pathname, item.path) || Boolean(item.children?.some((child) => hasActiveDescendant(child, pathname)));
 const findActiveAccordionIds = (items: MenuItemResponse[], pathname: string): string[] => {
   const ids: string[] = [];
-  const walk = (item: MenuItemResponse) => {
-    const children = item.children ?? [];
-    if (children.length > 0 && children.some((child) => hasActiveDescendant(child, pathname))) ids.push(item.id);
-    children.forEach(walk);
-  };
+  const walk = (item: MenuItemResponse) => { const children = item.children ?? []; if (children.length > 0 && children.some((child) => hasActiveDescendant(child, pathname))) ids.push(item.id); children.forEach(walk); };
   items.forEach(walk);
   return ids;
 };
-
 const normalizeIconKey = (value?: string | null) => (value ?? "").toLowerCase().replace(/[_\s-]/g, "");
-
 const getMenuIcon = (item: MenuItemResponse): ReactNode => {
   const key = normalizeIconKey(item.icon || item.label);
-
   if (key.includes("dashboard") || key.includes("grid")) return <GridIcon />;
   if (key.includes("admin") || key.includes("role") || key.includes("permission") || key.includes("lock") || key.includes("shield") || key.includes("administrasi")) return <LockIcon />;
   if (key.includes("user") || key.includes("student") || key.includes("coach") || key.includes("profile") || key.includes("siswa") || key.includes("pengguna")) return <UserCircleIcon />;
@@ -245,15 +218,7 @@ const getMenuIcon = (item: MenuItemResponse): ReactNode => {
   return <ListIcon />;
 };
 
-interface SidebarItemProps {
-  item: MenuItemResponse;
-  pathname: string;
-  level?: number;
-  collapsed?: boolean;
-  openItemIds: Set<string>;
-  onToggleItem: (itemId: string) => void;
-}
-
+interface SidebarItemProps { item: MenuItemResponse; pathname: string; level?: number; collapsed?: boolean; openItemIds: Set<string>; onToggleItem: (itemId: string) => void; }
 function SidebarItem({ item, pathname, level = 0, collapsed = false, openItemIds, onToggleItem }: SidebarItemProps) {
   const children = item.children ?? [];
   const hasChildren = children.length > 0;
@@ -266,121 +231,36 @@ function SidebarItem({ item, pathname, level = 0, collapsed = false, openItemIds
   const activeClassName = isActive || isGroupActive ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50 hover:text-blue-700";
   const collapsedClassName = collapsed && level === 0 ? "justify-center" : "justify-start";
   const iconClassName = isActive || isGroupActive ? "text-blue-700" : "text-gray-500 group-hover:text-blue-700";
-
   const itemIcon = <span className={`menu-item-icon flex h-6 w-6 shrink-0 items-center justify-center ${iconClassName}`}>{getMenuIcon(item)}</span>;
   const itemText = showText ? <span className="menu-item-text truncate">{item.label}</span> : null;
-
   return (
     <div className="flex flex-col gap-1">
       {hasChildren ? (
-        <button
-          type="button"
-          title={itemTitle}
-          aria-label={collapsed && level === 0 ? item.label : undefined}
-          aria-expanded={isOpen}
-          aria-controls={`sidebar-accordion-${item.id}`}
-          onClick={() => onToggleItem(item.id)}
-          className={`${itemBaseClassName} ${activeClassName} ${collapsedClassName}`}
-          style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
-        >
-          {itemIcon}
-          {itemText}
-          {showText ? <ChevronDownIcon className={`ml-auto h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180 text-blue-600" : "text-gray-400"}`} /> : null}
+        <button type="button" title={itemTitle} aria-label={collapsed && level === 0 ? item.label : undefined} aria-expanded={isOpen} aria-controls={`sidebar-accordion-${item.id}`} onClick={() => onToggleItem(item.id)} className={`${itemBaseClassName} ${activeClassName} ${collapsedClassName}`} style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}>
+          {itemIcon}{itemText}{showText ? <ChevronDownIcon className={`ml-auto h-5 w-5 transition-transform duration-200 ${isOpen ? "rotate-180 text-blue-600" : "text-gray-400"}`} /> : null}
         </button>
       ) : item.path ? (
-        <Link
-          href={item.path}
-          title={itemTitle}
-          aria-label={collapsed && level === 0 ? item.label : undefined}
-          className={`${itemBaseClassName} ${activeClassName} ${collapsedClassName}`}
-          style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
-        >
-          {itemIcon}
-          {itemText}
-        </Link>
+        <Link href={item.path} title={itemTitle} aria-label={collapsed && level === 0 ? item.label : undefined} className={`${itemBaseClassName} ${activeClassName} ${collapsedClassName}`} style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}>{itemIcon}{itemText}</Link>
       ) : (
-        <p
-          title={itemTitle}
-          className={`${itemBaseClassName} ${collapsedClassName} text-gray-500`}
-          style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}
-        >
-          {itemIcon}
-          {itemText}
-        </p>
+        <p title={itemTitle} className={`${itemBaseClassName} ${collapsedClassName} text-gray-500`} style={collapsed && level === 0 ? undefined : { paddingLeft: `${0.75 + level * 0.75}rem` }}>{itemIcon}{itemText}</p>
       )}
-
-      {hasChildren && !collapsed ? (
-        <div id={`sidebar-accordion-${item.id}`} className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
-          <div className="overflow-hidden">
-            <div className="ml-9 flex flex-col gap-1 pt-1">
-              {children.map((child) => (
-                <SidebarItem key={child.id} item={child} pathname={pathname} level={level + 1} collapsed={collapsed} openItemIds={openItemIds} onToggleItem={onToggleItem} />
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {hasChildren && !collapsed ? <div id={`sidebar-accordion-${item.id}`} className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}><div className="overflow-hidden"><div className="ml-9 flex flex-col gap-1 pt-1">{children.map((child) => <SidebarItem key={child.id} item={child} pathname={pathname} level={level + 1} collapsed={collapsed} openItemIds={openItemIds} onToggleItem={onToggleItem} />)}</div></div></div> : null}
     </div>
   );
 }
 
-interface SidebarProps {
-  collapsed?: boolean;
-}
-
+interface SidebarProps { collapsed?: boolean; }
 export default function Sidebar({ collapsed = false }: SidebarProps) {
   const pathname = usePathname();
   const menu = useAuthStore((state) => state.menu);
   const visibleMenu = useMemo(() => filterVisibleMenu(mergeMenuWithLocalFallback(menu.map(normalizeMenuItem))), [menu]);
   const [openItemIds, setOpenItemIds] = useState<Set<string>>(() => new Set(findActiveAccordionIds(visibleMenu, pathname)));
-
-  useEffect(() => {
-    setOpenItemIds((current) => {
-      const next = new Set(current);
-      findActiveAccordionIds(visibleMenu, pathname).forEach((itemId) => next.add(itemId));
-      return next;
-    });
-  }, [pathname, visibleMenu]);
-
-  const handleToggleItem = (itemId: string) => {
-    setOpenItemIds((current) => {
-      const next = new Set(current);
-      if (next.has(itemId)) next.delete(itemId);
-      else next.add(itemId);
-      return next;
-    });
-  };
-
+  useEffect(() => { setOpenItemIds((current) => { const next = new Set(current); findActiveAccordionIds(visibleMenu, pathname).forEach((itemId) => next.add(itemId)); return next; }); }, [pathname, visibleMenu]);
+  const handleToggleItem = (itemId: string) => { setOpenItemIds((current) => { const next = new Set(current); if (next.has(itemId)) next.delete(itemId); else next.add(itemId); return next; }); };
   return (
     <aside className={`fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-5 text-gray-900 transition-all duration-300 ease-in-out ${collapsed ? "w-[90px]" : "w-[290px]"}`} aria-label="Sidebar navigation">
-      <div className={`flex py-8 ${collapsed ? "justify-center" : "justify-start"}`}>
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">B</span>
-          {!collapsed ? (
-            <span>
-              <span className="block text-sm font-semibold uppercase tracking-wide text-gray-400">Boost</span>
-              <span className="block text-lg font-semibold text-gray-900">Admin</span>
-            </span>
-          ) : null}
-        </Link>
-      </div>
-
-      <div className="flex flex-1 flex-col overflow-y-auto pb-6">
-        <nav className="mb-6">
-          <h2 className={`mb-4 flex text-xs uppercase leading-5 text-gray-400 ${collapsed ? "justify-center" : "justify-start"}`}>
-            {collapsed ? <HorizontaLDots className="h-6 w-6" /> : "Menu Utama"}
-          </h2>
-          {visibleMenu.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-4 text-sm text-gray-500">{collapsed ? "-" : "Tidak ada menu yang tersedia."}</div>
-          ) : (
-            <div className="flex flex-col gap-1.5">
-              {visibleMenu.map((item) => (
-                <SidebarItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} openItemIds={openItemIds} onToggleItem={handleToggleItem} />
-              ))}
-            </div>
-          )}
-        </nav>
-      </div>
+      <div className={`flex py-8 ${collapsed ? "justify-center" : "justify-start"}`}><Link href="/dashboard" className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">B</span>{!collapsed ? <span><span className="block text-sm font-semibold uppercase tracking-wide text-gray-400">Boost</span><span className="block text-lg font-semibold text-gray-900">Admin</span></span> : null}</Link></div>
+      <div className="flex flex-1 flex-col overflow-y-auto pb-6"><nav className="mb-6"><h2 className={`mb-4 flex text-xs uppercase leading-5 text-gray-400 ${collapsed ? "justify-center" : "justify-start"}`}>{collapsed ? <HorizontaLDots className="h-6 w-6" /> : "Menu Utama"}</h2>{visibleMenu.length === 0 ? <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-4 text-sm text-gray-500">{collapsed ? "-" : "Tidak ada menu yang tersedia."}</div> : <div className="flex flex-col gap-1.5">{visibleMenu.map((item) => <SidebarItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} openItemIds={openItemIds} onToggleItem={handleToggleItem} />)}</div>}</nav></div>
     </aside>
   );
 }
