@@ -62,35 +62,28 @@ const toApiPayload = (payload: AcademyLocationPayload) => {
   };
 };
 
+const buildParams = (params?: AcademyLocationListParams) => ({
+  academyId: params?.academyId || undefined,
+  keyword: params?.keyword ?? params?.search ?? undefined,
+  search: params?.search || undefined,
+  page: params?.page,
+  size: params?.size,
+  sort: params?.sort,
+  direction: params?.direction,
+  active: typeof params?.active === "boolean" ? params.active : undefined,
+});
+
 export const academyLocationService = {
   async list(params?: AcademyLocationListParams): Promise<AcademyLocation[]> {
     const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>(BASE_URL, {
-      params: {
-        academyId: params?.academyId || undefined,
-        keyword: params?.keyword ?? params?.search || undefined,
-        search: params?.search || undefined,
-        page: params?.page,
-        size: params?.size,
-        sort: params?.sort,
-        direction: params?.direction,
-        active: typeof params?.active === "boolean" ? params.active : undefined,
-      },
+      params: buildParams(params),
     });
     return normalizeSlice(response.data.data, params).items;
   },
 
   async slice(params?: AcademyLocationListParams): Promise<MasterSliceResponse<AcademyLocation>> {
     const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>(BASE_URL, {
-      params: {
-        academyId: params?.academyId || undefined,
-        keyword: params?.keyword ?? params?.search || undefined,
-        search: params?.search || undefined,
-        page: params?.page ?? 0,
-        size: params?.size ?? 10,
-        sort: params?.sort,
-        direction: params?.direction,
-        active: typeof params?.active === "boolean" ? params.active : undefined,
-      },
+      params: buildParams({ ...params, page: params?.page ?? 0, size: params?.size ?? 10 }),
     });
     return normalizeSlice(response.data.data, params);
   },
