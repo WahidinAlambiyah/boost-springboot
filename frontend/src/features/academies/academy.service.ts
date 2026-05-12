@@ -65,33 +65,27 @@ const toApiPayload = (payload: AcademyPayload) => {
   };
 };
 
+const buildParams = (params?: AcademyListParams) => ({
+  keyword: params?.keyword ?? params?.search ?? undefined,
+  search: params?.search || undefined,
+  page: params?.page,
+  size: params?.size,
+  sort: params?.sort,
+  direction: params?.direction,
+  active: typeof params?.active === "boolean" ? params.active : undefined,
+});
+
 export const academyService = {
   async list(params?: AcademyListParams): Promise<Academy[]> {
     const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>(BASE_URL, {
-      params: {
-        keyword: params?.keyword ?? params?.search || undefined,
-        search: params?.search || undefined,
-        page: params?.page,
-        size: params?.size,
-        sort: params?.sort,
-        direction: params?.direction,
-        active: typeof params?.active === "boolean" ? params.active : undefined,
-      },
+      params: buildParams(params),
     });
     return normalizeSlice(response.data.data, params).items;
   },
 
   async slice(params?: AcademyListParams): Promise<MasterSliceResponse<Academy>> {
     const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>(BASE_URL, {
-      params: {
-        keyword: params?.keyword ?? params?.search || undefined,
-        search: params?.search || undefined,
-        page: params?.page ?? 0,
-        size: params?.size ?? 10,
-        sort: params?.sort,
-        direction: params?.direction,
-        active: typeof params?.active === "boolean" ? params.active : undefined,
-      },
+      params: buildParams({ ...params, page: params?.page ?? 0, size: params?.size ?? 10 }),
     });
     return normalizeSlice(response.data.data, params);
   },
