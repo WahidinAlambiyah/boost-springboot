@@ -29,6 +29,15 @@ interface PageResponse<T> {
   direction?: string;
 }
 
+type AcademyLocationPayload = (AcademyLocationCreateRequest | AcademyLocationUpdateRequest) & {
+  academyId?: string;
+  googleMapsUrl?: string;
+  isActive?: boolean;
+  active?: boolean;
+};
+
+const BASE_URL = "/api/master/academy-locations";
+
 const normalizeSlice = (payload: AcademyLocation[] | PageResponse<AcademyLocation> | null | undefined, params?: AcademyLocationListParams): MasterSliceResponse<AcademyLocation> => {
   const items = Array.isArray(payload) ? payload : payload?.items ?? payload?.content ?? [];
   const page = Array.isArray(payload) ? params?.page ?? 0 : payload?.page ?? params?.page ?? 0;
@@ -45,9 +54,17 @@ const normalizeSlice = (payload: AcademyLocation[] | PageResponse<AcademyLocatio
   };
 };
 
+const toApiPayload = (payload: AcademyLocationPayload) => {
+  const { isActive, active, googleMapsUrl: _googleMapsUrl, ...rest } = payload;
+  return {
+    ...rest,
+    active: typeof active === "boolean" ? active : Boolean(isActive),
+  };
+};
+
 export const academyLocationService = {
   async list(params?: AcademyLocationListParams): Promise<AcademyLocation[]> {
-    const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>("/api/academy-locations", {
+    const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>(BASE_URL, {
       params: {
         academyId: params?.academyId || undefined,
         keyword: params?.keyword ?? params?.search || undefined,
@@ -63,7 +80,7 @@ export const academyLocationService = {
   },
 
   async slice(params?: AcademyLocationListParams): Promise<MasterSliceResponse<AcademyLocation>> {
-    const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>("/api/academy-locations", {
+    const response = await api.get<ApiResponse<AcademyLocation[] | PageResponse<AcademyLocation>>>(BASE_URL, {
       params: {
         academyId: params?.academyId || undefined,
         keyword: params?.keyword ?? params?.search || undefined,
@@ -79,7 +96,7 @@ export const academyLocationService = {
   },
 
   async create(payload: AcademyLocationCreateRequest & { googleMapsUrl?: string; isActive?: boolean }): Promise<ApiResponse<AcademyLocation>> {
-    const response = await api.post<ApiResponse<AcademyLocation>>("/api/academy-locations", payload);
+    const response = await api.post<ApiResponse<AcademyLocation>>(BASE_URL, toApiPayload(payload));
     return response.data;
   },
 
@@ -87,12 +104,12 @@ export const academyLocationService = {
     id: string,
     payload: AcademyLocationUpdateRequest & { academyId?: string; googleMapsUrl?: string; isActive?: boolean },
   ): Promise<ApiResponse<AcademyLocation>> {
-    const response = await api.put<ApiResponse<AcademyLocation>>(`/api/academy-locations/${id}`, payload);
+    const response = await api.put<ApiResponse<AcademyLocation>>(`${BASE_URL}/${id}`, toApiPayload(payload));
     return response.data;
   },
 
   async remove(id: string): Promise<ApiResponse<string>> {
-    const response = await api.delete<ApiResponse<string>>(`/api/academy-locations/${id}`);
+    const response = await api.delete<ApiResponse<string>>(`${BASE_URL}/${id}`);
     return response.data;
   },
 };
