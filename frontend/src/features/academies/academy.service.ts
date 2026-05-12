@@ -34,6 +34,13 @@ interface PageResponse<T> {
   direction?: string;
 }
 
+type AcademyPayload = Omit<AcademyCreateRequest | AcademyUpdateRequest, "isActive"> & {
+  isActive?: boolean;
+  active?: boolean;
+};
+
+const BASE_URL = "/api/master/academies";
+
 const normalizeSlice = (payload: Academy[] | PageResponse<Academy> | null | undefined, params?: AcademyListParams): MasterSliceResponse<Academy> => {
   const items = Array.isArray(payload) ? payload : payload?.items ?? payload?.content ?? [];
   const page = Array.isArray(payload) ? params?.page ?? 0 : payload?.page ?? params?.page ?? 0;
@@ -50,9 +57,17 @@ const normalizeSlice = (payload: Academy[] | PageResponse<Academy> | null | unde
   };
 };
 
+const toApiPayload = (payload: AcademyPayload) => {
+  const { isActive, active, ...rest } = payload;
+  return {
+    ...rest,
+    active: typeof active === "boolean" ? active : Boolean(isActive),
+  };
+};
+
 export const academyService = {
   async list(params?: AcademyListParams): Promise<Academy[]> {
-    const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>("/api/academies", {
+    const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>(BASE_URL, {
       params: {
         keyword: params?.keyword ?? params?.search || undefined,
         search: params?.search || undefined,
@@ -67,7 +82,7 @@ export const academyService = {
   },
 
   async slice(params?: AcademyListParams): Promise<MasterSliceResponse<Academy>> {
-    const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>("/api/academies", {
+    const response = await api.get<ApiResponse<Academy[] | PageResponse<Academy>>>(BASE_URL, {
       params: {
         keyword: params?.keyword ?? params?.search || undefined,
         search: params?.search || undefined,
@@ -82,17 +97,17 @@ export const academyService = {
   },
 
   async create(payload: AcademyCreateRequest): Promise<ApiResponse<Academy>> {
-    const response = await api.post<ApiResponse<Academy>>("/api/academies", payload);
+    const response = await api.post<ApiResponse<Academy>>(BASE_URL, toApiPayload(payload));
     return response.data;
   },
 
   async update(id: string, payload: AcademyUpdateRequest): Promise<ApiResponse<Academy>> {
-    const response = await api.put<ApiResponse<Academy>>(`/api/academies/${id}`, payload);
+    const response = await api.put<ApiResponse<Academy>>(`${BASE_URL}/${id}`, toApiPayload(payload));
     return response.data;
   },
 
   async remove(id: string): Promise<ApiResponse<string>> {
-    const response = await api.delete<ApiResponse<string>>(`/api/academies/${id}`);
+    const response = await api.delete<ApiResponse<string>>(`${BASE_URL}/${id}`);
     return response.data;
   },
 };
