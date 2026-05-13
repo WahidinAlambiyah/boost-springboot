@@ -4,7 +4,7 @@ databaseChangeLog:
       author: codex
       changes:
         - sql:
-            splitStatements: true
+            splitStatements: false
             stripComments: true
             sql: |
               alter table fastworks_springboot.students
@@ -21,10 +21,23 @@ databaseChangeLog:
                 from (select id from fastworks_springboot.academies order by created_at asc limit 1) a
                where s.academy_id is null;
 
-              alter table fastworks_springboot.students
-                add constraint fk_students_academy
-                foreign key (academy_id) references fastworks_springboot.academies(id)
-                deferrable initially immediate;
+              do $$
+              begin
+                if not exists (
+                  select 1
+                    from pg_constraint c
+                    join pg_class t on t.oid = c.conrelid
+                    join pg_namespace n on n.oid = t.relnamespace
+                   where c.conname = 'fk_students_academy'
+                     and t.relname = 'students'
+                     and n.nspname = 'fastworks_springboot'
+                ) then
+                  alter table fastworks_springboot.students
+                    add constraint fk_students_academy
+                    foreign key (academy_id) references fastworks_springboot.academies(id)
+                    deferrable initially immediate;
+                end if;
+              end $$;
 
               create index if not exists idx_students_academy_status
                 on fastworks_springboot.students(academy_id, status)
