@@ -23,7 +23,6 @@ databaseChangeLog:
       file: db/changelog/changes/012-add-academic-ops-permissions.yaml
   - include:
       file: db/changelog/changes/013-create-academic-core-and-billing.yaml
-
   - include:
       file: db/changelog/changes/014-enrollment-optimistic-locking-and-idempotency.yaml
   - include:
@@ -32,7 +31,6 @@ databaseChangeLog:
       file: db/changelog/changes/016-add-scheduling-session-aliases.yaml
   - include:
       file: db/changelog/changes/017-create-menus-and-menu-permissions.yaml
-
   - include:
       file: db/changelog/changes/018-add-menu-admin-permissions.yaml
   - include:
@@ -47,15 +45,12 @@ databaseChangeLog:
       file: db/changelog/changes/023-create-student-assessments.yaml
   - include:
       file: db/changelog/changes/024-seed-default-assessment-skills.yaml
-
   - include:
       file: db/changelog/changes/025-assessment-skill-unique-academy-code-null-safe.yaml
-
   - include:
       file: db/changelog/changes/026-create-training-packages-and-coach-payroll.yaml
   - include:
       file: db/changelog/changes/027-seed-package-payroll-permissions.yaml
-
   - include:
       file: db/changelog/changes/028-add-coach-monthly-salary.yaml
   - include:
@@ -64,10 +59,13 @@ databaseChangeLog:
       file: db/changelog/changes/030-add-fe4-assessment-skills-menu.yaml
   - include:
       file: db/changelog/changes/031-seed-dashboard-permissions.yaml
-
   - include:
       file: db/changelog/changes/032-seed-lookup-permission.yaml
   - include:
       file: db/changelog/changes/033-seed-report-progress-permission.yaml
   - include:
       file: db/changelog/changes/034-reorganize-menu-structure-phase-1.yaml
+  - include:
+      file: db/changelog/changes/035-master-student-coach-crud-support.yaml
+  - include:
+      file: db/changelog/changes/036-master-package-skill-crud-support.yaml
