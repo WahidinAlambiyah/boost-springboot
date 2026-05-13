@@ -89,13 +89,18 @@ export interface AcademyCreateRequest {
   description?: string;
   phone?: string;
   email?: string;
+  isActive?: boolean;
+  active?: boolean;
 }
 
 export interface AcademyUpdateRequest {
+  code?: string;
   name: string;
   description?: string;
   phone?: string;
   email?: string;
+  isActive?: boolean;
+  active?: boolean;
 }
 
 export interface AcademyLocation {
@@ -126,9 +131,13 @@ export interface AcademyLocationCreateRequest {
   country?: string;
   timezone?: string;
   phone?: string;
+  isActive?: boolean;
+  active?: boolean;
 }
 
 export interface AcademyLocationUpdateRequest {
+  academyId?: string;
+  code?: string;
   name: string;
   address?: string;
   city?: string;
@@ -137,6 +146,8 @@ export interface AcademyLocationUpdateRequest {
   country?: string;
   timezone?: string;
   phone?: string;
+  isActive?: boolean;
+  active?: boolean;
 }
 
 export interface CoachProfile {
@@ -165,15 +176,20 @@ export interface CoachProfileCreateRequest {
   bio?: string;
   employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT";
   payType: "SALARY" | "HOURLY" | "PER_SESSION";
+  active?: boolean;
 }
 
 export interface CoachProfileUpdateRequest {
+  academyId?: string;
+  userId?: string;
+  coachNo?: string;
   fullName?: string;
   phone?: string;
   specialties?: string;
   bio?: string;
   employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT";
   payType: "SALARY" | "HOURLY" | "PER_SESSION";
+  active?: boolean;
 }
 
 export interface Student {
@@ -183,6 +199,7 @@ export interface Student {
   fullName: string;
   nickname?: string;
   status: string;
+  currentLevel?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -191,6 +208,7 @@ export interface StudentUpdateRequest {
   fullName?: string;
   nickname?: string;
   status?: string;
+  currentLevel?: string;
 }
 
 export interface ClassSession {
@@ -278,7 +296,7 @@ export interface AttendanceRecordUpdateRequest {
 
 export interface AssessmentSkill {
   id: string;
-  academyId: string;
+  academyId?: string | null;
   code: string;
   name: string;
   description?: string;
@@ -290,7 +308,7 @@ export interface AssessmentSkill {
 }
 
 export interface AssessmentSkillRequestDto {
-  academyId?: string;
+  academyId?: string | null;
   code: string;
   name: string;
   description?: string;
@@ -302,7 +320,7 @@ export interface AssessmentSkillRequestDto {
 export type AssessmentSkillCreateRequest = AssessmentSkillRequestDto;
 
 export interface AssessmentSkillUpdateRequest {
-  academyId?: string;
+  academyId?: string | null;
   code?: string;
   name?: string;
   description?: string;
@@ -406,9 +424,11 @@ export interface TrainingPackageCreateRequest {
   validityDays?: number;
   description?: string;
   isActive?: boolean;
+  active?: boolean;
 }
 
 export interface TrainingPackageUpdateRequest {
+  academyId?: string;
   code: string;
   name: string;
   packageType: "TRIAL" | "PER_SESSION" | "MONTHLY" | "SESSION_BUNDLE";
@@ -417,6 +437,7 @@ export interface TrainingPackageUpdateRequest {
   validityDays?: number;
   description?: string;
   isActive?: boolean;
+  active?: boolean;
 }
 
 export interface StudentPackageSubscription {
@@ -549,7 +570,6 @@ export interface OwnerDashboardRecentAssessment {
   overallNotes?: string | null;
   recommendation?: string | null;
 }
-
 
 export interface OwnerDashboardAssessmentCompletion {
   totalActiveStudents: number;
