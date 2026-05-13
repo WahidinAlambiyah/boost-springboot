@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 036-master-package-skill-crud-support
+      author: codex
+      changes:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              alter table fastworks_springboot.training_packages
+                add column if not exists validity_days integer;
+
+              update fastworks_springboot.training_packages
+                 set validity_days = case
+                   when package_type = 'TRIAL' then 7
+                   when package_type = 'PER_SESSION' then 30
+                   when package_type = 'MONTHLY' then 30
+                   when package_type = 'SESSION_BUNDLE' then 60
+                   else validity_days
+                 end
+               where validity_days is null;
+
+              create index if not exists idx_training_packages_master_query
+                on fastworks_springboot.training_packages(academy_id, is_active, package_type)
+                where deleted_at is null;
+
+              create index if not exists idx_assessment_skills_master_query
+                on fastworks_springboot.assessment_skills(academy_id, is_active, order_no)
+                where deleted_at is null;
+      rollback:
+        - sql:
+            splitStatements: true
+            stripComments: true
+            sql: |
+              drop index if exists fastworks_springboot.idx_assessment_skills_master_query;
+              drop index if exists fastworks_springboot.idx_training_packages_master_query;
